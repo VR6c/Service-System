@@ -1,4 +1,4 @@
-import type { User, Brand, Branch, Quotation, Receipt, SystemSettings } from '../types';
+import type { User, Brand, Branch, Quotation, Receipt, SystemSettings, DashboardMetrics, BranchPerformance } from '../types';
 
 const BRANDS_KEY = 'byd_denza_brands';
 const BRANCHES_KEY = 'byd_denza_branches';
@@ -1031,4 +1031,50 @@ export class StorageService {
     ) + 1;
     return `${prefix}${String(nextSequence).padStart(3, '0')}`;
   }
+
+  // DYNAMIC DASHBOARD ANALYTICS & METRICS
+  static getDashboardMetrics(): DashboardMetrics {
+    const quotations = this.getQuotations();
+    const receipts = this.getReceipts();
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const thisMonthStr = new Date().toISOString().slice(0, 7);
+
+    const todayQuotations = quotations.filter(q => q.created_date?.startsWith(todayStr)).length;
+    const thisMonthQuotations = quotations.filter(q => q.created_date?.startsWith(thisMonthStr)).length;
+    const todayReceipts = receipts.filter(r => r.created_date?.startsWith(todayStr)).length;
+    const thisMonthReceipts = receipts.filter(r => r.created_date?.startsWith(thisMonthStr)).length;
+
+    const totalQuotationAmount = quotations.reduce((acc, q) => acc + (Number(q.total_amount) || 0), 0);
+    const totalReceiptAmount = receipts.reduce((acc, r) => acc + (Number(r.total_amount) || 0), 0);
+
+    return {
+      totalQuotations: quotations.length,
+      todayQuotations,
+      thisMonthQuotations,
+      totalReceipts: receipts.length,
+      todayReceipts,
+      thisMonthReceipts,
+      totalQuotationAmount,
+      totalReceiptAmount
+    };
+  }
+
+  static getBranchPerformance(): BranchPerformance[] {
+    const receipts = this.getReceipts();
+    const branches = this.getBranches();
+
+    return branches.map(branch => {
+      const branchReceipts = receipts.filter(r => r.branch_id === branch.id || r.branch_name === branch.branch_name);
+      const amount = branchReceipts.reduce((acc, r) => acc + (Number(r.total_amount) || 0), 0);
+      return {
+        brand_name: branch.service_center_name || branch.branch_name,
+        branch_id: branch.id,
+        branch_name: branch.branch_name,
+        quotations: 0,
+        receipts: branchReceipts.length,
+        amount
+      };
+    });
+  }
 }
+
