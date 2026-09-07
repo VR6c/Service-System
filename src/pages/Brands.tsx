@@ -59,16 +59,9 @@ export const Brands: React.FC = () => {
     setModalOpen(true);
   };
 
-  const handleDeleteBrand = (b: Brand) => {
+  const handleDeleteBrand = async (b: Brand) => {
     if (confirm(`Are you sure you want to delete brand "${b.brand_name}"? This will also remove any affiliated branches.`)) {
-      const currentBrands = StorageService.getBrands();
-      const updatedBrands = currentBrands.filter(brand => brand.id !== b.id);
-      StorageService.saveBrands(updatedBrands);
-
-      const currentBranches = StorageService.getBranches();
-      const updatedBranches = currentBranches.filter(br => br.brand_id !== b.id);
-      StorageService.saveBranches(updatedBranches);
-
+      await StorageService.deleteBrand(b.id);
       refreshBrandsAndBranches();
     }
   };
@@ -89,59 +82,32 @@ export const Brands: React.FC = () => {
     }
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!brandCode || !brandName) {
       alert('Brand Code and Brand Name are required.');
       return;
     }
 
-    const currentBrands = StorageService.getBrands();
-    let updatedBrands: Brand[];
+    const brandData: Brand = {
+      id: editingBrand ? editingBrand.id : `brand-${Date.now()}`,
+      brand_code: brandCode,
+      brand_name: brandName,
+      logo_type: logoType,
+      logo_url: logoUrl,
+      service_center_name: serviceCenterName,
+      local_company_name: localCompanyName,
+      address,
+      telephone,
+      email,
+      document_prefix: documentPrefix,
+      receipt_prefix: receiptPrefix,
+      status,
+      created_at: editingBrand ? editingBrand.created_at : new Date().toISOString().split('T')[0],
+      updated_at: new Date().toISOString().split('T')[0]
+    };
 
-    if (editingBrand) {
-      updatedBrands = currentBrands.map(b =>
-        b.id === editingBrand.id
-          ? {
-              ...b,
-              brand_code: brandCode,
-              brand_name: brandName,
-              logo_type: logoType,
-              logo_url: logoUrl,
-              service_center_name: serviceCenterName,
-              local_company_name: localCompanyName,
-              address,
-              telephone,
-              email,
-              document_prefix: documentPrefix,
-              receipt_prefix: receiptPrefix,
-              status,
-              updated_at: new Date().toISOString().split('T')[0]
-            }
-          : b
-      );
-    } else {
-      const newBrand: Brand = {
-        id: `brand-${Date.now()}`,
-        brand_code: brandCode,
-        brand_name: brandName,
-        logo_type: logoType,
-        logo_url: logoUrl,
-        service_center_name: serviceCenterName,
-        local_company_name: localCompanyName,
-        address,
-        telephone,
-        email,
-        document_prefix: documentPrefix,
-        receipt_prefix: receiptPrefix,
-        status,
-        created_at: new Date().toISOString().split('T')[0],
-        updated_at: new Date().toISOString().split('T')[0]
-      };
-      updatedBrands = [...currentBrands, newBrand];
-    }
-
-    StorageService.saveBrands(updatedBrands);
+    await StorageService.saveBrand(brandData);
     refreshBrandsAndBranches();
     setModalOpen(false);
   };

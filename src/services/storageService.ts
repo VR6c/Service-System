@@ -497,6 +497,22 @@ export const INITIAL_SETTINGS: SystemSettings = {
 
 export class StorageService {
   // BRANDS
+  static async fetchBrands(): Promise<Brand[]> {
+    try {
+      const res = await fetch('/api/brands');
+      if (res.ok) {
+        const data: Brand[] = await res.json();
+        if (data && data.length > 0) {
+          localStorage.setItem(BRANDS_KEY, JSON.stringify(data));
+          return data;
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch brands from MongoDB API:', err);
+    }
+    return this.getBrands();
+  }
+
   static getBrands(): Brand[] {
     const data = localStorage.getItem(BRANDS_KEY);
     if (!data) {
@@ -527,11 +543,66 @@ export class StorageService {
     return brands;
   }
 
-  static saveBrands(brands: Brand[]): void {
+  static async saveBrands(brands: Brand[]): Promise<void> {
     localStorage.setItem(BRANDS_KEY, JSON.stringify(brands));
+    try {
+      await fetch('/api/brands/bulk', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(brands)
+      });
+    } catch (err) {
+      console.warn('MongoDB sync error (brands bulk):', err);
+    }
+  }
+
+  static async saveBrand(brand: Brand): Promise<void> {
+    const brands = this.getBrands();
+    const existingIndex = brands.findIndex(b => b.id === brand.id);
+    if (existingIndex >= 0) {
+      brands[existingIndex] = brand;
+    } else {
+      brands.push(brand);
+    }
+    localStorage.setItem(BRANDS_KEY, JSON.stringify(brands));
+    try {
+      await fetch(`/api/brands/${brand.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(brand)
+      });
+    } catch (err) {
+      console.warn(`MongoDB sync error (brand ${brand.id}):`, err);
+    }
+  }
+
+  static async deleteBrand(id: string): Promise<void> {
+    const brands = this.getBrands().filter(b => b.id !== id);
+    localStorage.setItem(BRANDS_KEY, JSON.stringify(brands));
+    try {
+      await fetch(`/api/brands/${id}`, { method: 'DELETE' });
+    } catch (err) {
+      console.warn(`MongoDB delete error (brand ${id}):`, err);
+    }
   }
 
   // BRANCHES
+  static async fetchBranches(): Promise<Branch[]> {
+    try {
+      const res = await fetch('/api/branches');
+      if (res.ok) {
+        const data: Branch[] = await res.json();
+        if (data && data.length > 0) {
+          localStorage.setItem(BRANCHES_KEY, JSON.stringify(data));
+          return data;
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch branches from MongoDB API:', err);
+    }
+    return this.getBranches();
+  }
+
   static getBranches(): Branch[] {
     const data = localStorage.getItem(BRANCHES_KEY);
     if (!data) {
@@ -541,8 +612,47 @@ export class StorageService {
     return JSON.parse(data);
   }
 
-  static saveBranches(branches: Branch[]): void {
+  static async saveBranches(branches: Branch[]): Promise<void> {
     localStorage.setItem(BRANCHES_KEY, JSON.stringify(branches));
+    try {
+      await fetch('/api/branches/bulk', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(branches)
+      });
+    } catch (err) {
+      console.warn('MongoDB sync error (branches bulk):', err);
+    }
+  }
+
+  static async saveBranch(branch: Branch): Promise<void> {
+    const branches = this.getBranches();
+    const existingIndex = branches.findIndex(b => b.id === branch.id);
+    if (existingIndex >= 0) {
+      branches[existingIndex] = branch;
+    } else {
+      branches.push(branch);
+    }
+    localStorage.setItem(BRANCHES_KEY, JSON.stringify(branches));
+    try {
+      await fetch(`/api/branches/${branch.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(branch)
+      });
+    } catch (err) {
+      console.warn(`MongoDB sync error (branch ${branch.id}):`, err);
+    }
+  }
+
+  static async deleteBranch(id: string): Promise<void> {
+    const branches = this.getBranches().filter(b => b.id !== id);
+    localStorage.setItem(BRANCHES_KEY, JSON.stringify(branches));
+    try {
+      await fetch(`/api/branches/${id}`, { method: 'DELETE' });
+    } catch (err) {
+      console.warn(`MongoDB delete error (branch ${id}):`, err);
+    }
   }
 
   static getBranchesByBrand(brand_id: string): Branch[] {
@@ -552,21 +662,96 @@ export class StorageService {
   }
 
   // USERS
-  static getUsers(): User[] {
-    const data = localStorage.getItem(USERS_KEY);
-    if (!data || !data.includes('Huot Phanit')) {
-      localStorage.setItem(USERS_KEY, JSON.stringify(INITIAL_USERS));
-      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(INITIAL_USERS[0]));
-      return INITIAL_USERS;
+  static async fetchUsers(): Promise<User[]> {
+    try {
+      const res = await fetch('/api/users');
+      if (res.ok) {
+        const data: User[] = await res.json();
+        if (data && data.length > 0) {
+          localStorage.setItem(USERS_KEY, JSON.stringify(data));
+          return data;
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch users from MongoDB API:', err);
     }
-    return JSON.parse(data);
+    return this.getUsers();
   }
 
-  static saveUsers(users: User[]): void {
+  static getUsers(): User[] {
+    const data = localStorage.getItem(USERS_KEY);
+    if (!data) {
+      localStorage.setItem(USERS_KEY, JSON.stringify(INITIAL_USERS));
+      return INITIAL_USERS;
+    }
+    try {
+      return JSON.parse(data);
+    } catch {
+      localStorage.setItem(USERS_KEY, JSON.stringify(INITIAL_USERS));
+      return INITIAL_USERS;
+    }
+  }
+
+  static async saveUsers(users: User[]): Promise<void> {
     localStorage.setItem(USERS_KEY, JSON.stringify(users));
+    try {
+      await fetch('/api/users/bulk', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(users)
+      });
+    } catch (err) {
+      console.warn('MongoDB sync error (users bulk):', err);
+    }
+  }
+
+  static async saveUser(user: User): Promise<void> {
+    const users = this.getUsers();
+    const existingIndex = users.findIndex(u => u.id === user.id);
+    if (existingIndex >= 0) {
+      users[existingIndex] = user;
+    } else {
+      users.push(user);
+    }
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+    try {
+      await fetch(`/api/users/${user.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user)
+      });
+    } catch (err) {
+      console.warn(`MongoDB sync error (user ${user.id}):`, err);
+    }
+  }
+
+  static async deleteUser(id: string): Promise<void> {
+    const users = this.getUsers().filter(u => u.id !== id);
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+    try {
+      await fetch(`/api/users/${id}`, { method: 'DELETE' });
+    } catch (err) {
+      console.warn(`MongoDB delete error (user ${id}):`, err);
+    }
   }
 
   // QUOTATIONS
+  static async fetchQuotations(): Promise<Quotation[]> {
+    try {
+      const res = await fetch('/api/quotations');
+      if (res.ok) {
+        const data: Quotation[] = await res.json();
+        if (data && Array.isArray(data)) {
+          localStorage.setItem(QUOTATIONS_KEY, JSON.stringify(data));
+          return data;
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch quotations from MongoDB API:', err);
+    }
+    return this.getQuotations();
+  }
+
   static getQuotations(): Quotation[] {
     const data = localStorage.getItem(QUOTATIONS_KEY);
     if (!data) {
@@ -576,11 +761,66 @@ export class StorageService {
     return JSON.parse(data);
   }
 
-  static saveQuotations(quotations: Quotation[]): void {
+  static async saveQuotations(quotations: Quotation[]): Promise<void> {
     localStorage.setItem(QUOTATIONS_KEY, JSON.stringify(quotations));
+    try {
+      await fetch('/api/quotations/bulk', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(quotations)
+      });
+    } catch (err) {
+      console.warn('MongoDB sync error (quotations bulk):', err);
+    }
+  }
+
+  static async saveQuotation(quotation: Quotation): Promise<void> {
+    const existing = this.getQuotations();
+    const index = existing.findIndex(q => q.id === quotation.id);
+    if (index >= 0) {
+      existing[index] = quotation;
+    } else {
+      existing.unshift(quotation);
+    }
+    localStorage.setItem(QUOTATIONS_KEY, JSON.stringify(existing));
+    try {
+      await fetch(`/api/quotations/${quotation.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(quotation)
+      });
+    } catch (err) {
+      console.warn(`MongoDB sync error (quotation ${quotation.id}):`, err);
+    }
+  }
+
+  static async deleteQuotation(id: string): Promise<void> {
+    const quotations = this.getQuotations().filter(q => q.id !== id);
+    localStorage.setItem(QUOTATIONS_KEY, JSON.stringify(quotations));
+    try {
+      await fetch(`/api/quotations/${id}`, { method: 'DELETE' });
+    } catch (err) {
+      console.warn(`MongoDB delete error (quotation ${id}):`, err);
+    }
   }
 
   // RECEIPTS
+  static async fetchReceipts(): Promise<Receipt[]> {
+    try {
+      const res = await fetch('/api/receipts');
+      if (res.ok) {
+        const data: Receipt[] = await res.json();
+        if (data && Array.isArray(data)) {
+          localStorage.setItem(RECEIPTS_KEY, JSON.stringify(data));
+          return data;
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch receipts from MongoDB API:', err);
+    }
+    return this.getReceipts();
+  }
+
   static getReceipts(): Receipt[] {
     const data = localStorage.getItem(RECEIPTS_KEY);
     if (!data) {
@@ -590,11 +830,66 @@ export class StorageService {
     return JSON.parse(data);
   }
 
-  static saveReceipts(receipts: Receipt[]): void {
+  static async saveReceipts(receipts: Receipt[]): Promise<void> {
     localStorage.setItem(RECEIPTS_KEY, JSON.stringify(receipts));
+    try {
+      await fetch('/api/receipts/bulk', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(receipts)
+      });
+    } catch (err) {
+      console.warn('MongoDB sync error (receipts bulk):', err);
+    }
+  }
+
+  static async saveReceipt(receipt: Receipt): Promise<void> {
+    const existing = this.getReceipts();
+    const index = existing.findIndex(r => r.id === receipt.id);
+    if (index >= 0) {
+      existing[index] = receipt;
+    } else {
+      existing.unshift(receipt);
+    }
+    localStorage.setItem(RECEIPTS_KEY, JSON.stringify(existing));
+    try {
+      await fetch(`/api/receipts/${receipt.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(receipt)
+      });
+    } catch (err) {
+      console.warn(`MongoDB sync error (receipt ${receipt.id}):`, err);
+    }
+  }
+
+  static async deleteReceipt(id: string): Promise<void> {
+    const receipts = this.getReceipts().filter(r => r.id !== id);
+    localStorage.setItem(RECEIPTS_KEY, JSON.stringify(receipts));
+    try {
+      await fetch(`/api/receipts/${id}`, { method: 'DELETE' });
+    } catch (err) {
+      console.warn(`MongoDB delete error (receipt ${id}):`, err);
+    }
   }
 
   // SETTINGS
+  static async fetchSettings(): Promise<SystemSettings> {
+    try {
+      const res = await fetch('/api/settings');
+      if (res.ok) {
+        const data: SystemSettings = await res.json();
+        if (data) {
+          localStorage.setItem(SETTINGS_KEY, JSON.stringify(data));
+          return data;
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch settings from MongoDB API:', err);
+    }
+    return this.getSettings();
+  }
+
   static getSettings(): SystemSettings {
     const data = localStorage.getItem(SETTINGS_KEY);
     if (!data) {
@@ -629,22 +924,75 @@ export class StorageService {
     return settings;
   }
 
-  static saveSettings(settings: SystemSettings): void {
+  static async saveSettings(settings: SystemSettings): Promise<void> {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    try {
+      await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+      });
+    } catch (err) {
+      console.warn('MongoDB sync error (settings):', err);
+    }
+  }
+
+  // MONGODB FULL REFRESH SYNC
+  static async syncFromMongoDB(): Promise<boolean> {
+    try {
+      const [resB, resBr, resU, resQ, resR, resS] = await Promise.allSettled([
+        fetch('/api/brands').then(r => r.ok ? r.json() : null),
+        fetch('/api/branches').then(r => r.ok ? r.json() : null),
+        fetch('/api/users').then(r => r.ok ? r.json() : null),
+        fetch('/api/quotations').then(r => r.ok ? r.json() : null),
+        fetch('/api/receipts').then(r => r.ok ? r.json() : null),
+        fetch('/api/settings').then(r => r.ok ? r.json() : null)
+      ]);
+
+      if (resB.status === 'fulfilled' && resB.value && Array.isArray(resB.value) && resB.value.length > 0) {
+        localStorage.setItem(BRANDS_KEY, JSON.stringify(resB.value));
+      }
+      if (resBr.status === 'fulfilled' && resBr.value && Array.isArray(resBr.value) && resBr.value.length > 0) {
+        localStorage.setItem(BRANCHES_KEY, JSON.stringify(resBr.value));
+      }
+      if (resU.status === 'fulfilled' && resU.value && Array.isArray(resU.value) && resU.value.length > 0) {
+        localStorage.setItem(USERS_KEY, JSON.stringify(resU.value));
+      }
+      if (resQ.status === 'fulfilled' && resQ.value && Array.isArray(resQ.value)) {
+        localStorage.setItem(QUOTATIONS_KEY, JSON.stringify(resQ.value));
+      }
+      if (resR.status === 'fulfilled' && resR.value && Array.isArray(resR.value)) {
+        localStorage.setItem(RECEIPTS_KEY, JSON.stringify(resR.value));
+      }
+      if (resS.status === 'fulfilled' && resS.value) {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(resS.value));
+      }
+      return true;
+    } catch (err) {
+      console.warn('Could not sync with MongoDB backend:', err);
+      return false;
+    }
   }
 
   // CURRENT USER
-  static getCurrentUser(): User {
+  static getCurrentUser(): User | null {
     const data = localStorage.getItem(CURRENT_USER_KEY);
-    if (!data || !data.includes('Huot Phanit')) {
-      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(INITIAL_USERS[0]));
-      return INITIAL_USERS[0];
+    if (!data) {
+      return null;
     }
-    return JSON.parse(data);
+    try {
+      return JSON.parse(data);
+    } catch {
+      return null;
+    }
   }
 
-  static setCurrentUser(user: User): void {
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+  static setCurrentUser(user: User | null): void {
+    if (user) {
+      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(CURRENT_USER_KEY);
+    }
   }
 
   // DOCUMENT NUMBER GENERATION
@@ -652,7 +1000,7 @@ export class StorageService {
     const quotations = this.getQuotations();
     const brands = this.getBrands();
     const selectedBrand = brands.find(b => b.id === brand_id) || brands[0];
-    const prefixStr = selectedBrand.brand_code || 'BYD';
+    const prefixStr = selectedBrand?.brand_code || 'BYD';
 
     const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const prefix = `${prefixStr}-Q-${todayStr}-`;
@@ -670,7 +1018,7 @@ export class StorageService {
     const receipts = this.getReceipts();
     const brands = this.getBrands();
     const selectedBrand = brands.find(b => b.id === brand_id) || brands[0];
-    const receiptPrefix = selectedBrand.receipt_prefix || 'BYD60M';
+    const receiptPrefix = selectedBrand?.receipt_prefix || 'BYD60M';
 
     const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const prefix = `${receiptPrefix}${todayStr}-`;

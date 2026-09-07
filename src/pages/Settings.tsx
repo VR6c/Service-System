@@ -14,6 +14,14 @@ export const Settings: React.FC = () => {
   const [testingTelegram, setTestingTelegram] = useState(false);
   const [telegramStatusMsg, setTelegramStatusMsg] = useState<{ success?: boolean; text?: string } | null>(null);
 
+  React.useEffect(() => {
+    const loadSettings = async () => {
+      const fetched = await StorageService.fetchSettings();
+      setSettings(fetched);
+    };
+    loadSettings();
+  }, []);
+
   // Brand Management Modal State
   const [brandModalOpen, setBrandModalOpen] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
@@ -65,16 +73,9 @@ export const Settings: React.FC = () => {
     setBrandModalOpen(true);
   };
 
-  const handleDeleteBrand = (b: Brand) => {
+  const handleDeleteBrand = async (b: Brand) => {
     if (confirm(`Are you sure you want to delete brand "${b.brand_name}"? This will also remove any affiliated branches.`)) {
-      const currentBrands = StorageService.getBrands();
-      const updatedBrands = currentBrands.filter(brand => brand.id !== b.id);
-      StorageService.saveBrands(updatedBrands);
-
-      const currentBranches = StorageService.getBranches();
-      const updatedBranches = currentBranches.filter(br => br.brand_id !== b.id);
-      StorageService.saveBranches(updatedBranches);
-
+      await StorageService.deleteBrand(b.id);
       refreshBrandsAndBranches();
     }
   };
@@ -95,59 +96,32 @@ export const Settings: React.FC = () => {
     }
   };
 
-  const handleBrandSave = (e: React.FormEvent) => {
+  const handleBrandSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!brandCode || !brandName) {
       alert('Brand Code and Brand Name are required.');
       return;
     }
 
-    const currentBrands = StorageService.getBrands();
-    let updatedBrands: Brand[];
+    const brandData: Brand = {
+      id: editingBrand ? editingBrand.id : `brand-${Date.now()}`,
+      brand_code: brandCode,
+      brand_name: brandName,
+      logo_type: logoType,
+      logo_url: logoUrl,
+      service_center_name: serviceCenterName,
+      local_company_name: localCompanyName,
+      address,
+      telephone,
+      email,
+      document_prefix: documentPrefix,
+      receipt_prefix: receiptPrefix,
+      status,
+      created_at: editingBrand ? editingBrand.created_at : new Date().toISOString().split('T')[0],
+      updated_at: new Date().toISOString().split('T')[0]
+    };
 
-    if (editingBrand) {
-      updatedBrands = currentBrands.map(b =>
-        b.id === editingBrand.id
-          ? {
-              ...b,
-              brand_code: brandCode,
-              brand_name: brandName,
-              logo_type: logoType,
-              logo_url: logoUrl,
-              service_center_name: serviceCenterName,
-              local_company_name: localCompanyName,
-              address,
-              telephone,
-              email,
-              document_prefix: documentPrefix,
-              receipt_prefix: receiptPrefix,
-              status,
-              updated_at: new Date().toISOString().split('T')[0]
-            }
-          : b
-      );
-    } else {
-      const newBrand: Brand = {
-        id: `brand-${Date.now()}`,
-        brand_code: brandCode,
-        brand_name: brandName,
-        logo_type: logoType,
-        logo_url: logoUrl,
-        service_center_name: serviceCenterName,
-        local_company_name: localCompanyName,
-        address,
-        telephone,
-        email,
-        document_prefix: documentPrefix,
-        receipt_prefix: receiptPrefix,
-        status,
-        created_at: new Date().toISOString().split('T')[0],
-        updated_at: new Date().toISOString().split('T')[0]
-      };
-      updatedBrands = [...currentBrands, newBrand];
-    }
-
-    StorageService.saveBrands(updatedBrands);
+    await StorageService.saveBrand(brandData);
     refreshBrandsAndBranches();
     setBrandModalOpen(false);
   };
@@ -195,8 +169,6 @@ export const Settings: React.FC = () => {
     setTestingTelegram(false);
   };
 
-
-
   const handleBYDLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -227,22 +199,19 @@ export const Settings: React.FC = () => {
     }
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    StorageService.saveSettings(settings);
+    await StorageService.saveSettings(settings);
 
     // Sync brand logos to Brands list in storage
-    const brands = StorageService.getBrands();
-    const updatedBrands = brands.map(b => {
+    const currentBrands = StorageService.getBrands();
+    for (const b of currentBrands) {
       if (b.brand_code === 'BYD' || b.id.includes('byd')) {
-        return { ...b, logo_url: settings.byd_logo_url || b.logo_url };
+        await StorageService.saveBrand({ ...b, logo_url: settings.byd_logo_url || b.logo_url });
+      } else if (b.brand_code === 'DENZA' || b.id.includes('denza')) {
+        await StorageService.saveBrand({ ...b, logo_url: settings.denza_logo_url || b.logo_url });
       }
-      if (b.brand_code === 'DENZA' || b.id.includes('denza')) {
-        return { ...b, logo_url: settings.denza_logo_url || b.logo_url };
-      }
-      return b;
-    });
-    localStorage.setItem('byd_denza_brands', JSON.stringify(updatedBrands));
+    }
 
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);

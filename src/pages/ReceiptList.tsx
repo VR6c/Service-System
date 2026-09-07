@@ -40,11 +40,14 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
   const [downloadReceipt, setDownloadReceipt] = useState<Receipt | null>(null);
 
   useEffect(() => {
-    let list = StorageService.getReceipts();
-    if (filterType === 'my' && currentUser) {
-      list = list.filter(r => r.created_by === currentUser.id);
-    }
-    setReceipts(list);
+    const loadData = async () => {
+      let list = await StorageService.fetchReceipts();
+      if (filterType === 'my' && currentUser) {
+        list = list.filter(r => r.created_by === currentUser.id);
+      }
+      setReceipts(list);
+    };
+    loadData();
   }, [filterType, currentUser]);
 
   const filteredReceipts = receipts.filter(r => {
@@ -78,12 +81,11 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
     }
   };
 
-  const handleDelete = (receipt: Receipt) => {
+  const handleDelete = async (receipt: Receipt) => {
     if (currentUser?.role !== 'Admin') return;
     if (!window.confirm(`Delete receipt ${receipt.receipt_no}? This action cannot be undone.`)) return;
 
-    const updatedReceipts = StorageService.getReceipts().filter(item => item.id !== receipt.id);
-    StorageService.saveReceipts(updatedReceipts);
+    await StorageService.deleteReceipt(receipt.id);
     setReceipts(current => current.filter(item => item.id !== receipt.id));
     if (selectedReceipt?.id === receipt.id) setSelectedReceipt(null);
   };

@@ -76,20 +76,11 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
     }
   };
 
-  const handleDelete = (quotation: Quotation) => {
+  const handleDelete = async (quotation: Quotation) => {
     if (currentUser?.role !== 'Admin') return;
     if (!window.confirm(`Delete quotation ${quotation.quotation_no}? Existing receipts will be kept. This action cannot be undone.`)) return;
 
-    const updatedQuotations = StorageService.getQuotations().filter(item => item.id !== quotation.id);
-    StorageService.saveQuotations(updatedQuotations);
-
-    const now = new Date().toISOString();
-    const updatedReceipts = StorageService.getReceipts().map(receipt =>
-      receipt.quotation_id === quotation.id
-        ? { ...receipt, quotation_id: undefined, updated_at: now }
-        : receipt
-    );
-    StorageService.saveReceipts(updatedReceipts);
+    await StorageService.deleteQuotation(quotation.id);
 
     setQuotations(current => current.filter(item => item.id !== quotation.id));
     if (selectedQuotation?.id === quotation.id) setSelectedQuotation(null);

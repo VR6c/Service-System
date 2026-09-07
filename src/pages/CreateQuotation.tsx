@@ -118,7 +118,7 @@ export const CreateQuotation: React.FC<CreateQuotationProps> = ({ onSaved, onCon
   const activeBrandObj = brands.find(b => b.id === selectedBrandId) || brands[0];
   const activeBranchObj = branches.find(b => b.id === selectedBranchId) || branches[0];
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!customerName || !phone || !plateNo) {
       alert('Please fill in Customer Name, Phone Number, and Plate Number.');
       return;
@@ -155,11 +155,7 @@ export const CreateQuotation: React.FC<CreateQuotationProps> = ({ onSaved, onCon
       updated_at: editingQuotation ? new Date().toISOString() : undefined
     };
 
-    const existing = StorageService.getQuotations();
-    const updated = editingQuotation
-      ? existing.map(quotation => quotation.id === editingQuotation.id ? savedRecord : quotation)
-      : [savedRecord, ...existing];
-    StorageService.saveQuotations(updated);
+    await StorageService.saveQuotation(savedRecord);
     setSavedQuotation(savedRecord);
     setPreviewMode(true);
   };

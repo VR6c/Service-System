@@ -25,10 +25,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [branches, setBranches] = useState<Branch[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  const loadAll = () => {
-    const loadedUsers = StorageService.getUsers();
-    const loadedBrands = StorageService.getBrands();
-    const loadedBranches = StorageService.getBranches();
+  const loadAll = async () => {
+    await StorageService.syncFromMongoDB();
+    const loadedUsers = await StorageService.fetchUsers();
+    const loadedBrands = await StorageService.fetchBrands();
+    const loadedBranches = await StorageService.fetchBranches();
     setUsers(loadedUsers);
     setBrands(loadedBrands);
     setBranches(loadedBranches);
@@ -43,7 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = (email: string, password?: string): boolean => {
     const loadedUsers = StorageService.getUsers();
     const user = loadedUsers.find(
-      u => u.email.toLowerCase() === email.toLowerCase() && (password ? u.password === password : true)
+      u => u.email.toLowerCase() === email.toLowerCase() && (!password || u.password === password)
     );
 
     if (user && user.status === 'Active') {
@@ -56,7 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     setCurrentUser(null);
-    localStorage.removeItem('byd_current_user');
+    StorageService.setCurrentUser(null);
   };
 
   const switchRole = (targetRole: UserRole) => {
@@ -77,7 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const addUser = (userData: Omit<User, 'id' | 'created_date'>) => {
+  const addUser = async (userData: Omit<User, 'id' | 'created_date'>) => {
     const newUser: User = {
       ...userData,
       id: `u-${Date.now()}`,
@@ -85,29 +86,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     const updatedUsers = [...users, newUser];
     setUsers(updatedUsers);
-    StorageService.saveUsers(updatedUsers);
+    await StorageService.saveUser(newUser);
   };
 
-  const updateUser = (id: string, updatedFields: Partial<User>) => {
-    const updatedUsers = users.map(u => (u.id === id ? { ...u, ...updatedFields } : u));
+  const updateUser = async (id: string, updatedFields: Partial<User>) => {
+    const target = users.find(u => u.id === id);
+    if (!target) return;
+    const updatedUser = { ...target, ...updatedFields };
+    const updatedUsers = users.map(u => (u.id === id ? updatedUser : u));
     setUsers(updatedUsers);
-    StorageService.saveUsers(updatedUsers);
+    await StorageService.saveUser(updatedUser);
     if (currentUser?.id === id) {
-      const updatedCurrent = { ...currentUser, ...updatedFields };
-      setCurrentUser(updatedCurrent);
-      StorageService.setCurrentUser(updatedCurrent);
+      setCurrentUser(updatedUser);
+      StorageService.setCurrentUser(updatedUser);
     }
   };
 
-  const deleteUser = (id: string) => {
+  const deleteUser = async (id: string) => {
     const updatedUsers = users.filter(u => u.id !== id);
     setUsers(updatedUsers);
-    StorageService.saveUsers(updatedUsers);
+    await StorageService.deleteUser(id);
   };
 
-  const refreshBrandsAndBranches = () => {
-    setBrands(StorageService.getBrands());
-    setBranches(StorageService.getBranches());
+  const refreshBrandsAndBranches = async () => {
+    const b = await StorageService.fetchBrands();
+    const br = await StorageService.fetchBranches();
+    setBrands(b);
+    setBranches(br);
   };
 
   return (

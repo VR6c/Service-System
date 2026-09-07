@@ -104,37 +104,39 @@ export const Login: React.FC = () => {
           </button>
         </form>
 
-        {/* Quick Demo Sign-in Presets */}
-        <div className="mt-8 pt-6 border-t border-slate-100">
-          <div className="flex items-center justify-center gap-1.5 text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            <span>Quick Demo Logins</span>
+        {/* Quick Demo Accounts */}
+        <div className="mt-6 pt-6 border-t border-slate-100 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-black uppercase text-slate-400 font-heading tracking-wider flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-red-500" /> Demo Quick Access
+            </span>
           </div>
-
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <button
+              type="button"
               onClick={() => handleQuickLogin('admin@byd.com')}
-              className="flex items-center gap-2.5 p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl text-left transition-all group cursor-pointer"
+              className="p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-left transition cursor-pointer flex items-center gap-2 group"
             >
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-red-600 to-red-700 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <div className="w-7 h-7 rounded-lg bg-red-100 text-red-600 font-black text-xs flex items-center justify-center shrink-0">
                 <ShieldCheck className="w-4 h-4" />
               </div>
-              <div className="overflow-hidden">
-                <p className="text-xs font-black text-slate-900 group-hover:text-red-600 transition-colors font-heading">Admin</p>
-                <p className="text-[10px] text-slate-500 truncate font-semibold">admin@byd.com</p>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-slate-800 truncate group-hover:text-red-600">Admin</p>
+                <p className="text-[10px] text-slate-400 truncate">admin@byd.com</p>
               </div>
             </button>
 
             <button
+              type="button"
               onClick={() => handleQuickLogin('huot.phanit@byd.com')}
-              className="flex items-center gap-2.5 p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl text-left transition-all group cursor-pointer"
+              className="p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-left transition cursor-pointer flex items-center gap-2 group"
             >
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-600 font-black text-xs flex items-center justify-center shrink-0">
                 <UserCheck className="w-4 h-4" />
               </div>
-              <div className="overflow-hidden">
-                <p className="text-xs font-black text-slate-900 group-hover:text-blue-600 transition-colors font-heading">Service Advisor</p>
-                <p className="text-[10px] text-slate-500 truncate font-semibold">huot.phanit@byd.com</p>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-slate-800 truncate group-hover:text-blue-600">Service Advisor</p>
+                <p className="text-[10px] text-slate-400 truncate">huot.phanit@byd.com</p>
               </div>
             </button>
           </div>

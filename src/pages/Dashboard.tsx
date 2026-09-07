@@ -82,9 +82,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
 }) => {
   const { currentUser, brands, branches } = useAuth();
   const [previewReceipt, setPreviewReceipt] = useState<Receipt | null>(null);
+  const [receipts, setReceipts] = useState<Receipt[]>([]);
 
-  // Load storage data
-  const receipts = StorageService.getReceipts();
+  React.useEffect(() => {
+    const loadData = async () => {
+      const fetched = await StorageService.fetchReceipts();
+      setReceipts(fetched);
+    };
+    loadData();
+  }, []);
 
   return (
     <div className="space-y-6 pb-12 animate-fade-in font-sans">

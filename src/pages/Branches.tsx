@@ -49,60 +49,35 @@ export const Branches: React.FC = () => {
     setModalOpen(true);
   };
 
-  const handleDeleteBranch = (br: Branch) => {
+  const handleDeleteBranch = async (br: Branch) => {
     if (confirm(`Are you sure you want to delete branch "${br.branch_name}"?`)) {
-      const currentBranches = StorageService.getBranches();
-      const updatedBranches = currentBranches.filter(b => b.id !== br.id);
-      StorageService.saveBranches(updatedBranches);
+      await StorageService.deleteBranch(br.id);
       refreshBrandsAndBranches();
     }
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!branchCode || !branchName) {
       alert('Branch Code and Branch Name are required.');
       return;
     }
 
-    const currentBranches = StorageService.getBranches();
-    let updatedBranches: Branch[];
+    const branchData: Branch = {
+      id: editingBranch ? editingBranch.id : `b-${Date.now()}`,
+      brand_id: brandId,
+      branch_code: branchCode,
+      branch_name: branchName,
+      service_center_name: serviceCenterName,
+      address,
+      telephone,
+      email,
+      status,
+      created_at: editingBranch ? editingBranch.created_at : new Date().toISOString().split('T')[0],
+      updated_at: new Date().toISOString().split('T')[0]
+    };
 
-    if (editingBranch) {
-      updatedBranches = currentBranches.map(b =>
-        b.id === editingBranch.id
-          ? {
-              ...b,
-              brand_id: brandId,
-              branch_code: branchCode,
-              branch_name: branchName,
-              service_center_name: serviceCenterName,
-              address,
-              telephone,
-              email,
-              status,
-              updated_at: new Date().toISOString().split('T')[0]
-            }
-          : b
-      );
-    } else {
-      const newBranch: Branch = {
-        id: `b-${Date.now()}`,
-        brand_id: brandId,
-        branch_code: branchCode,
-        branch_name: branchName,
-        service_center_name: serviceCenterName,
-        address,
-        telephone,
-        email,
-        status,
-        created_at: new Date().toISOString().split('T')[0],
-        updated_at: new Date().toISOString().split('T')[0]
-      };
-      updatedBranches = [...currentBranches, newBranch];
-    }
-
-    StorageService.saveBranches(updatedBranches);
+    await StorageService.saveBranch(branchData);
     refreshBrandsAndBranches();
     setModalOpen(false);
   };

@@ -19,6 +19,8 @@ import { Settings } from './pages/Settings';
 import type { Quotation, Receipt } from './types';
 import { LanguageProvider } from './context/LanguageContext';
 
+import { StorageService } from './services/storageService';
+
 const MainApp: React.FC = () => {
   const { currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState<string>('dashboard');
@@ -27,6 +29,10 @@ const MainApp: React.FC = () => {
   const [editingReceipt, setEditingReceipt] = useState<Receipt | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    StorageService.syncFromMongoDB();
+  }, []);
 
   useEffect(() => {
     if (activeTab !== 'quotation-create') setEditingQuotation(null);

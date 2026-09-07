@@ -291,18 +291,14 @@ export const CreateReceipt: React.FC<CreateReceiptProps> = ({
     updated_at: editingReceipt ? new Date().toISOString() : undefined
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!customerName || !vehicleModel || !plateNo) {
       alert('Please fill in required fields: Customer Name, Vehicle Model, and Plate Number.');
       return;
     }
 
-    const receipts = StorageService.getReceipts();
     const completedReceipt = { ...currentReceiptObject, status: status };
-    const updatedReceipts = editingReceipt
-      ? receipts.map(receipt => receipt.id === editingReceipt.id ? completedReceipt : receipt)
-      : [completedReceipt, ...receipts];
-    StorageService.saveReceipts(updatedReceipts);
+    await StorageService.saveReceipt(completedReceipt);
 
     if (onSaved) {
       onSaved(completedReceipt);
@@ -311,7 +307,7 @@ export const CreateReceipt: React.FC<CreateReceiptProps> = ({
     }
   };
 
-  const handleSaveDraft = () => {
+  const handleSaveDraft = async () => {
     if (!customerName || !vehicleModel || !plateNo) {
       alert('Please fill in required fields: Customer Name, Vehicle Model, and Plate Number.');
       return;
@@ -322,11 +318,7 @@ export const CreateReceipt: React.FC<CreateReceiptProps> = ({
       status: 'Pending'
     };
 
-    const receipts = StorageService.getReceipts();
-    const updatedReceipts = editingReceipt
-      ? receipts.map(receipt => receipt.id === editingReceipt.id ? draftReceipt : receipt)
-      : [draftReceipt, ...receipts];
-    StorageService.saveReceipts(updatedReceipts);
+    await StorageService.saveReceipt(draftReceipt);
 
     if (onSaved) {
       onSaved(draftReceipt);
