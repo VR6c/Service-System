@@ -1,0 +1,289 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Inter:ital,wght@0,300..900;1,300..900&family=Outfit:wght@300;400;500;600;700;800&family=Figtree:ital,wght@0,300..900;1,300..900&family=Moul&family=Battambang:wght@400;700;900&family=JetBrains+Mono:wght@400;500;600;700&family=Kantumruy+Pro:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --byd-red: #E31B23;
+    --byd-red-dark: #B91219;
+    --byd-red-light: #FF3B42;
+    --navy-deep: #081525;
+    --navy-surface: #0E1E34;
+    --navy-hover: #142742;
+    --font-heading: 'Plus Jakarta Sans', 'Inter', 'Figtree', 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-sidebar: 'Plus Jakarta Sans', 'Inter', 'Figtree', 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-body: 'Plus Jakarta Sans', 'Inter', 'Figtree', 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-khmer: 'Battambang', 'Khmer OS Battambang', 'Kantumruy Pro', sans-serif;
+  }
+
+  body {
+    font-family: var(--font-body);
+    @apply bg-slate-100 text-slate-800 antialiased min-h-screen selection:bg-blue-600 selection:text-white;
+    background-color: #f1f5f9;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: normal;
+  }
+
+  body.lang-km {
+    font-family: var(--font-khmer);
+    line-height: 1.6;
+  }
+
+  body.lang-km h1, 
+  body.lang-km h2, 
+  body.lang-km h3, 
+  body.lang-km h4, 
+  body.lang-km h5, 
+  body.lang-km h6, 
+  body.lang-km .font-heading,
+  body.lang-km button,
+  body.lang-km input,
+  body.lang-km select,
+  body.lang-km p,
+  body.lang-km span,
+  body.lang-km a,
+  body.lang-km label,
+  body.lang-km option,
+  body.lang-km th,
+  body.lang-km td {
+    font-family: var(--font-khmer) !important;
+    letter-spacing: normal !important;
+  }
+
+  h1, h2, h3, h4, .font-heading {
+    font-family: var(--font-heading);
+    letter-spacing: -0.015em;
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  body.lang-km .font-mono {
+    font-family: var(--font-mono) !important;
+  }
+
+  .font-khmer {
+    font-family: var(--font-khmer) !important;
+  }
+
+  .font-battambang {
+    font-family: 'Battambang', 'Khmer OS Battambang', 'Kantumruy Pro', sans-serif !important;
+  }
+
+  .font-muol, .font-moul {
+    font-family: 'Khmer OS Muol Light', 'Khmer OS Muol', 'Moul', 'Khmer OS Muol Pali', sans-serif !important;
+  }
+}
+
+/* Professional Card & Input Utilities */
+.pro-card {
+  @apply bg-white rounded-2xl border border-slate-200/80 shadow-[0_2px_12px_rgba(15,23,42,0.04)] transition-all duration-200 hover:shadow-[0_8px_24px_-4px_rgba(15,23,42,0.08)];
+}
+
+.pro-card-navy {
+  @apply bg-[#081525] text-slate-100 rounded-2xl border border-slate-800 shadow-lg transition-all duration-200;
+}
+
+.pro-card-glass {
+  @apply bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] transition-all duration-200;
+}
+
+.pro-input {
+  @apply w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-[#E31B23] focus:ring-3 focus:ring-red-500/10 transition-all duration-150;
+}
+
+.pro-select {
+  @apply w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 focus:bg-white focus:outline-none focus:border-[#E31B23] focus:ring-3 focus:ring-red-500/10 transition-all duration-200 cursor-pointer shadow-2xs hover:shadow-xs;
+}
+
+/* Modern & Smooth Dropdown Select Utility */
+select, .pro-select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-color: #f8fafc;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2.2' stroke='%2364748B'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m19.5 8.25-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.75rem center !important;
+  background-size: 1rem 1rem !important;
+  padding-right: 2.25rem !important;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  cursor: pointer;
+}
+
+select:hover, .pro-select:hover {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2.5' stroke='%23E31B23'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m19.5 8.25-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E") !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+select:focus, .pro-select:focus {
+  outline: none !important;
+  background-color: #ffffff !important;
+  border-color: #E31B23 !important;
+  box-shadow: 0 0 0 3px rgba(227, 27, 35, 0.12), 0 2px 10px rgba(15, 23, 42, 0.06) !important;
+}
+
+select option, .pro-select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  padding: 10px 14px !important;
+  font-weight: 600 !important;
+  font-size: 0.8125rem !important;
+}
+
+.btn-crimson {
+  @apply bg-[#E31B23] hover:bg-[#C7151C] text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all duration-150 shadow-sm hover:shadow-red-600/20 active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2;
+}
+
+.byd-gradient-btn {
+  @apply bg-[#E31B23] hover:bg-[#C7151C] text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all duration-150 shadow-sm hover:shadow-red-600/20 active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2;
+}
+
+.btn-navy {
+  @apply bg-[#081525] hover:bg-[#0E1E34] text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all duration-150 shadow-sm active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2;
+}
+
+.byd-dark-btn {
+  @apply bg-[#081525] hover:bg-[#142742] text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all duration-150 shadow-sm active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2;
+}
+
+.btn-gold {
+  @apply bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs transition-all duration-150 shadow-xs hover:shadow-amber-500/20 active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2;
+}
+
+.pro-btn-primary {
+  @apply bg-[#E31B23] hover:bg-[#C7151C] text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all duration-150 shadow-sm hover:shadow-red-600/20 active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2;
+}
+
+.pro-btn-secondary {
+  @apply bg-white hover:bg-slate-50 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs border border-slate-200 transition-all duration-150 shadow-2xs hover:border-slate-300 active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2;
+}
+
+/* Status Badges */
+.badge-completed {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/80 shadow-2xs;
+}
+
+.badge-pending {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200/80 shadow-2xs;
+}
+
+.badge-converted {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200/80 shadow-2xs;
+}
+
+.badge-draft {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out forwards;
+}
+
+/* Real Physical A4 Dimensions & Dedicated Print CSS */
+.receipt-print-page {
+  width: 210mm;
+  min-height: 297mm;
+  box-sizing: border-box;
+  padding: 10mm 0;
+  margin: 0 auto;
+  background: white;
+  position: relative;
+}
+
+.receipt-content {
+  width: 190mm;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  html, body {
+    width: 210mm !important;
+    min-height: 297mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide app UI */
+  .no-print, header, aside, nav, button, .no-print * {
+    display: none !important;
+  }
+
+  /* Force print page to occupy physical 210mm x 297mm without shrinking */
+  #receipt-pdf-document, #quotation-pdf-document, .receipt-print-page {
+    visibility: visible !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 210mm !important;
+    min-height: 297mm !important;
+    margin: 0 !important;
+    padding: 10mm 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #ffffff !important;
+    display: block !important;
+  }
+
+  .receipt-content {
+    width: 190mm !important;
+    margin: 0 auto !important;
+  }
+
+  /* Page break rules for clean multi-page document pagination */
+  .break-inside-avoid, tr, table {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  #receipt-pdf-document *, #quotation-pdf-document * {
+    visibility: visible !important;
+  }
+}
+
