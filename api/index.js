@@ -18,6 +18,14 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
+// Normalize URL in case of Vercel serverless rewrite
+app.use((req, res, next) => {
+  if (req.originalUrl && req.url !== req.originalUrl) {
+    req.url = req.originalUrl;
+  }
+  next();
+});
+
 // Middleware to ensure DB connection before handling requests
 app.use(async (req, res, next) => {
   try {
@@ -500,8 +508,8 @@ app.put('/api/settings', async (req, res) => {
 
 export default app;
 
-// If run directly via node server
-if (process.env.NODE_ENV !== 'production' || process.argv[1]?.endsWith('api/index.js')) {
+// If run directly via node server (local development)
+if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
