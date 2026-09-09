@@ -286,47 +286,78 @@ export const Users: React.FC = () => {
 
       {/* Users Table */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden no-print">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr className="bg-slate-100/90 text-slate-700 font-heading font-extrabold uppercase text-[11px] tracking-wider border-b border-slate-200/90">
-                <th className="py-3.5 px-5">User Name</th>
-                <th className="py-3.5 px-5">Email</th>
-                <th className="py-3.5 px-5">Role</th>
-                <th className="py-3.5 px-5">Assigned Brand & Branch</th>
-                <th className="py-3.5 px-5 text-center">Status</th>
-                <th className="py-3.5 px-5">Created Date</th>
-                <th className="py-3.5 px-5 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {users.map(u => (
-                <tr key={u.id} className="hover:bg-slate-50/90 transition-colors">
-                  <td className="py-3.5 px-5 font-bold text-slate-900 flex items-center gap-3 font-heading text-sm">
+        {/* Mobile Card View (< md) */}
+        <div className="md:hidden divide-y divide-slate-100">
+          {users.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mb-2">
+                <UsersIcon className="w-6 h-6 stroke-[1.5]" />
+              </div>
+              <p className="text-sm font-bold text-slate-800 font-heading">No staff users found</p>
+              <p className="text-xs text-slate-400 font-medium mt-0.5">Click "Add New Staff User" to create an account.</p>
+            </div>
+          ) : (
+            users.map((u, idx) => (
+              <div
+                key={u.id}
+                className={`p-4 sm:p-5 hover:bg-slate-50/70 transition-colors space-y-3.5 animate-slide-up stagger-${Math.min(idx + 1, 5)}`}
+              >
+                {/* User Header */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs text-white shadow-xs ${u.role === 'Admin' ? 'bg-red-600' : 'bg-blue-600'
-                        }`}
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm text-white shadow-xs shrink-0 ${
+                        u.role === 'Admin' ? 'bg-red-600' : 'bg-blue-600'
+                      }`}
                     >
                       {u.name.charAt(0).toUpperCase()}
                     </div>
-                    <span>{u.name}</span>
-                  </td>
-                  <td className="py-3.5 px-5 text-slate-600 font-medium">{u.email}</td>
-                  <td className="py-3.5 px-5">
+                    <div className="min-w-0">
+                      <p className="font-heading font-extrabold text-sm text-slate-900 truncate">
+                        {u.name}
+                      </p>
+                      <p className="text-xs text-slate-500 font-medium truncate">
+                        {u.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider shrink-0 ${
+                      u.status === 'Active'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : 'bg-slate-100 text-slate-600 border border-slate-200'
+                    }`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${
+                      u.status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400'
+                    }`}></span>
+                    {u.status}
+                  </span>
+                </div>
+
+                {/* Role, Branch & Brand */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
+                  <div>
                     <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${u.role === 'Admin'
-                        ? 'bg-red-50 text-red-700 border border-red-200'
-                        : 'bg-blue-50 text-blue-700 border border-blue-200'
-                        }`}
+                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
+                        u.role === 'Admin'
+                          ? 'bg-red-50 text-red-700 border border-red-200'
+                          : 'bg-blue-50 text-blue-700 border border-blue-200'
+                      }`}
                     >
                       {u.role === 'Admin' ? <Shield className="w-3 h-3" /> : <UserCheck className="w-3 h-3" />}
-                      {u.role}
+                      <span>{u.role}</span>
                     </span>
-                  </td>
-                  <td className="py-3.5 px-5 text-slate-700 font-semibold">
-                    <div className="flex items-center gap-1.5 mb-1">
+                    <div className="text-[11px] text-slate-400 font-medium mt-1">
+                      Joined {u.created_date}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
                       <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span className="text-xs font-bold text-slate-800">{u.branch}</span>
+                      <span>{u.branch}</span>
                     </div>
                     {u.role === 'Service Advisor' && (
                       <div className="flex items-center gap-1 flex-wrap">
@@ -339,57 +370,176 @@ export const Users: React.FC = () => {
                           return (
                             <span
                               key={bId}
-                              className={`px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider border ${isByd
-                                ? 'bg-red-50 text-red-700 border-red-200'
-                                : 'bg-blue-50 text-blue-700 border-blue-200'
-                                }`}
+                              className={`px-1.5 py-0.2 rounded text-[9px] font-extrabold uppercase tracking-wider border ${
+                                isByd
+                                  ? 'bg-red-50 text-red-700 border-red-200'
+                                  : 'bg-blue-50 text-blue-700 border-blue-200'
+                              }`}
                             >
                               {brObj?.brand_code || 'BRAND'}
                             </span>
                           );
                         })}
                         {u.assigned_brand_ids && u.assigned_brand_ids.length === 2 && (
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200">
-                            Dual-Brand SA
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200">
+                            Dual-Brand
                           </span>
                         )}
                       </div>
                     )}
-                  </td>
-                  <td className="py-3.5 px-5 text-center">
-                    <span
-                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${u.status === 'Active'
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                        : 'bg-slate-100 text-slate-600 border border-slate-200'
-                        }`}
+                  </div>
+                </div>
+
+                {/* Actions Toolbar */}
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-end gap-2">
+                  <button
+                    onClick={() => openEditModal(u)}
+                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl transition-all shadow-2xs font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                    title="Edit User & Default Receipt Profile"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                    <span>Edit Profile</span>
+                  </button>
+                  {u.id !== currentUser?.id && (
+                    <button
+                      onClick={() => handleDeleteUser(u)}
+                      className="p-1.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl transition-all shadow-2xs cursor-pointer"
+                      title="Delete User"
                     >
-                      {u.status === 'Active' ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                      {u.status}
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-5 text-slate-500 font-medium">{u.created_date}</td>
-                  <td className="py-3.5 px-5 text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => openEditModal(u)}
-                        className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl transition-all shadow-2xs cursor-pointer"
-                        title="Edit User & Default Receipt Profile"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      {u.id !== currentUser?.id && (
-                        <button
-                          onClick={() => handleDeleteUser(u)}
-                          className="p-2 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl transition-all shadow-2xs cursor-pointer"
-                          title="Delete User"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop Table View (>= md) */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead className="bg-slate-50/90 text-slate-600 font-heading font-extrabold uppercase text-[11px] tracking-wider border-b border-slate-200/80 sticky top-0 z-10 backdrop-blur-xs">
+              <tr>
+                <th className="py-3.5 px-5">User Name</th>
+                <th className="py-3.5 px-5">Email</th>
+                <th className="py-3.5 px-5">Role</th>
+                <th className="py-3.5 px-5">Assigned Brand & Branch</th>
+                <th className="py-3.5 px-5 text-center">Status</th>
+                <th className="py-3.5 px-5">Created Date</th>
+                <th className="py-3.5 px-5 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+              {users.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-slate-400 font-medium">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mb-1">
+                        <UsersIcon className="w-6 h-6 stroke-[1.5]" />
+                      </div>
+                      <p className="text-sm font-bold text-slate-800 font-heading">No staff users found</p>
+                      <p className="text-xs text-slate-400 font-medium">Click "Add New Staff User" to create an account.</p>
                     </div>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                users.map(u => (
+                  <tr key={u.id} className="hover:bg-slate-50/80 transition-colors group">
+                    <td className="py-3.5 px-5 font-bold text-slate-900 flex items-center gap-3 font-heading text-sm">
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs text-white shadow-xs ${
+                          u.role === 'Admin' ? 'bg-red-600' : 'bg-blue-600'
+                        }`}
+                      >
+                        {u.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span>{u.name}</span>
+                    </td>
+                    <td className="py-3.5 px-5 text-slate-600 font-medium">{u.email}</td>
+                    <td className="py-3.5 px-5">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
+                          u.role === 'Admin'
+                            ? 'bg-red-50 text-red-700 border border-red-200'
+                            : 'bg-blue-50 text-blue-700 border border-blue-200'
+                        }`}
+                      >
+                        {u.role === 'Admin' ? <Shield className="w-3 h-3" /> : <UserCheck className="w-3 h-3" />}
+                        <span>{u.role}</span>
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-5 text-slate-700 font-semibold">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="text-xs font-bold text-slate-800">{u.branch}</span>
+                      </div>
+                      {u.role === 'Service Advisor' && (
+                        <div className="flex items-center gap-1 flex-wrap">
+                          {(u.assigned_brand_ids && u.assigned_brand_ids.length > 0
+                            ? u.assigned_brand_ids
+                            : [u.default_brand_id || u.brand_id || 'brand-byd']
+                          ).map(bId => {
+                            const brObj = brands.find(b => b.id === bId);
+                            const isByd = brObj?.brand_code === 'BYD' || bId === 'brand-byd';
+                            return (
+                              <span
+                                key={bId}
+                                className={`px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider border ${
+                                  isByd
+                                    ? 'bg-red-50 text-red-700 border-red-200'
+                                    : 'bg-blue-50 text-blue-700 border-blue-200'
+                                }`}
+                              >
+                                {brObj?.brand_code || 'BRAND'}
+                              </span>
+                            );
+                          })}
+                          {u.assigned_brand_ids && u.assigned_brand_ids.length === 2 && (
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200">
+                              Dual-Brand SA
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                    <td className="py-3.5 px-5 text-center">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
+                          u.status === 'Active'
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            : 'bg-slate-100 text-slate-600 border border-slate-200'
+                        }`}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          u.status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400'
+                        }`}></span>
+                        <span>{u.status}</span>
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-5 text-slate-500 font-medium">{u.created_date}</td>
+                    <td className="py-3.5 px-5 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => openEditModal(u)}
+                          className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+                          title="Edit User & Default Receipt Profile"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        {u.id !== currentUser?.id && (
+                          <button
+                            onClick={() => handleDeleteUser(u)}
+                            className="p-2 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+                            title="Delete User"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

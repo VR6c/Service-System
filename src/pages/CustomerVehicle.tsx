@@ -354,18 +354,145 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
       </div>
 
       {/* Customer Registry Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="bg-slate-50/90 text-slate-500 font-extrabold uppercase border-b border-slate-200/80 text-[10px] tracking-wider">
-                <th className="py-3.5 px-4">Customer</th>
-                <th className="py-3.5 px-4">Contact Phone</th>
-                <th className="py-3.5 px-4">Vehicle Model</th>
-                <th className="py-3.5 px-4">License Plate</th>
-                <th className="py-3.5 px-4">Mileage & Last Visit</th>
-                <th className="py-3.5 px-4 text-center">Status</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden no-print">
+        {/* Mobile Card View (< md) */}
+        <div className="md:hidden divide-y divide-slate-100">
+          {filteredRecords.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mb-2">
+                <Users className="w-6 h-6 stroke-[1.5]" />
+              </div>
+              <p className="text-sm font-bold text-slate-800 font-heading">No customer records found</p>
+              <p className="text-xs text-slate-400 font-medium mt-0.5">Try adjusting your search query or filter options.</p>
+            </div>
+          ) : (
+            filteredRecords.map((r, idx) => {
+              const brandInfo = getBrandBadge(r.vehicleModel, r.branch);
+              return (
+                <div
+                  key={r.id}
+                  onClick={() => setSelectedCustomer(r)}
+                  className={`p-4 sm:p-5 hover:bg-slate-50/70 transition-colors space-y-3.5 cursor-pointer animate-slide-up stagger-${Math.min(idx + 1, 5)}`}
+                >
+                  {/* Customer Header */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 text-white font-black flex items-center justify-center text-xs shadow-xs border border-slate-700/50 shrink-0">
+                        {r.name.charAt(0)}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-heading font-extrabold text-sm text-slate-900 truncate">
+                          {r.name}
+                        </p>
+                        <span className="font-mono text-[10px] font-bold text-slate-400">
+                          {r.customerId}
+                        </span>
+                      </div>
+                    </div>
+
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider shrink-0 ${
+                        r.status === 'In Service'
+                          ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                          : r.status === 'Active'
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            : 'bg-slate-100 text-slate-600 border border-slate-200'
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${
+                        r.status === 'In Service' ? 'bg-amber-500 animate-pulse' : r.status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400'
+                      }`}></span>
+                      {r.status}
+                    </span>
+                  </div>
+
+                  {/* Vehicle, Plate, Phone & Mileage */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 text-xs">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className={`px-1.5 py-0.2 text-[9px] font-black rounded border tracking-wider uppercase ${brandInfo.badgeClass}`}>
+                          {brandInfo.brand}
+                        </span>
+                        <span className="font-bold text-slate-900">{r.vehicleModel}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+                        <span className="flex items-center gap-1">
+                          <span
+                            className="w-2 h-2 rounded-full border border-slate-300 shrink-0"
+                            style={{ backgroundColor: getColorHex(r.color) }}
+                          ></span>
+                          <span>{r.color || 'Standard'}</span>
+                        </span>
+                        <span>•</span>
+                        <span className="truncate">{r.branch}</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2 justify-between sm:justify-start">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-slate-300 font-mono text-xs font-black text-slate-900 shadow-2xs">
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0"></span>
+                          <span>{r.plateNumber}</span>
+                        </div>
+                        <div className="flex items-center gap-1 font-semibold text-slate-600">
+                          <Phone className="w-3 h-3 text-slate-400" />
+                          <span className="font-mono text-[11px]">{r.phone}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 text-[11px] text-slate-400 font-medium">
+                        <span className="flex items-center gap-1 font-mono font-bold text-slate-700">
+                          <Gauge className="w-3 h-3 text-slate-400" />
+                          {r.mileage ? `${Number(r.mileage).toLocaleString()} km` : 'N/A'}
+                        </span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3 text-slate-400" />
+                          {r.lastService}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions Toolbar */}
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                    {onCreateQuotation && (
+                      <button
+                        onClick={() => onCreateQuotation(r)}
+                        className="px-3 py-1.5 rounded-xl text-slate-700 hover:text-red-700 bg-slate-100 hover:bg-red-50 border border-slate-200/80 hover:border-red-200 transition-all shadow-2xs font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                        title="Create Quotation for Customer"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Quote</span>
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setSelectedCustomer(r)}
+                      className="px-3 py-1.5 rounded-xl text-slate-700 hover:text-white bg-slate-100 hover:bg-slate-900 border border-slate-200/80 transition-all shadow-2xs font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                      title="View Full Profile"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>View Profile</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop Table View (>= md) */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead className="bg-slate-50/90 text-slate-600 font-heading font-extrabold uppercase text-[11px] tracking-wider border-b border-slate-200/80 sticky top-0 z-10 backdrop-blur-xs">
+              <tr>
+                <th className="py-3.5 px-5">Customer</th>
+                <th className="py-3.5 px-5">Contact Phone</th>
+                <th className="py-3.5 px-5">Vehicle Model</th>
+                <th className="py-3.5 px-5">License Plate</th>
+                <th className="py-3.5 px-5">Mileage & Last Visit</th>
+                <th className="py-3.5 px-5 text-center">Status</th>
+                <th className="py-3.5 px-5 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
@@ -373,8 +500,11 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-slate-400 font-medium">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <Users className="w-8 h-8 text-slate-300 stroke-[1.5]" />
-                      <p>No matching customer or vehicle records found.</p>
+                      <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mb-1">
+                        <Users className="w-6 h-6 stroke-[1.5]" />
+                      </div>
+                      <p className="text-sm font-bold text-slate-800 font-heading">No matching customer or vehicle records found</p>
+                      <p className="text-xs text-slate-400 font-medium">Try adjusting your search query or filter options.</p>
                     </div>
                   </td>
                 </tr>
@@ -385,16 +515,16 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
                     <tr
                       key={r.id}
                       onClick={() => setSelectedCustomer(r)}
-                      className="hover:bg-slate-50/90 transition cursor-pointer group"
+                      className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
                     >
                       {/* Customer ID & Name */}
-                      <td className="py-3.5 px-4 font-bold text-slate-900">
+                      <td className="py-3.5 px-5 font-bold text-slate-900">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 text-white font-black flex items-center justify-center text-xs shadow-xs border border-slate-700/50 shrink-0">
                             {r.name.charAt(0)}
                           </div>
                           <div>
-                            <p className="font-extrabold text-slate-900 group-hover:text-red-600 transition-colors">
+                            <p className="font-heading font-extrabold text-slate-900 text-sm group-hover:text-red-600 transition-colors">
                               {r.name}
                             </p>
                             <span className="font-mono text-[10px] font-bold text-slate-400">
@@ -405,13 +535,13 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
                       </td>
 
                       {/* Phone */}
-                      <td className="py-3.5 px-4 font-semibold text-slate-600">
+                      <td className="py-3.5 px-5 font-semibold text-slate-600">
                         <div className="flex items-center gap-1.5">
                           <Phone className="w-3.5 h-3.5 text-slate-400" />
                           <span className="font-mono">{r.phone}</span>
                           <button
                             onClick={(e) => handleCopy(r.phone, `phone-${r.id}`, e)}
-                            className="p-1 rounded text-slate-300 hover:text-slate-600 hover:bg-slate-100 transition opacity-0 group-hover:opacity-100"
+                            className="p-1 rounded text-slate-300 hover:text-slate-600 hover:bg-slate-100 transition opacity-0 group-hover:opacity-100 cursor-pointer"
                             title="Copy Phone"
                           >
                             {copiedField === `phone-${r.id}` ? (
@@ -424,7 +554,7 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
                       </td>
 
                       {/* Vehicle Model & Brand */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-5">
                         <div>
                           <div className="flex items-center gap-1.5">
                             <span
@@ -449,66 +579,64 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
                       </td>
 
                       {/* Cambodian Style License Plate */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-5">
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-slate-300 font-mono text-xs font-black text-slate-900 shadow-2xs">
-                          <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0"></span>
                           <span>{r.plateNumber}</span>
                         </div>
                       </td>
 
                       {/* Mileage & Last Service */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-5">
                         <div className="space-y-0.5">
                           <div className="flex items-center gap-1 font-mono font-bold text-slate-800 text-[11px]">
-                            <Gauge className="w-3 h-3 text-slate-400" />
+                            <Gauge className="w-3.5 h-3.5 text-slate-400" />
                             <span>{r.mileage ? `${Number(r.mileage).toLocaleString()} km` : 'N/A'}</span>
                           </div>
                           <div className="flex items-center gap-1 text-[10px] text-slate-400 font-medium">
-                            <Calendar className="w-3 h-3 text-slate-400" />
+                            <Calendar className="w-3.5 h-3.5 text-slate-400" />
                             <span>{r.lastService}</span>
                           </div>
                         </div>
                       </td>
 
                       {/* Status */}
-                      <td className="py-3.5 px-4 text-center">
+                      <td className="py-3.5 px-5 text-center">
                         <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${r.status === 'In Service'
-                            ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                            : r.status === 'Active'
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                              : 'bg-slate-100 text-slate-600 border border-slate-200'
-                            }`}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
+                            r.status === 'In Service'
+                              ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                              : r.status === 'Active'
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : 'bg-slate-100 text-slate-600 border border-slate-200'
+                          }`}
                         >
-                          {r.status === 'In Service' && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                          )}
-                          {r.status === 'Active' && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                          )}
+                          <span className={`w-1.5 h-1.5 rounded-full ${
+                            r.status === 'In Service' ? 'bg-amber-500 animate-pulse' : r.status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400'
+                          }`}></span>
                           <span>{r.status}</span>
                         </span>
                       </td>
 
                       {/* Action */}
-                      <td className="py-3.5 px-4 text-right">
+                      <td className="py-3.5 px-5 text-right">
                         <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
                           {onCreateQuotation && (
                             <button
                               onClick={() => onCreateQuotation(r)}
-                              className="px-2.5 py-1 rounded-lg text-slate-700 hover:text-red-700 bg-slate-100 hover:bg-red-50 border border-slate-200 hover:border-red-200 transition cursor-pointer font-bold text-[11px] flex items-center gap-1"
+                              className="px-2.5 py-1.5 rounded-xl text-slate-700 hover:text-red-700 bg-slate-100 hover:bg-red-50 border border-slate-200/80 hover:border-red-200 transition-all shadow-2xs font-bold text-xs flex items-center gap-1 hover:scale-105 active:scale-95 cursor-pointer"
                               title="Create Quotation for Customer"
                             >
-                              <Plus className="w-3 h-3" />
+                              <Plus className="w-3.5 h-3.5" />
                               <span className="hidden sm:inline">Quote</span>
                             </button>
                           )}
                           <button
                             onClick={() => setSelectedCustomer(r)}
-                            className="px-2.5 py-1 rounded-lg text-slate-700 hover:text-white bg-slate-100 hover:bg-slate-900 border border-slate-200 transition cursor-pointer font-bold text-[11px] flex items-center gap-1"
+                            className="px-2.5 py-1.5 rounded-xl text-slate-700 hover:text-white bg-slate-100 hover:bg-slate-900 border border-slate-200/80 transition-all shadow-2xs font-bold text-xs flex items-center gap-1 hover:scale-105 active:scale-95 cursor-pointer"
                             title="View Full Profile"
                           >
-                            <Eye className="w-3 h-3" />
+                            <Eye className="w-3.5 h-3.5" />
                             <span>View</span>
                           </button>
                         </div>
