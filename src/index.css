@@ -78,24 +78,26 @@
 }
 
 /* Professional Card & Input Utilities */
-.pro-card {
-  @apply bg-white rounded-2xl border border-slate-200/80 shadow-[0_2px_12px_rgba(15,23,42,0.04)] transition-all duration-200 hover:shadow-[0_8px_24px_-4px_rgba(15,23,42,0.08)];
-}
+@layer components {
+  .pro-card {
+    @apply bg-white rounded-2xl border border-slate-200/80 shadow-[0_2px_12px_rgba(15,23,42,0.04)] transition-all duration-200 hover:shadow-[0_8px_24px_-4px_rgba(15,23,42,0.08)];
+  }
 
-.pro-card-navy {
-  @apply bg-[#081525] text-slate-100 rounded-2xl border border-slate-800 shadow-lg transition-all duration-200;
-}
+  .pro-card-navy {
+    @apply bg-[#081525] text-slate-100 rounded-2xl border border-slate-800 shadow-lg transition-all duration-200;
+  }
 
-.pro-card-glass {
-  @apply bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] transition-all duration-200;
-}
+  .pro-card-glass {
+    @apply bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] transition-all duration-200;
+  }
 
-.pro-input {
-  @apply w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-[#E31B23] focus:ring-3 focus:ring-red-500/10 transition-all duration-150;
-}
+  .pro-input {
+    @apply w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-[#E31B23] focus:ring-3 focus:ring-red-500/10 transition-all duration-150;
+  }
 
-.pro-select {
-  @apply w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 focus:bg-white focus:outline-none focus:border-[#E31B23] focus:ring-3 focus:ring-red-500/10 transition-all duration-200 cursor-pointer shadow-2xs hover:shadow-xs;
+  .pro-select {
+    @apply w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 focus:bg-white focus:outline-none focus:border-[#E31B23] focus:ring-3 focus:ring-red-500/10 transition-all duration-200 cursor-pointer shadow-2xs hover:shadow-xs;
+  }
 }
 
 /* Modern & Smooth Dropdown Select Utility */

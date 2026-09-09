@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { History, Search, Filter, RefreshCw } from 'lucide-react';
+import { History, Search, Filter, RefreshCw, X } from 'lucide-react';
 import { Select } from '../components/common/Select';
 
 interface AuditLogItem {
@@ -108,14 +108,22 @@ export const ActivityLog: React.FC = () => {
       {/* Controls */}
       <div className="bg-white rounded-2xl p-4 shadow-2xs border border-slate-200/90 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="relative w-full sm:w-96">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3 pointer-events-none" />
           <input
             type="text"
             placeholder="Search activity log by user, action, IP..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pro-input pl-9"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-8 text-xs text-slate-900 placeholder-slate-400 font-semibold focus:bg-white focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/10 transition-all"
           />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-2.5 top-2.5 p-1 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
