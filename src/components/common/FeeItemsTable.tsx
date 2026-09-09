@@ -1,6 +1,7 @@
 import React from 'react';
 import type { FeeItem } from '../../types';
-import { Plus, Trash2, Wrench, DollarSign } from 'lucide-react';
+import { Plus, Trash2, Wrench } from 'lucide-react';
+import { Select } from './Select';
 
 interface FeeItemsTableProps {
   feeItems: FeeItem[];
@@ -88,29 +89,25 @@ export const FeeItemsTable: React.FC<FeeItemsTableProps> = ({
                   </td>
                 )}
                 {showSapAndStock && (
-                  <td className="py-2.5 px-3 text-center">
-                    <select
+                  <td className="py-2.5 px-3 text-center min-w-[85px]">
+                    <Select
                       disabled={readOnly}
                       value={item.stock_yes_no || 'YES'}
-                      onChange={e => onUpdateItem(item.id, 'stock_yes_no', e.target.value)}
-                      className="bg-slate-50 border border-slate-200 rounded-lg px-1.5 py-1 text-[11px] font-bold text-slate-700 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    >
-                      <option value="YES">YES</option>
-                      <option value="NO">NO</option>
-                    </select>
+                      onChange={val => onUpdateItem(item.id, 'stock_yes_no', val)}
+                      options={['YES', 'NO']}
+                      size="sm"
+                    />
                   </td>
                 )}
                 {showSapAndStock && (
-                  <td className="py-2.5 px-3 text-center">
-                    <select
+                  <td className="py-2.5 px-3 text-center min-w-[85px]">
+                    <Select
                       disabled={readOnly}
                       value={item.warranty_yes_no || 'NO'}
-                      onChange={e => onUpdateItem(item.id, 'warranty_yes_no', e.target.value)}
-                      className="bg-slate-50 border border-slate-200 rounded-lg px-1.5 py-1 text-[11px] font-bold text-slate-700 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    >
-                      <option value="YES">YES</option>
-                      <option value="NO">NO</option>
-                    </select>
+                      onChange={val => onUpdateItem(item.id, 'warranty_yes_no', val)}
+                      options={['YES', 'NO']}
+                      size="sm"
+                    />
                   </td>
                 )}
                 <td className="py-2.5 px-3 text-right">

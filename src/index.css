@@ -115,6 +115,14 @@ select, .pro-select {
   cursor: pointer;
 }
 
+select.pl-8, .pro-select.pl-8 {
+  padding-left: 2.25rem !important;
+}
+
+select.pl-9, .pro-select.pl-9 {
+  padding-left: 2.5rem !important;
+}
+
 select:hover, .pro-select:hover {
   background-color: #ffffff !important;
   border-color: #cbd5e1 !important;
@@ -198,10 +206,25 @@ select option, .pro-select option {
   background: #94a3b8;
 }
 
-/* Animations */
+/* Animations & Transitions */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes scaleIn {
@@ -209,13 +232,60 @@ select option, .pro-select option {
   to { opacity: 1; transform: scale(1); }
 }
 
+@keyframes popScale {
+  0% { opacity: 0; transform: scale(0.94); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes statusPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.2s ease-out forwards;
 }
 
-.animate-scale-in {
-  animation: scaleIn 0.2s ease-out forwards;
+.animate-page-enter {
+  animation: pageEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+.animate-slide-up {
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-pop-scale {
+  animation: popScale 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-status-pulse {
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+/* Staggered Entrance Animation Delays */
+.stagger-1 { animation-delay: 40ms; }
+.stagger-2 { animation-delay: 80ms; }
+.stagger-3 { animation-delay: 120ms; }
+.stagger-4 { animation-delay: 160ms; }
+.stagger-5 { animation-delay: 200ms; }
+
+/* Interactive Transaction Row Elevation */
+.transaction-row-hover {
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s ease, box-shadow 0.18s ease;
+}
+.transaction-row-hover:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+}
+
 
 /* Real Physical A4 Dimensions & Dedicated Print CSS */
 .receipt-print-page {

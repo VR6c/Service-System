@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { StorageService } from '../services/storageService';
 import type { Branch } from '../types';
 import { GitBranch, Plus, Edit2, Trash2, MapPin, Phone, Mail } from 'lucide-react';
+import { Select } from '../components/common/Select';
 
 export const Branches: React.FC = () => {
   const { brands, branches, refreshBrandsAndBranches } = useAuth();
@@ -97,16 +98,17 @@ export const Branches: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <select
-            value={filterBrandId}
-            onChange={e => setFilterBrandId(e.target.value)}
-            className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800"
-          >
-            <option value="all">All Brands</option>
-            {brands.map(b => (
-              <option key={b.id} value={b.id}>{b.brand_name}</option>
-            ))}
-          </select>
+          <div className="w-44">
+            <Select
+              value={filterBrandId}
+              onChange={setFilterBrandId}
+              options={[
+                { value: 'all', label: 'All Brands' },
+                ...brands.map(b => ({ value: b.id, label: b.brand_name }))
+              ]}
+              size="sm"
+            />
+          </div>
 
           <button
             onClick={openCreateModal}
@@ -193,16 +195,12 @@ export const Branches: React.FC = () => {
 
             <form onSubmit={handleSave} className="space-y-3 text-xs">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Affiliated Brand *</label>
-                <select
+                <Select
+                  label="Affiliated Brand *"
                   value={brandId}
-                  onChange={e => setBrandId(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold"
-                >
-                  {brands.map(b => (
-                    <option key={b.id} value={b.id}>{b.brand_name} ({b.brand_code})</option>
-                  ))}
-                </select>
+                  onChange={setBrandId}
+                  options={brands.map(b => ({ value: b.id, label: `${b.brand_name} (${b.brand_code})` }))}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -217,15 +215,12 @@ export const Branches: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Status</label>
-                  <select
+                  <Select
+                    label="Status"
                     value={status}
-                    onChange={e => setStatus(e.target.value as 'Active' | 'Inactive')}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold"
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                  </select>
+                    onChange={val => setStatus(val as 'Active' | 'Inactive')}
+                    options={['Active', 'Inactive']}
+                  />
                 </div>
               </div>
 

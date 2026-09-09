@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Quotation, Brand, SystemSettings } from '../../types';
+import type { Quotation, Brand, SystemSettings, Branch } from '../../types';
 import { StorageService } from '../../services/storageService';
 import { BYDLogo } from '../common/BYDLogo';
 import { DENZALogo } from '../common/DENZALogo';
@@ -8,9 +8,10 @@ interface QuotationPDFProps {
   quotation: Quotation;
   brand?: Brand;
   settings?: SystemSettings;
+  branch?: Branch;
 }
 
-export const QuotationPDF: React.FC<QuotationPDFProps> = ({ quotation, brand, settings }) => {
+export const QuotationPDF: React.FC<QuotationPDFProps> = ({ quotation, brand, settings, branch: _branch }) => {
   const currentSettings = settings || StorageService.getSettings();
   const brands = StorageService.getBrands();
   const matchedBrand = brand || brands.find(b => 

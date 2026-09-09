@@ -8,13 +8,12 @@ import { BrandBranchSelector } from '../components/common/BrandBranchSelector';
 import { CustomerVehicleForm } from '../components/common/CustomerVehicleForm';
 import { FeeItemsTable } from '../components/common/FeeItemsTable';
 import { DocumentPreviewModal } from '../components/common/DocumentPreviewModal';
+import { Select } from '../components/common/Select';
 import {
   FileText,
   Save,
   Eye,
-  CheckCircle2,
-  ArrowRight,
-  RotateCcw
+  ArrowRight
 } from 'lucide-react';
 
 interface CreateQuotationProps {
@@ -187,18 +186,36 @@ export const CreateQuotation: React.FC<CreateQuotationProps> = ({
         onDescriptionChange={docForm.setDescription}
       />
 
-      {/* Additional Repair Recommendation Box */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs">
-        <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-          Technical Repair Recommendations
-        </label>
-        <textarea
-          rows={2}
-          value={repairRecommendation}
-          onChange={e => setRepairRecommendation(e.target.value)}
-          placeholder="Specify technical advice or recommended repairs..."
-          className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition resize-none"
-        />
+      {/* Quotation Status & Technical Repair Recommendation Box */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs">
+          <Select
+            label="Quotation Status"
+            value={status}
+            onChange={val => setStatus(val as Quotation['status'])}
+            options={[
+              { value: 'Draft', label: 'Draft' },
+              { value: 'Sent', label: 'Sent' },
+              { value: 'Accepted', label: 'Accepted' },
+              { value: 'Quotation', label: 'Quotation (Default)' },
+              { value: 'Pending', label: 'Pending' },
+              { value: 'Converted', label: 'Converted' },
+              { value: 'Expired', label: 'Expired' }
+            ]}
+          />
+        </div>
+        <div className="md:col-span-2 bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs">
+          <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+            Technical Repair Recommendations
+          </label>
+          <textarea
+            rows={2}
+            value={repairRecommendation}
+            onChange={e => setRepairRecommendation(e.target.value)}
+            placeholder="Specify technical advice or recommended repairs..."
+            className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition resize-none"
+          />
+        </div>
       </div>
 
       {/* Reusable Fee Items Table Component */}

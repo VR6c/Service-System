@@ -10,6 +10,7 @@ export const exportToPDF = async (elementId: string, filename: string) => {
   }
 
   try {
+    await document.fonts?.ready;
     let canvas: HTMLCanvasElement;
     try {
       canvas = await html2canvas(element, {

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { StorageService } from '../services/storageService';
 import {
   Users,
   Search,
@@ -10,8 +11,19 @@ import {
   Car,
   Calendar,
   Building2,
-  ShieldCheck
+  ShieldCheck,
+  FileCheck,
+  FileText
 } from 'lucide-react';
+
+interface HistoryItem {
+  type: 'Quotation' | 'Receipt';
+  no: string;
+  date: string;
+  amount: number;
+  description: string;
+  status: string;
+}
 
 interface CustomerVehicleRecord {
   id: string;
@@ -24,88 +36,22 @@ interface CustomerVehicleRecord {
   status: 'Active' | 'In Service' | 'Inactive';
   lastService: string;
   branch: string;
+  vin?: string;
+  mileage?: number;
+  battery?: string;
+  history?: HistoryItem[];
 }
 
-const INITIAL_CUSTOMERS: CustomerVehicleRecord[] = [
-  {
-    id: 'cv-1',
-    customerId: 'CUST-2026-001',
-    name: 'Sokunthy CHENG',
-    phone: '+855 12 999 111',
-    vehicleModel: 'BYD SEAL AWD Performance',
-    plateNumber: '2BX-1234',
-    color: 'Atlantis Grey',
-    status: 'In Service',
-    lastService: 'Aug 21, 2026',
-    branch: 'BYD Siem Reap'
-  },
-  {
-    id: 'cv-2',
-    customerId: 'CUST-2026-002',
-    name: 'Oun Sopheaktra',
-    phone: '+855 12 999 222',
-    vehicleModel: 'BYD ATTO 3 Extended Range',
-    plateNumber: '2BC-5678',
-    color: 'Skiing White',
-    status: 'Active',
-    lastService: 'Aug 21, 2026',
-    branch: 'BYD Siem Reap'
-  },
-  {
-    id: 'cv-3',
-    customerId: 'CUST-2026-003',
-    name: 'Vireak Sophearet',
-    phone: '+855 12 999 333',
-    vehicleModel: 'BYD SEALION 6 DM-i',
-    plateNumber: '2BK-9012',
-    color: 'Cosmos Black',
-    status: 'In Service',
-    lastService: 'Aug 20, 2026',
-    branch: 'BYD Phnom Penh'
-  },
-  {
-    id: 'cv-4',
-    customerId: 'CUST-2026-004',
-    name: 'Leng Vichera',
-    phone: '+855 12 999 444',
-    vehicleModel: 'BYD DOLPHIN Extended Range',
-    plateNumber: '2BJ-3456',
-    color: 'Coral Pink',
-    status: 'Active',
-    lastService: 'Aug 20, 2026',
-    branch: 'BYD Chroy Changva 6A'
-  },
-  {
-    id: 'cv-5',
-    customerId: 'CUST-2026-005',
-    name: 'Phat Sophanna',
-    phone: '+855 12 999 555',
-    vehicleModel: 'BYD TANG EV Flagship',
-    plateNumber: '2BZ-7890',
-    color: 'Emperor Red',
-    status: 'In Service',
-    lastService: 'Aug 19, 2026',
-    branch: 'BYD Siem Reap'
-  },
-  {
-    id: 'cv-6',
-    customerId: 'CUST-2026-006',
-    name: 'Chan Ponlok',
-    phone: '+855 12 111 222',
-    vehicleModel: 'BYD SEAL RWD Design',
-    plateNumber: '2BX-9988',
-    color: 'Polar White',
-    status: 'Active',
-    lastService: 'Aug 15, 2026',
-    branch: 'BYD City Mall'
-  }
-];
-
 export const CustomerVehicle: React.FC = () => {
-  const [records] = useState<CustomerVehicleRecord[]>(INITIAL_CUSTOMERS);
+  const [records, setRecords] = useState<CustomerVehicleRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerVehicleRecord | null>(null);
+
+  useEffect(() => {
+    const data = StorageService.getCustomerVehicles();
+    setRecords(data);
+  }, []);
 
   const filteredRecords = records.filter(r => {
     const matchesSearch =
@@ -129,7 +75,7 @@ export const CustomerVehicle: React.FC = () => {
           </div>
           <div>
             <h1 className="text-xl font-extrabold text-slate-900 font-heading">Customer Management</h1>
-            <p className="text-xs text-slate-500 font-medium">View, search, and filter registered customer profiles & vehicle records</p>
+            <p className="text-xs text-slate-500 font-medium">View, search, and filter registered customer profiles & vehicle records ({records.length} records)</p>
           </div>
         </div>
 
@@ -149,7 +95,7 @@ export const CustomerVehicle: React.FC = () => {
             placeholder="Search by customer name, phone, plate no, or ID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pro-input pl-9"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-8 text-xs text-slate-900 placeholder-slate-400 font-semibold focus:outline-none focus:border-red-500 transition-all"
           />
         </div>
 
@@ -256,10 +202,10 @@ export const CustomerVehicle: React.FC = () => {
         </div>
       </div>
 
-      {/* View Customer Details Modal */}
+      {/* View Customer Details & History Modal */}
       {selectedCustomer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 animate-scale-in">
+          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 animate-scale-in max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-red-50 text-[#E31B23] font-black flex items-center justify-center text-sm border border-red-100">
@@ -304,7 +250,7 @@ export const CustomerVehicle: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <h4 className="font-extrabold text-slate-900 text-xs uppercase tracking-wider text-slate-500">Vehicle Details</h4>
+                <h4 className="font-extrabold text-slate-900 text-xs uppercase tracking-wider text-slate-500">Vehicle Specifications</h4>
                 <div className="p-3.5 rounded-xl border border-slate-200 bg-white space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-slate-500 font-medium">Model:</span>
@@ -321,8 +267,20 @@ export const CustomerVehicle: React.FC = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-slate-500 font-medium">Color:</span>
-                    <span className="font-bold text-slate-800">{selectedCustomer.color}</span>
+                    <span className="font-bold text-slate-800">{selectedCustomer.color || 'Standard'}</span>
                   </div>
+                  {selectedCustomer.vin && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 font-medium">VIN:</span>
+                      <span className="font-mono text-slate-700 font-bold">{selectedCustomer.vin}</span>
+                    </div>
+                  )}
+                  {selectedCustomer.mileage ? (
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 font-medium">Odometer Mileage:</span>
+                      <span className="font-bold text-slate-900">{selectedCustomer.mileage.toLocaleString()} km</span>
+                    </div>
+                  ) : null}
                   <div className="flex items-center justify-between">
                     <span className="text-slate-500 font-medium">Registered Branch:</span>
                     <span className="font-bold text-slate-800 flex items-center gap-1">
@@ -340,10 +298,38 @@ export const CustomerVehicle: React.FC = () => {
                 </div>
               </div>
 
+              {/* Service Document History Timeline */}
+              {selectedCustomer.history && selectedCustomer.history.length > 0 && (
+                <div className="space-y-2 pt-2">
+                  <h4 className="font-extrabold text-slate-900 text-xs uppercase tracking-wider text-slate-500">Service Document History</h4>
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    {selectedCustomer.history.map((h, i) => (
+                      <div key={i} className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2.5">
+                          {h.type === 'Receipt' ? (
+                            <FileCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                          ) : (
+                            <FileText className="w-4 h-4 text-amber-500 shrink-0" />
+                          )}
+                          <div>
+                            <p className="font-bold text-slate-900 font-mono">{h.no}</p>
+                            <p className="text-[10px] text-slate-500 truncate max-w-[200px]">{h.description}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-mono font-black text-slate-900">${h.amount.toFixed(2)}</p>
+                          <p className="text-[10px] text-slate-400 font-medium">{h.date}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="p-3 bg-blue-50/80 rounded-xl border border-blue-100 flex items-start gap-2 text-[11px] text-blue-900">
                 <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
                 <p>
-                  Customer records are automatically logged and synchronized whenever a Service Receipt or Quotation is issued.
+                  Customer records and vehicle service history update live when quotations or receipts are created.
                 </p>
               </div>
             </div>
@@ -351,7 +337,7 @@ export const CustomerVehicle: React.FC = () => {
             <div className="flex items-center justify-end pt-3 border-t border-slate-100">
               <button
                 onClick={() => setSelectedCustomer(null)}
-                className="pro-btn-secondary"
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition"
               >
                 Close
               </button>
@@ -362,3 +348,4 @@ export const CustomerVehicle: React.FC = () => {
     </div>
   );
 };
+

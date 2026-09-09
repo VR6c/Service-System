@@ -3,6 +3,7 @@ import type { Brand, Branch } from '../../types';
 import { BYDLogo } from './BYDLogo';
 import { DENZALogo } from './DENZALogo';
 import { Building2, ShieldCheck } from 'lucide-react';
+import { Select } from './Select';
 
 interface BrandBranchSelectorProps {
   brands: Brand[];
@@ -75,21 +76,16 @@ export const BrandBranchSelector: React.FC<BrandBranchSelectorProps> = ({
 
         {/* Branch / Service Center Dropdown */}
         <div>
-          <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-            Service Center Branch
-          </label>
-          <select
+          <Select
+            label="Service Center Branch"
             disabled={readOnly}
             value={selectedBranchId}
-            onChange={e => onBranchChange(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3.5 py-2.5 text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
-          >
-            {availableBranches.map(branch => (
-              <option key={branch.id} value={branch.id}>
-                {branch.branch_name} ({branch.branch_code})
-              </option>
-            ))}
-          </select>
+            onChange={onBranchChange}
+            options={availableBranches.map(branch => ({
+              value: branch.id,
+              label: `${branch.branch_name} (${branch.branch_code})`
+            }))}
+          />
           {currentBrand && (
             <p className="text-[11px] text-slate-500 font-medium mt-2 flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />

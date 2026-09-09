@@ -5,6 +5,7 @@ import { sendTelegramReminder } from '../services/telegramService';
 import type { Quotation } from '../types';
 import { QuotationPDF } from '../components/pdf/QuotationPDF';
 import { exportToPDF, printDocument } from '../utils/pdfExport';
+import { Select } from '../components/common/Select';
 import {
   FileText,
   Search,
@@ -18,7 +19,9 @@ import {
   Car,
   Pencil,
   Trash2,
-  Send
+  Send,
+  Building,
+  GitBranch
 } from 'lucide-react';
 
 interface QuotationListProps {
@@ -40,11 +43,14 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
   const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null);
 
   useEffect(() => {
-    let list = StorageService.getQuotations();
-    if (filterType === 'my' && currentUser) {
-      list = list.filter(q => q.created_by === currentUser.id);
-    }
-    setQuotations(list);
+    const loadQuotations = async () => {
+      let list = await StorageService.fetchQuotations();
+      if (filterType === 'my' && currentUser) {
+        list = list.filter(q => q.created_by === currentUser.id);
+      }
+      setQuotations(list);
+    };
+    loadQuotations();
   }, [filterType, currentUser]);
 
   const filteredQuotations = quotations.filter(q => {
@@ -129,51 +135,54 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
           </div>
 
           {/* Status Filter */}
-          <div className="relative">
-            <Filter className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-3 pointer-events-none z-10" />
-            <select
+          <div className="w-44">
+            <Select
+              icon={<Filter className="w-3.5 h-3.5" />}
               value={statusFilter}
-              onChange={e => setStatusFilter(e.target.value)}
-              className="pro-select pl-8 py-2 text-xs font-bold text-slate-800"
-            >
-              <option value="ALL">All Statuses</option>
-              <option value="Draft">Draft</option>
-              <option value="Sent">Sent</option>
-              <option value="Accepted">Accepted</option>
-              <option value="Converted">Converted to Receipt</option>
-              <option value="Cancelled">Cancelled</option>
-            </select>
+              onChange={setStatusFilter}
+              options={[
+                { value: 'ALL', label: 'All Statuses' },
+                { value: 'Draft', label: 'Draft' },
+                { value: 'Sent', label: 'Sent' },
+                { value: 'Accepted', label: 'Accepted' },
+                { value: 'Converted', label: 'Converted to Receipt' },
+                { value: 'Cancelled', label: 'Cancelled' }
+              ]}
+              size="sm"
+            />
           </div>
 
-          <div className="relative">
-            <select
+          {/* Brand Filter */}
+          <div className="w-48">
+            <Select
+              icon={<Building className="w-3.5 h-3.5" />}
               value={selectedBrandFilter}
-              onChange={e => {
-                setSelectedBrandFilter(e.target.value);
+              onChange={val => {
+                setSelectedBrandFilter(val);
                 setSelectedBranchFilter('ALL');
               }}
-              className="pro-select py-2 text-xs font-bold text-slate-800"
-            >
-              <option value="ALL">All Brands (BYD & DENZA)</option>
-              {brands.map(b => (
-                <option key={b.id} value={b.id}>{b.brand_name}</option>
-              ))}
-            </select>
+              options={[
+                { value: 'ALL', label: 'All Brands (BYD & DENZA)' },
+                ...brands.map(b => ({ value: b.id, label: b.brand_name }))
+              ]}
+              size="sm"
+            />
           </div>
 
-          <div className="relative">
-            <select
+          {/* Branch Filter */}
+          <div className="w-44">
+            <Select
+              icon={<GitBranch className="w-3.5 h-3.5" />}
               value={selectedBranchFilter}
-              onChange={e => setSelectedBranchFilter(e.target.value)}
-              className="pro-select py-2 text-xs font-bold text-slate-800"
-            >
-              <option value="ALL">All Branches</option>
-              {branches
-                .filter(br => selectedBrandFilter === 'ALL' || br.brand_id === selectedBrandFilter)
-                .map(br => (
-                  <option key={br.id} value={br.id}>{br.branch_name}</option>
-                ))}
-            </select>
+              onChange={setSelectedBranchFilter}
+              options={[
+                { value: 'ALL', label: 'All Branches' },
+                ...branches
+                  .filter(br => selectedBrandFilter === 'ALL' || br.brand_id === selectedBrandFilter)
+                  .map(br => ({ value: br.id, label: br.branch_name }))
+              ]}
+              size="sm"
+            />
           </div>
 
           <button
@@ -212,8 +221,8 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
                   </td>
                 </tr>
               ) : (
-                filteredQuotations.map(q => (
-                  <tr key={q.id} className="hover:bg-slate-50/90 transition-colors group">
+                filteredQuotations.map((q, idx) => (
+                  <tr key={q.id} className={`hover:bg-slate-50/90 transaction-row-hover animate-slide-up stagger-${Math.min(idx + 1, 5)} group`}>
                     <td className="py-3.5 px-5">
                       <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100/90 border border-slate-200/90 text-slate-800 font-mono font-bold text-[12px] shadow-2xs">
                         <FileText className="w-3.5 h-3.5 text-amber-500 shrink-0" />

@@ -6,6 +6,7 @@ import type { SystemSettings, Brand } from '../types';
 import { Settings as SettingsIcon, Save, CheckCircle, Building2, Percent, FileText, Layout, Upload, X, Send, Bot, Plus, Edit2, Trash2, Image as ImageIcon } from 'lucide-react';
 import { BYDLogo } from '../components/common/BYDLogo';
 import { DENZALogo } from '../components/common/DENZALogo';
+import { Select } from '../components/common/Select';
 
 export const Settings: React.FC = () => {
   const { brands, branches, refreshBrandsAndBranches } = useAuth();
@@ -995,15 +996,12 @@ export const Settings: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Status</label>
-                  <select
+                  <Select
+                    label="Status"
                     value={status}
-                    onChange={e => setStatus(e.target.value as 'Active' | 'Inactive')}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold"
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                  </select>
+                    onChange={val => setStatus(val as 'Active' | 'Inactive')}
+                    options={['Active', 'Inactive']}
+                  />
                 </div>
               </div>
 

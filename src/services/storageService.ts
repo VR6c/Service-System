@@ -1000,17 +1000,19 @@ export class StorageService {
     const quotations = this.getQuotations();
     const brands = this.getBrands();
     const selectedBrand = brands.find(b => b.id === brand_id) || brands[0];
-    const prefixStr = selectedBrand?.brand_code || 'BYD';
+    const brandCode = selectedBrand?.brand_code || 'BYD';
 
-    const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const prefix = `${prefixStr}-Q-${todayStr}-`;
-    const nextSequence = Math.max(
-      0,
-      ...quotations
-        .filter(q => q.quotation_no.startsWith(prefix))
-        .map(q => Number(q.quotation_no.slice(prefix.length)))
-        .filter(Number.isFinite)
-    ) + 1;
+    const d = new Date();
+    const yy = String(d.getFullYear()).slice(-2);
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const prefix = `${brandCode}-QT${yy}${mm}-`;
+
+    const sequences = quotations.map(q => {
+      const match = q.quotation_no.match(/(\d+)$/);
+      return match ? parseInt(match[1], 10) : 0;
+    });
+
+    const nextSequence = (sequences.length > 0 ? Math.max(0, ...sequences) : 0) + 1;
     return `${prefix}${String(nextSequence).padStart(3, '0')}`;
   }
 
@@ -1020,16 +1022,188 @@ export class StorageService {
     const selectedBrand = brands.find(b => b.id === brand_id) || brands[0];
     const receiptPrefix = selectedBrand?.receipt_prefix || 'BYD60M';
 
-    const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const prefix = `${receiptPrefix}${todayStr}-`;
-    const nextSequence = Math.max(
-      0,
-      ...receipts
-        .filter(r => r.receipt_no.startsWith(prefix))
-        .map(r => Number(r.receipt_no.slice(prefix.length)))
-        .filter(Number.isFinite)
-    ) + 1;
+    const d = new Date();
+    const yy = String(d.getFullYear()).slice(-2);
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const prefix = `${receiptPrefix}${yy}${mm}-`;
+
+    const sequences = receipts.map(r => {
+      const match = r.receipt_no.match(/(\d+)$/);
+      return match ? parseInt(match[1], 10) : 0;
+    });
+
+    const nextSequence = (sequences.length > 0 ? Math.max(0, ...sequences) : 0) + 1;
     return `${prefix}${String(nextSequence).padStart(3, '0')}`;
+  }
+
+  // DYNAMIC CUSTOMER & VEHICLE AGGREGATION
+  static getCustomerVehicles() {
+    const receipts = this.getReceipts();
+    const quotations = this.getQuotations();
+    const map = new Map<string, any>();
+
+    const initialList = [
+      {
+        id: 'cv-1',
+        customerId: 'CUST-2026-001',
+        name: 'Sokunthy CHENG',
+        phone: '+855 12 999 111',
+        vehicleModel: 'BYD SEAL AWD Performance',
+        plateNumber: '2BX-1234',
+        color: 'Atlantis Grey',
+        status: 'In Service',
+        lastService: '2026-08-21',
+        branch: 'BYD Siem Reap',
+        vin: 'LC0BYDSEAL2026001',
+        mileage: 10500,
+        battery: 'SoC 92%'
+      },
+      {
+        id: 'cv-2',
+        customerId: 'CUST-2026-002',
+        name: 'Oun Sopheaktra',
+        phone: '+855 12 999 222',
+        vehicleModel: 'BYD ATTO 3 Extended Range',
+        plateNumber: '2BC-5678',
+        color: 'Skiing White',
+        status: 'Active',
+        lastService: '2026-08-21',
+        branch: 'BYD Siem Reap',
+        vin: 'LC0BYDATTO2026002',
+        mileage: 15000,
+        battery: 'SoC 88%'
+      },
+      {
+        id: 'cv-3',
+        customerId: 'CUST-2026-003',
+        name: 'Vireak Sophearet',
+        phone: '+855 12 999 333',
+        vehicleModel: 'BYD SEALION 6 DM-i',
+        plateNumber: '2BK-9012',
+        color: 'Cosmos Black',
+        status: 'In Service',
+        lastService: '2026-08-20',
+        branch: 'BYD Phnom Penh',
+        vin: 'LC0BYDSEALION003',
+        mileage: 8000,
+        battery: 'SoC 95%'
+      },
+      {
+        id: 'cv-4',
+        customerId: 'CUST-2026-004',
+        name: 'Leng Vichera',
+        phone: '+855 12 999 444',
+        vehicleModel: 'BYD DOLPHIN Extended Range',
+        plateNumber: '2BJ-3456',
+        color: 'Coral Pink',
+        status: 'Active',
+        lastService: '2026-08-20',
+        branch: 'BYD Chroy Changva 6A',
+        vin: 'LC0BYDDOLPHIN004',
+        mileage: 22000,
+        battery: 'SoC 80%'
+      },
+      {
+        id: 'cv-5',
+        customerId: 'CUST-2026-005',
+        name: 'Phat Sophanna',
+        phone: '+855 12 999 555',
+        vehicleModel: 'BYD TANG EV Flagship',
+        plateNumber: '2BZ-7890',
+        color: 'Emperor Red',
+        status: 'In Service',
+        lastService: '2026-08-19',
+        branch: 'BYD Siem Reap',
+        vin: 'LC0BYDTANG005',
+        mileage: 31000,
+        battery: 'SoC 87%'
+      }
+    ];
+
+    initialList.forEach(c => {
+      const key = (c.plateNumber || c.name).toLowerCase().trim();
+      map.set(key, { ...c, history: [] });
+    });
+
+    quotations.forEach(q => {
+      if (!q.customer_name) return;
+      const key = (q.plate_no || q.customer_name).toLowerCase().trim();
+      let record = map.get(key);
+      if (!record) {
+        record = {
+          id: `cv-q-${q.id}`,
+          customerId: `CUST-${(q.quotation_no || '').slice(-6)}`,
+          name: q.customer_name,
+          phone: q.phone || '',
+          vehicleModel: q.vehicle_model || 'BYD Vehicle',
+          plateNumber: q.plate_no || 'N/A',
+          color: q.color || '',
+          status: q.status === 'Pending' ? 'In Service' : 'Active',
+          lastService: q.created_date || new Date().toISOString().slice(0, 10),
+          branch: q.branch_name || 'BYD Service Center',
+          vin: q.vin || '',
+          mileage: q.mileage || 0,
+          battery: q.battery || '',
+          history: []
+        };
+        map.set(key, record);
+      }
+      record.history.push({
+        type: 'Quotation',
+        no: q.quotation_no,
+        date: q.created_date,
+        amount: q.total_amount,
+        description: q.description || q.repair_recommendation || 'Service Quotation',
+        status: q.status
+      });
+      if (q.created_date && q.created_date > record.lastService) {
+        record.lastService = q.created_date;
+      }
+    });
+
+    receipts.forEach(r => {
+      if (!r.customer_name) return;
+      const key = (r.plate_no || r.customer_name).toLowerCase().trim();
+      let record = map.get(key);
+      if (!record) {
+        record = {
+          id: `cv-r-${r.id}`,
+          customerId: `CUST-${(r.receipt_no || '').slice(-6)}`,
+          name: r.customer_name,
+          phone: r.phone || '',
+          vehicleModel: r.vehicle_model || 'BYD Vehicle',
+          plateNumber: r.plate_no || 'N/A',
+          color: r.color || '',
+          status: r.status === 'Pending' ? 'In Service' : 'Active',
+          lastService: r.created_date || new Date().toISOString().slice(0, 10),
+          branch: r.branch_name || 'BYD Service Center',
+          vin: r.vin || '',
+          mileage: r.mileage || 0,
+          battery: r.battery || '',
+          history: []
+        };
+        map.set(key, record);
+      }
+      if (r.status === 'Pending') {
+        record.status = 'In Service';
+      }
+      if (r.mileage && r.mileage > (record.mileage || 0)) {
+        record.mileage = r.mileage;
+      }
+      record.history.push({
+        type: 'Receipt',
+        no: r.receipt_no,
+        date: r.created_date,
+        amount: r.total_amount,
+        description: r.description || 'Service Maintenance',
+        status: r.status
+      });
+      if (r.created_date && r.created_date > record.lastService) {
+        record.lastService = r.created_date;
+      }
+    });
+
+    return Array.from(map.values());
   }
 
   // DYNAMIC DASHBOARD ANALYTICS & METRICS

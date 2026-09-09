@@ -6,6 +6,7 @@ import { sendTelegramReminder } from '../services/telegramService';
 import type { Receipt } from '../types';
 import { ReceiptPDF } from '../components/pdf/ReceiptPDF';
 import { exportToPDF, printDocument } from '../utils/pdfExport';
+import { Select } from '../components/common/Select';
 import {
   FileCheck,
   Search,
@@ -18,7 +19,9 @@ import {
   Car,
   Pencil,
   Trash2,
-  Send
+  Send,
+  Building,
+  GitBranch
 } from 'lucide-react';
 
 interface ReceiptListProps {
@@ -149,50 +152,53 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
           </div>
 
           {/* Status Select */}
-          <div className="relative">
-            <Filter className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-3 pointer-events-none z-10" />
-            <select
+          <div className="w-44">
+            <Select
+              icon={<Filter className="w-3.5 h-3.5" />}
               value={statusFilter}
-              onChange={e => setStatusFilter(e.target.value)}
-              className="pro-select pl-8 py-2 text-xs font-bold text-slate-800"
-            >
-              <option value="all">All Statuses</option>
-              <option value="Completed">Completed</option>
-              <option value="Delivered">Delivered</option>
-              <option value="Pending">Pending</option>
-              <option value="Cancelled">Cancelled</option>
-            </select>
+              onChange={setStatusFilter}
+              options={[
+                { value: 'all', label: 'All Statuses' },
+                { value: 'Completed', label: 'Completed' },
+                { value: 'Delivered', label: 'Delivered' },
+                { value: 'Pending', label: 'Pending' },
+                { value: 'Cancelled', label: 'Cancelled' }
+              ]}
+              size="sm"
+            />
           </div>
 
-          <div className="relative">
-            <select
+          {/* Brand Filter */}
+          <div className="w-48">
+            <Select
+              icon={<Building className="w-3.5 h-3.5" />}
               value={selectedBrandFilter}
-              onChange={e => {
-                setSelectedBrandFilter(e.target.value);
+              onChange={val => {
+                setSelectedBrandFilter(val);
                 setSelectedBranchFilter('ALL');
               }}
-              className="pro-select py-2 text-xs font-bold text-slate-800"
-            >
-              <option value="ALL">All Brands (BYD & DENZA)</option>
-              {brands.map(b => (
-                <option key={b.id} value={b.id}>{b.brand_name}</option>
-              ))}
-            </select>
+              options={[
+                { value: 'ALL', label: 'All Brands (BYD & DENZA)' },
+                ...brands.map(b => ({ value: b.id, label: b.brand_name }))
+              ]}
+              size="sm"
+            />
           </div>
 
-          <div className="relative">
-            <select
+          {/* Branch Filter */}
+          <div className="w-44">
+            <Select
+              icon={<GitBranch className="w-3.5 h-3.5" />}
               value={selectedBranchFilter}
-              onChange={e => setSelectedBranchFilter(e.target.value)}
-              className="pro-select py-2 text-xs font-bold text-slate-800"
-            >
-              <option value="ALL">All Branches</option>
-              {branches
-                .filter(br => selectedBrandFilter === 'ALL' || br.brand_id === selectedBrandFilter)
-                .map(br => (
-                  <option key={br.id} value={br.id}>{br.branch_name}</option>
-                ))}
-            </select>
+              onChange={setSelectedBranchFilter}
+              options={[
+                { value: 'ALL', label: 'All Branches' },
+                ...branches
+                  .filter(br => selectedBrandFilter === 'ALL' || br.brand_id === selectedBrandFilter)
+                  .map(br => ({ value: br.id, label: br.branch_name }))
+              ]}
+              size="sm"
+            />
           </div>
 
           <button
@@ -231,11 +237,11 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                   </td>
                 </tr>
               ) : (
-                filteredReceipts.map(r => {
+                filteredReceipts.map((r, idx) => {
                   const bObj = brands.find(b => b.id === r.brand_id);
                   const brObj = branches.find(br => br.id === r.branch_id);
                   return (
-                    <tr key={r.id} className="hover:bg-slate-50/90 transition-colors group">
+                    <tr key={r.id} className={`hover:bg-slate-50/90 transaction-row-hover animate-slide-up stagger-${Math.min(idx + 1, 5)} group`}>
                       <td className="py-3.5 px-5">
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100/90 border border-slate-200/90 text-slate-800 font-mono font-bold text-[12px] shadow-2xs">
                           <FileCheck className="w-3.5 h-3.5 text-red-600 shrink-0" />

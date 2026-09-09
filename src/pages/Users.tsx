@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import type { User, UserRole } from '../types';
+import { Select } from '../components/common/Select';
 import {
   Users as UsersIcon,
   UserPlus,
@@ -268,27 +269,24 @@ export const Users: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Role *</label>
-                    <select
+                    <Select
+                      label="Role *"
                       value={role}
-                      onChange={e => setRole(e.target.value as UserRole)}
-                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-900"
-                    >
-                      <option value="Service Advisor">Service Advisor (Dashboard, Receipt, Quotation, Customer, Reports)</option>
-                      <option value="Admin">Admin (Full Control)</option>
-                    </select>
+                      onChange={val => setRole(val as UserRole)}
+                      options={[
+                        { value: 'Service Advisor', label: 'Service Advisor (Dashboard, Receipt, Quotation, Customer, Reports)' },
+                        { value: 'Admin', label: 'Admin (Full Control)' }
+                      ]}
+                    />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Account Status</label>
-                    <select
+                    <Select
+                      label="Account Status"
                       value={status}
-                      onChange={e => setStatus(e.target.value as any)}
-                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-900"
-                    >
-                      <option value="Active">Active</option>
-                      <option value="Inactive">Inactive</option>
-                    </select>
+                      onChange={val => setStatus(val as any)}
+                      options={['Active', 'Inactive']}
+                    />
                   </div>
                 </div>
               </div>
@@ -310,33 +308,25 @@ export const Users: React.FC = () => {
                   <span className="text-[11px] font-black uppercase tracking-wider text-slate-700 block">Organization</span>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block font-bold text-slate-700 mb-1">Brand *</label>
-                      <select
+                      <Select
+                        label="Brand *"
                         value={brandId}
-                        onChange={e => {
-                          setBrandId(e.target.value);
-                          const firstBr = branches.find(b => b.brand_id === e.target.value)?.id || '';
+                        onChange={val => {
+                          setBrandId(val);
+                          const firstBr = branches.find(b => b.brand_id === val)?.id || '';
                           setBranchId(firstBr);
                         }}
-                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-900"
-                      >
-                        {brands.map(b => (
-                          <option key={b.id} value={b.id}>{b.brand_name}</option>
-                        ))}
-                      </select>
+                        options={brands.map(b => ({ value: b.id, label: b.brand_name }))}
+                      />
                     </div>
 
                     <div>
-                      <label className="block font-bold text-slate-700 mb-1">Branch *</label>
-                      <select
+                      <Select
+                        label="Branch *"
                         value={branchId}
-                        onChange={e => setBranchId(e.target.value)}
-                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-900"
-                      >
-                        {availableBranches.map(br => (
-                          <option key={br.id} value={br.id}>{br.branch_name}</option>
-                        ))}
-                      </select>
+                        onChange={setBranchId}
+                        options={availableBranches.map(br => ({ value: br.id, label: br.branch_name }))}
+                      />
                     </div>
                   </div>
                 </div>

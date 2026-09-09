@@ -28,6 +28,7 @@ const MainApp: React.FC = () => {
   const [editingQuotation, setEditingQuotation] = useState<Quotation | null>(null);
   const [editingReceipt, setEditingReceipt] = useState<Receipt | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
 
   useEffect(() => {
@@ -42,6 +43,14 @@ const MainApp: React.FC = () => {
   if (!currentUser) {
     return <Login />;
   }
+
+  const handleToggleMenu = () => {
+    if (window.innerWidth < 768) {
+      setIsMobileMenuOpen(prev => !prev);
+    } else {
+      setIsSidebarCollapsed(prev => !prev);
+    }
+  };
 
   const handleConvertToReceipt = (quotation: Quotation) => {
     setConvertedQuotation(quotation);
@@ -189,16 +198,19 @@ const MainApp: React.FC = () => {
         setActiveTab={setActiveTab}
         isMobileOpen={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
+        isCollapsed={isSidebarCollapsed}
       />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Header
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          onToggleMobileMenu={() => setIsMobileMenuOpen(prev => !prev)}
+          onToggleMobileMenu={handleToggleMenu}
           onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-7">
-          {renderContent()}
+          <div key={activeTab} className="animate-page-enter">
+            {renderContent()}
+          </div>
         </main>
       </div>
 

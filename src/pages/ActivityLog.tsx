@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { History, Search, Filter, RefreshCw } from 'lucide-react';
+import { Select } from '../components/common/Select';
 
 interface AuditLogItem {
   id: string;
@@ -118,21 +119,22 @@ export const ActivityLog: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="text-xs font-bold text-slate-400 flex items-center gap-1">
-            <Filter className="w-3.5 h-3.5" /> Module:
-          </span>
-          <select
-            value={moduleFilter}
-            onChange={(e) => setModuleFilter(e.target.value)}
-            className="pro-select w-44"
-          >
-            <option value="All">All Modules</option>
-            <option value="Service Receipt">Service Receipt</option>
-            <option value="Quotation">Quotation</option>
-            <option value="User Management">User Management</option>
-            <option value="Settings">Settings</option>
-            <option value="Quality Assurance">Quality Assurance</option>
-          </select>
+          <div className="w-48">
+            <Select
+              icon={<Filter className="w-3.5 h-3.5" />}
+              value={moduleFilter}
+              onChange={setModuleFilter}
+              options={[
+                { value: 'All', label: 'All Modules' },
+                { value: 'Service Receipt', label: 'Service Receipt' },
+                { value: 'Quotation', label: 'Quotation' },
+                { value: 'User Management', label: 'User Management' },
+                { value: 'Settings', label: 'Settings' },
+                { value: 'Quality Assurance', label: 'Quality Assurance' }
+              ]}
+              size="sm"
+            />
+          </div>
         </div>
       </div>
 
@@ -152,8 +154,8 @@ export const ActivityLog: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
-              {filteredLogs.map((log) => (
-                <tr key={log.id} className="hover:bg-slate-50/80 transition">
+              {filteredLogs.map((log, idx) => (
+                <tr key={log.id} className={`hover:bg-slate-50/80 transaction-row-hover animate-slide-up stagger-${Math.min(idx + 1, 5)}`}>
                   <td className="py-3.5 px-4 font-mono font-semibold text-slate-500 text-[11px]">
                     {log.timestamp}
                   </td>

@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Menu, Bell } from 'lucide-react';
+import { Select } from '../common/Select';
 
 interface HeaderProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
+  activeTab?: string;
+  setActiveTab?: (tab: string) => void;
   onToggleMobileMenu?: () => void;
   onOpenCommandPalette?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  onToggleMobileMenu
+  onToggleMobileMenu,
+  onOpenCommandPalette
 }) => {
   const { currentUser, users, switchUser } = useAuth();
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
@@ -35,6 +37,19 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="text-slate-400">|</span>
           <span className="text-slate-500 ml-2">{currentUser?.branch || 'Siem Reap Branch'}</span>
         </div>
+
+        {onOpenCommandPalette && (
+          <button
+            onClick={onOpenCommandPalette}
+            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 text-xs font-semibold border border-slate-200 transition cursor-pointer"
+            title="Search or commands (Ctrl+K)"
+          >
+            <span>Search...</span>
+            <kbd className="hidden md:inline-block px-1.5 py-0.5 text-[10px] font-mono font-bold bg-white rounded border border-slate-300 shadow-2xs text-slate-600">
+              Ctrl K
+            </kbd>
+          </button>
+        )}
       </div>
 
       {/* Right Notifications & Profile */}
@@ -87,19 +102,14 @@ export const Header: React.FC<HeaderProps> = ({
               (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=E31B23&color=fff`;
             }}
           />
-          <div className="hidden sm:flex flex-col text-left">
-            <select
+          <div className="hidden sm:flex flex-col text-left min-w-[140px]">
+            <Select
               value={currentUser?.id || ''}
-              onChange={e => switchUser(e.target.value)}
-              className="pro-select py-1 px-2.5 text-xs font-bold text-slate-900 bg-slate-100/90 hover:bg-white rounded-xl outline-none cursor-pointer transition border border-slate-200"
-            >
-              {users.map(u => (
-                <option key={u.id} value={u.id} className="bg-white text-slate-800 font-semibold">
-                  {u.name}
-                </option>
-              ))}
-            </select>
-            <span className="text-[10px] text-slate-400 font-medium leading-none mt-0.5">
+              onChange={switchUser}
+              options={users.map(u => ({ value: u.id, label: u.name }))}
+              size="sm"
+            />
+            <span className="text-[10px] text-slate-400 font-medium leading-none mt-1">
               {userRole}
             </span>
           </div>

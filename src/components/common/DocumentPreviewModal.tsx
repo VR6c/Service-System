@@ -3,7 +3,7 @@ import type { Quotation, Receipt, Brand, Branch } from '../../types';
 import { QuotationPDF } from '../pdf/QuotationPDF';
 import { ReceiptPDF } from '../pdf/ReceiptPDF';
 import { exportToPDF, printDocument } from '../../utils/pdfExport';
-import { Printer, Download, X, FileText, CheckCircle2 } from 'lucide-react';
+import { Printer, Download, X, FileText } from 'lucide-react';
 
 interface DocumentPreviewModalProps {
   type: 'quotation' | 'receipt';
@@ -42,7 +42,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/75 backdrop-blur-sm p-4 overflow-y-auto print:p-0 print:bg-white print:static animate-fade-in font-sans">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden print:shadow-none print:max-w-none print:max-h-none print:w-full border border-slate-200/80">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden print:shadow-none print:max-w-none print:max-h-none print:w-full border border-slate-200/80 animate-pop-scale">
         {/* Modal Header Toolbar */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200/90 bg-slate-50/90 print:hidden">
           <div className="flex items-center gap-3">

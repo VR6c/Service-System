@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useLanguage } from '../context/LanguageContext';
 import { StorageService } from '../services/storageService';
 import { sendTelegramReminder } from '../services/telegramService';
 import type { Receipt, ReceiptStatus, Quotation } from '../types';
@@ -12,16 +11,14 @@ import { FeeItemsTable } from '../components/common/FeeItemsTable';
 import { DocumentPreviewModal } from '../components/common/DocumentPreviewModal';
 import { TimePicker } from '../components/common/TimePicker';
 import { DatePicker } from '../components/common/DatePicker';
+import { Select } from '../components/common/Select';
 import {
   FileCheck,
   Save,
   Eye,
-  Send,
   Bell,
-  CheckCircle2,
   Clock,
-  Wrench,
-  UserCheck
+  Wrench
 } from 'lucide-react';
 
 interface CreateReceiptProps {
@@ -36,7 +33,6 @@ export const CreateReceipt: React.FC<CreateReceiptProps> = ({
   onSaved
 }) => {
   const { currentUser } = useAuth();
-  const { t } = useLanguage();
   const settings = StorageService.getSettings();
 
   const docForm = useDocumentForm({
@@ -262,7 +258,15 @@ export const CreateReceipt: React.FC<CreateReceiptProps> = ({
           <Clock className="w-4 h-4 text-emerald-600" />
           Service Advisor & Reception Timings
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <Select
+              label="Receipt Status"
+              value={status}
+              onChange={val => setStatus(val as ReceiptStatus)}
+              options={['Pending', 'Completed', 'Delivered', 'Cancelled']}
+            />
+          </div>
           <div>
             <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">
               Service Advisor (SA)
@@ -285,6 +289,24 @@ export const CreateReceipt: React.FC<CreateReceiptProps> = ({
               Estimated Delivery Time
             </label>
             <TimePicker value={outTime} onChange={setOutTime} placeholder="Select Out Time" />
+          </div>
+          <div>
+            <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">
+              Est. Repair Date
+            </label>
+            <DatePicker value={estimatedRepairDate} onChange={setEstimatedRepairDate} placeholder="Est. repair date" />
+          </div>
+          <div>
+            <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">
+              Customer Confirmation
+            </label>
+            <input
+              type="text"
+              value={repairConfirmCustomer}
+              onChange={e => setRepairConfirmCustomer(e.target.value)}
+              placeholder="e.g. Confirmed by Phone / App"
+              className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+            />
           </div>
         </div>
       </div>
@@ -322,23 +344,39 @@ export const CreateReceipt: React.FC<CreateReceiptProps> = ({
             />
           </div>
           <div>
-            <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">
-              Old Parts Handling
-            </label>
-            <select
+            <Select
+              label="Old Parts Handling"
               value={oldPartsAction}
-              onChange={e => setOldPartsAction(e.target.value as 'Take away' | 'Give up')}
-              className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-            >
-              <option value="Take away">Take away by customer</option>
-              <option value="Give up">Disposed / Give up</option>
-            </select>
+              onChange={val => setOldPartsAction(val as 'Take away' | 'Give up')}
+              options={[
+                { value: 'Take away', label: 'Take away by customer' },
+                { value: 'Give up', label: 'Disposed / Give up' }
+              ]}
+            />
           </div>
           <div>
             <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">
               Next Service Reminder Date
             </label>
             <DatePicker value={remindDate} onChange={setRemindDate} placeholder="Select date" />
+          </div>
+          <div>
+            <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">
+              Vehicle Purchase Date
+            </label>
+            <DatePicker value={buyTime} onChange={setBuyTime} placeholder="Buy date" />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">
+              Service Reminder Note
+            </label>
+            <input
+              type="text"
+              value={serviceReminder}
+              onChange={e => setServiceReminder(e.target.value)}
+              placeholder="e.g. Next scheduled EV service at 30,000 km."
+              className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+            />
           </div>
         </div>
       </div>

@@ -3,9 +3,9 @@ import { StorageService } from '../services/storageService';
 import { useAuth } from '../context/AuthContext';
 import type { Quotation, Receipt, User } from '../types';
 import { ReceiptPreviewModal } from '../components/pdf/ReceiptPreviewModal';
+import { Select } from '../components/common/Select';
 import {
   FileText,
-  FileCheck,
   DollarSign,
   Calendar,
   PlusCircle,
@@ -15,7 +15,6 @@ import {
   ChevronDown,
   ArrowRight,
   UserCheck,
-  TrendingUp,
   Building2
 } from 'lucide-react';
 import {
@@ -49,6 +48,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [quotations, setQuotations] = useState<Quotation[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [trendRange, setTrendRange] = useState<'this_year' | 'this_month' | 'last_6_months' | 'all'>('this_year');
+  const [workshopRange, setWorkshopRange] = useState<'overall' | 'this_year' | 'this_month'>('overall');
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -75,8 +76,62 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   // Compute monthly trends for chart
   const monthlyTrendData = useMemo(() => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    if (trendRange === 'this_month') {
+      const weeks = [
+        { month: 'Week 1', receipts: 0, amount: 0 },
+        { month: 'Week 2', receipts: 0, amount: 0 },
+        { month: 'Week 3', receipts: 0, amount: 0 },
+        { month: 'Week 4', receipts: 0, amount: 0 }
+      ];
+
+      receipts.forEach(r => {
+        if (r.created_date) {
+          const d = new Date(r.created_date);
+          if (!isNaN(d.getTime()) && d.getFullYear() === currentYear && d.getMonth() === currentMonth) {
+            const day = d.getDate();
+            const wIdx = Math.min(3, Math.floor((day - 1) / 7));
+            weeks[wIdx].receipts += 1;
+            weeks[wIdx].amount += Number(r.total_amount) || 0;
+          }
+        }
+      });
+
+      const hasData = weeks.some(w => w.receipts > 0);
+      if (!hasData) {
+        const totalR = receipts.length || 5;
+        const totalA = totalRevenue || 1850;
+        return [
+          { month: 'Week 1', receipts: Math.ceil(totalR * 0.2), amount: Math.round(totalA * 0.2) },
+          { month: 'Week 2', receipts: Math.ceil(totalR * 0.3), amount: Math.round(totalA * 0.3) },
+          { month: 'Week 3', receipts: Math.ceil(totalR * 0.3), amount: Math.round(totalA * 0.3) },
+          { month: 'Week 4', receipts: Math.floor(totalR * 0.2), amount: Math.round(totalA * 0.2) }
+        ];
+      }
+      return weeks;
+    }
+
     const months = MONTH_NAMES.map(month => ({ month, receipts: 0, amount: 0 }));
-    receipts.forEach(r => {
+    const filteredReceipts = receipts.filter(r => {
+      if (!r.created_date) return true;
+      const d = new Date(r.created_date);
+      if (isNaN(d.getTime())) return true;
+
+      if (trendRange === 'this_year') {
+        return d.getFullYear() === currentYear;
+      }
+      if (trendRange === 'last_6_months') {
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(now.getMonth() - 6);
+        return d >= sixMonthsAgo;
+      }
+      return true;
+    });
+
+    filteredReceipts.forEach(r => {
       if (r.created_date) {
         const d = new Date(r.created_date);
         const mIdx = d.getMonth();
@@ -86,8 +141,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
         }
       }
     });
+
+    let result = months;
+    if (trendRange === 'last_6_months') {
+      const startIdx = (currentMonth - 5 + 12) % 12;
+      if (startIdx <= currentMonth) {
+        result = months.slice(startIdx, currentMonth + 1);
+      } else {
+        result = [...months.slice(startIdx), ...months.slice(0, currentMonth + 1)];
+      }
+    }
+
     // If receipts data is small, provide realistic baseline
-    const hasData = months.some(m => m.receipts > 0);
+    const hasData = result.some(m => m.receipts > 0);
     if (!hasData) {
       return [
         { month: 'Jan', receipts: 12, amount: 4500 },
@@ -100,19 +166,37 @@ export const Dashboard: React.FC<DashboardProps> = ({
         { month: 'Aug', receipts: receipts.length || 29, amount: totalRevenue || 12500 }
       ];
     }
-    return months;
-  }, [receipts, totalRevenue]);
+    return result;
+  }, [receipts, totalRevenue, trendRange]);
 
   // Workshop breakdown pie chart
   const workshopPieData = useMemo(() => {
     const branchCounts: Record<string, { count: number; name: string }> = {};
-    receipts.forEach(r => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    const filteredReceipts = receipts.filter(r => {
+      if (!r.created_date || workshopRange === 'overall') return true;
+      const d = new Date(r.created_date);
+      if (isNaN(d.getTime())) return true;
+
+      if (workshopRange === 'this_year') {
+        return d.getFullYear() === currentYear;
+      }
+      if (workshopRange === 'this_month') {
+        return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+      }
+      return true;
+    });
+
+    filteredReceipts.forEach(r => {
       const name = r.branch_name || 'BYD Main Workshop';
       if (!branchCounts[name]) branchCounts[name] = { count: 0, name };
       branchCounts[name].count += 1;
     });
 
-    const total = receipts.length || 1;
+    const total = filteredReceipts.length || 1;
     const items = Object.values(branchCounts).map((item, idx) => ({
       name: item.name,
       value: item.count,
@@ -128,7 +212,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       ];
     }
     return items;
-  }, [receipts]);
+  }, [receipts, workshopRange]);
 
   // Workshop Performance list
   const workshopPerformanceList = useMemo(() => {
@@ -211,7 +295,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* Dynamic 5 KPI Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Stat 1: Total Users */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md transition">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 animate-slide-up stagger-1">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
               <Users className="w-5 h-5" />
@@ -231,7 +315,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Stat 2: Total Customers */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md transition">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 animate-slide-up stagger-2">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
               <UserCheck className="w-5 h-5" />
@@ -251,7 +335,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Stat 3: Total Quotations */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md transition">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 animate-slide-up stagger-3">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
               <FileText className="w-5 h-5" />
@@ -271,7 +355,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Stat 4: Service Branches */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md transition">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 animate-slide-up stagger-4">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
               <Building2 className="w-5 h-5" />
@@ -291,7 +375,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Stat 5: Total Revenue */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md transition">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 animate-slide-up stagger-5">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
               <DollarSign className="w-5 h-5" />
@@ -322,9 +406,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <h3 className="text-base font-extrabold text-slate-900 font-heading">Receipt Overview</h3>
               <p className="text-xs text-slate-400 font-medium">Monthly receipt count & revenue trends</p>
             </div>
-            <div className="flex items-center gap-1 text-xs font-bold text-slate-600 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1 cursor-pointer">
-              <span>This Year</span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            <div className="w-36">
+              <Select
+                size="sm"
+                value={trendRange}
+                onChange={(val) => setTrendRange(val as any)}
+                options={[
+                  { value: 'this_year', label: 'This Year' },
+                  { value: 'this_month', label: 'This Month' },
+                  { value: 'last_6_months', label: 'Last 6 Months' },
+                  { value: 'all', label: 'All Time' }
+                ]}
+                buttonClassName="!bg-slate-50 border-slate-200 text-slate-700 rounded-xl"
+              />
             </div>
           </div>
 
@@ -368,8 +462,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-base font-extrabold text-slate-900 font-heading">Receipt by Workshop</h3>
-            <div className="flex items-center gap-1 text-xs font-bold text-slate-600 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1 cursor-pointer">
-              <span>Overall</span>
+            <div className="w-32">
+              <Select
+                size="sm"
+                value={workshopRange}
+                onChange={(val) => setWorkshopRange(val as any)}
+                options={[
+                  { value: 'overall', label: 'Overall' },
+                  { value: 'this_year', label: 'This Year' },
+                  { value: 'this_month', label: 'This Month' }
+                ]}
+                buttonClassName="!bg-slate-50 border-slate-200 text-slate-700 rounded-xl"
+              />
             </div>
           </div>
 

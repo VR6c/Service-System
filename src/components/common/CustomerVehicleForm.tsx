@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Car, Battery, Phone, Gauge, FileText, Check } from 'lucide-react';
+import { User, Car, Battery, Phone, Gauge, FileText } from 'lucide-react';
 
 interface CustomerVehicleFormProps {
   customerName: string;

@@ -3,6 +3,7 @@ import { StorageService } from '../services/storageService';
 import { useAuth } from '../context/AuthContext';
 import { Download, Printer, BarChart3, Building, GitBranch, Calendar, FileText, FileCheck } from 'lucide-react';
 import { DatePicker } from '../components/common/DatePicker';
+import { Select } from '../components/common/Select';
 
 export const Reports: React.FC = () => {
   const { brands, branches } = useAuth();
@@ -178,51 +179,50 @@ export const Reports: React.FC = () => {
           </div>
 
           {/* Brand Filter */}
-          <div className="relative">
-            <Building className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-3 pointer-events-none z-10" />
-            <select
+          <div className="w-44">
+            <Select
+              icon={<Building className="w-3.5 h-3.5" />}
               value={selectedBrandId}
-              onChange={e => {
-                setSelectedBrandId(e.target.value);
+              onChange={val => {
+                setSelectedBrandId(val);
                 setSelectedBranchId('all');
               }}
-              className="pro-select pl-8 py-2 text-xs font-bold text-slate-800"
-            >
-              <option value="all">All Brands</option>
-              {brands.map(b => (
-                <option key={b.id} value={b.id}>{b.brand_name}</option>
-              ))}
-            </select>
+              options={[
+                { value: 'all', label: 'All Brands' },
+                ...brands.map(b => ({ value: b.id, label: b.brand_name }))
+              ]}
+              size="sm"
+            />
           </div>
 
           {/* Branch Filter */}
-          <div className="relative">
-            <GitBranch className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-3 pointer-events-none z-10" />
-            <select
+          <div className="w-44">
+            <Select
+              icon={<GitBranch className="w-3.5 h-3.5" />}
               value={selectedBranchId}
-              onChange={e => setSelectedBranchId(e.target.value)}
-              className="pro-select pl-8 py-2 text-xs font-bold text-slate-800"
-            >
-              <option value="all">All Branches</option>
-              {availableBranches.map(br => (
-                <option key={br.id} value={br.id}>{br.branch_name}</option>
-              ))}
-            </select>
+              onChange={setSelectedBranchId}
+              options={[
+                { value: 'all', label: 'All Branches' },
+                ...availableBranches.map(br => ({ value: br.id, label: br.branch_name }))
+              ]}
+              size="sm"
+            />
           </div>
 
           {/* Date Filter */}
-          <div className="relative">
-            <Calendar className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-3 pointer-events-none z-10" />
-            <select
+          <div className="w-44">
+            <Select
+              icon={<Calendar className="w-3.5 h-3.5" />}
               value={dateFilter}
-              onChange={e => setDateFilter(e.target.value)}
-              className="pro-select pl-8 py-2 text-xs font-bold text-slate-800"
-            >
-              <option value="today">Today</option>
-              <option value="this_month">This Month</option>
-              <option value="last_month">Last Month</option>
-              <option value="custom">Custom Date Range</option>
-            </select>
+              onChange={setDateFilter}
+              options={[
+                { value: 'today', label: 'Today' },
+                { value: 'this_month', label: 'This Month' },
+                { value: 'last_month', label: 'Last Month' },
+                { value: 'custom', label: 'Custom Date Range' }
+              ]}
+              size="sm"
+            />
           </div>
 
           {dateFilter === 'custom' && (
