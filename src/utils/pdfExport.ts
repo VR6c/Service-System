@@ -5,7 +5,6 @@ export const exportToPDF = async (elementId: string, filename: string) => {
   const element = document.getElementById(elementId);
   if (!element) {
     console.error(`Element with id ${elementId} not found`);
-    alert(`Could not find document '${elementId}' to export.`);
     return;
   }
 

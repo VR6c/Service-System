@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useAlert, useToast } from '../context/DialogContext';
 import { StorageService } from '../services/storageService';
 import type { Quotation } from '../types';
 import { useFeeItems } from '../hooks/useFeeItems';
@@ -28,6 +29,8 @@ export const CreateQuotation: React.FC<CreateQuotationProps> = ({
   editingQuotation
 }) => {
   const { currentUser } = useAuth();
+  const showAlert = useAlert();
+  const showToast = useToast();
   const settings = StorageService.getSettings();
 
   const docForm = useDocumentForm({
@@ -64,8 +67,13 @@ export const CreateQuotation: React.FC<CreateQuotationProps> = ({
   }, [docForm.selectedBrandId, docForm.selectedBranchId, editingQuotation]);
 
   const handleSave = async () => {
-    if (!docForm.customerName || !docForm.phone || !docForm.plateNo) {
-      alert('Please fill in Customer Name, Phone Number, and Plate Number.');
+    if (!docForm.customerName.trim() || !docForm.phone.trim() || !docForm.plateNo.trim()) {
+      await showAlert({
+        title: 'Customer & Vehicle Details Required',
+        message: 'Please fill in Customer Name, Phone Number, and Plate Number before proceeding with the quotation.',
+        type: 'warning',
+        confirmText: 'Understood'
+      });
       return;
     }
 
@@ -98,6 +106,11 @@ export const CreateQuotation: React.FC<CreateQuotationProps> = ({
     };
 
     await StorageService.saveQuotation(savedRecord);
+    showToast({
+      type: 'success',
+      title: 'Quotation Saved',
+      message: `Quotation #${quotationNo} has been saved successfully.`
+    });
     setSavedQuotation(savedRecord);
     setIsPreviewOpen(true);
   };

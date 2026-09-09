@@ -18,6 +18,7 @@ import { Branches } from './pages/Branches';
 import { Settings } from './pages/Settings';
 import type { Quotation, Receipt } from './types';
 import { LanguageProvider } from './context/LanguageContext';
+import { DialogProvider } from './context/DialogContext';
 
 import { StorageService } from './services/storageService';
 
@@ -228,8 +229,11 @@ export default function App() {
   return (
     <AuthProvider>
       <LanguageProvider>
-        <MainApp />
+        <DialogProvider>
+          <MainApp />
+        </DialogProvider>
       </LanguageProvider>
     </AuthProvider>
   );
 }
+

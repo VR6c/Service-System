@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useConfirm, useAlert, useToast } from '../context/DialogContext';
+import { Modal } from '../components/common/Modal';
 import { StorageService } from '../services/storageService';
 import { testTelegramBotConnection } from '../services/telegramService';
 import type { SystemSettings, Brand } from '../types';
@@ -10,6 +12,9 @@ import { Select } from '../components/common/Select';
 
 export const Settings: React.FC = () => {
   const { brands, branches, refreshBrandsAndBranches } = useAuth();
+  const confirm = useConfirm();
+  const showAlert = useAlert();
+  const showToast = useToast();
   const [settings, setSettings] = useState<SystemSettings>(StorageService.getSettings());
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [testingTelegram, setTestingTelegram] = useState(false);
@@ -75,17 +80,34 @@ export const Settings: React.FC = () => {
   };
 
   const handleDeleteBrand = async (b: Brand) => {
-    if (confirm(`Are you sure you want to delete brand "${b.brand_name}"? This will also remove any affiliated branches.`)) {
+    const isConfirmed = await confirm({
+      title: 'Delete Automotive Brand',
+      message: `Are you sure you want to delete brand "${b.brand_name}"? This will also remove any affiliated branches.`,
+      details: `Code: ${b.brand_code} • Document Prefix: ${b.document_prefix}`,
+      confirmText: 'Delete Brand',
+      type: 'danger'
+    });
+
+    if (isConfirmed) {
       await StorageService.deleteBrand(b.id);
       refreshBrandsAndBranches();
+      showToast({
+        type: 'success',
+        title: 'Brand Deleted',
+        message: `Brand "${b.brand_name}" has been deleted.`
+      });
     }
   };
 
-  const handleBrandImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBrandImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        alert('File size exceeds 2MB limit. Please choose a smaller image.');
+        await showAlert({
+          title: 'File Too Large',
+          message: 'File size exceeds 2MB limit. Please choose a smaller image.',
+          type: 'warning'
+        });
         return;
       }
       const reader = new FileReader();
@@ -99,8 +121,12 @@ export const Settings: React.FC = () => {
 
   const handleBrandSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!brandCode || !brandName) {
-      alert('Brand Code and Brand Name are required.');
+    if (!brandCode.trim() || !brandName.trim()) {
+      await showAlert({
+        title: 'Missing Required Information',
+        message: 'Brand Code and Brand Name are required.',
+        type: 'warning'
+      });
       return;
     }
 
@@ -170,11 +196,15 @@ export const Settings: React.FC = () => {
     setTestingTelegram(false);
   };
 
-  const handleBYDLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBYDLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert('File size exceeds 5MB limit. Please choose a smaller image.');
+        await showAlert({
+          title: 'File Too Large',
+          message: 'File size exceeds 5MB limit. Please choose a smaller image.',
+          type: 'warning'
+        });
         return;
       }
       const reader = new FileReader();
@@ -185,11 +215,15 @@ export const Settings: React.FC = () => {
     }
   };
 
-  const handleDenzaLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDenzaLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert('File size exceeds 5MB limit. Please choose a smaller image.');
+        await showAlert({
+          title: 'File Too Large',
+          message: 'File size exceeds 5MB limit. Please choose a smaller image.',
+          type: 'warning'
+        });
         return;
       }
       const reader = new FileReader();
@@ -215,6 +249,11 @@ export const Settings: React.FC = () => {
     }
 
     setSavedSuccess(true);
+    showToast({
+      type: 'success',
+      title: 'Settings Saved',
+      message: 'System configurations have been updated successfully.'
+    });
     setTimeout(() => setSavedSuccess(false), 3000);
   };
 
@@ -789,14 +828,14 @@ export const Settings: React.FC = () => {
       </form>
 
       {/* Add / Edit Brand Modal */}
-      {brandModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4 my-8">
-            <h3 className="text-lg font-black text-slate-900 font-heading">
-              {editingBrand ? 'Edit Brand Settings' : 'Create New Brand'}
-            </h3>
-
-            <form onSubmit={handleBrandSave} className="space-y-3 text-xs">
+      <Modal
+        isOpen={brandModalOpen}
+        onClose={() => setBrandModalOpen(false)}
+        maxWidth="lg"
+        title={editingBrand ? 'Edit Brand Settings' : 'Create New Brand'}
+        subtitle="Configure brand credentials, logo styling, and document prefixes."
+      >
+        <form onSubmit={handleBrandSave} className="space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Brand Code *</label>
@@ -1021,9 +1060,7 @@ export const Settings: React.FC = () => {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+      </Modal>
     </div>
   );
 };

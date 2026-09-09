@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useConfirm, useAlert, useToast } from '../context/DialogContext';
+import { Modal } from '../components/common/Modal';
 import { StorageService } from '../services/storageService';
 import type { Branch } from '../types';
 import { GitBranch, Plus, Edit2, Trash2, MapPin, Phone, Mail } from 'lucide-react';
@@ -7,6 +9,9 @@ import { Select } from '../components/common/Select';
 
 export const Branches: React.FC = () => {
   const { brands, branches, refreshBrandsAndBranches } = useAuth();
+  const confirm = useConfirm();
+  const showAlert = useAlert();
+  const showToast = useToast();
 
   const [filterBrandId, setFilterBrandId] = useState<string>('all');
   const [modalOpen, setModalOpen] = useState<boolean>(false);
@@ -43,36 +48,52 @@ export const Branches: React.FC = () => {
     setBranchCode(br.branch_code);
     setBranchName(br.branch_name);
     setServiceCenterName(br.service_center_name || '');
-    setAddress(br.address);
-    setTelephone(br.telephone);
-    setEmail(br.email);
+    setAddress(br.address || '');
+    setTelephone(br.telephone || '');
+    setEmail(br.email || '');
     setStatus(br.status);
     setModalOpen(true);
   };
 
   const handleDeleteBranch = async (br: Branch) => {
-    if (confirm(`Are you sure you want to delete branch "${br.branch_name}"?`)) {
+    const isConfirmed = await confirm({
+      title: 'Delete Branch Location',
+      message: `Are you sure you want to delete branch "${br.branch_name}"?`,
+      details: `Code: ${br.branch_code} • ${br.service_center_name || ''}`,
+      confirmText: 'Delete Branch',
+      type: 'danger'
+    });
+    if (isConfirmed) {
       await StorageService.deleteBranch(br.id);
       refreshBrandsAndBranches();
+      showToast({
+        type: 'success',
+        title: 'Branch Deleted',
+        message: `Branch "${br.branch_name}" has been removed.`
+      });
     }
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!branchCode || !branchName) {
-      alert('Branch Code and Branch Name are required.');
+    if (!branchCode.trim() || !branchName.trim()) {
+      await showAlert({
+        title: 'Missing Required Information',
+        message: 'Branch Code and Branch Name are required.',
+        type: 'warning'
+      });
       return;
     }
 
     const branchData: Branch = {
       id: editingBranch ? editingBranch.id : `b-${Date.now()}`,
       brand_id: brandId,
-      branch_code: branchCode,
-      branch_name: branchName,
-      service_center_name: serviceCenterName,
-      address,
-      telephone,
-      email,
+      branch_code: branchCode.trim(),
+      branch_name: branchName.trim(),
+      service_center_name: serviceCenterName.trim(),
+      address: address.trim(),
+      telephone: telephone.trim(),
+      email: email.trim(),
       status,
       created_at: editingBranch ? editingBranch.created_at : new Date().toISOString().split('T')[0],
       updated_at: new Date().toISOString().split('T')[0]
@@ -80,6 +101,11 @@ export const Branches: React.FC = () => {
 
     await StorageService.saveBranch(branchData);
     refreshBrandsAndBranches();
+    showToast({
+      type: 'success',
+      title: editingBranch ? 'Branch Updated' : 'Branch Created',
+      message: `Branch "${branchName}" was saved successfully.`
+    });
     setModalOpen(false);
   };
 
@@ -186,116 +212,114 @@ export const Branches: React.FC = () => {
       </div>
 
       {/* Modal */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4">
-            <h3 className="text-lg font-black text-slate-900 font-heading">
-              {editingBranch ? 'Edit Branch Location' : 'Create New Branch'}
-            </h3>
-
-            <form onSubmit={handleSave} className="space-y-3 text-xs">
-              <div>
-                <Select
-                  label="Affiliated Brand *"
-                  value={brandId}
-                  onChange={setBrandId}
-                  options={brands.map(b => ({ value: b.id, label: `${b.brand_name} (${b.brand_code})` }))}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Branch Code *</label>
-                  <input
-                    type="text"
-                    value={branchCode}
-                    onChange={e => setBranchCode(e.target.value)}
-                    placeholder="e.g. 6A, CM, PP, SR"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold"
-                  />
-                </div>
-                <div>
-                  <Select
-                    label="Status"
-                    value={status}
-                    onChange={val => setStatus(val as 'Active' | 'Inactive')}
-                    options={['Active', 'Inactive']}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Branch Display Name *</label>
-                <input
-                  type="text"
-                  value={branchName}
-                  onChange={e => setBranchName(e.target.value)}
-                  placeholder="e.g. BYD Chroy Changva 6A"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Service Center Name</label>
-                <input
-                  type="text"
-                  value={serviceCenterName}
-                  onChange={e => setServiceCenterName(e.target.value)}
-                  placeholder="e.g. BYD Sales & Service Center 6A"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Branch Address</label>
-                <textarea
-                  rows={2}
-                  value={address}
-                  onChange={e => setAddress(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Telephone</label>
-                  <input
-                    type="text"
-                    value={telephone}
-                    onChange={e => setTelephone(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-black rounded-xl shadow-xs"
-                >
-                  Save Branch
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        maxWidth="lg"
+        title={editingBranch ? 'Edit Branch Location' : 'Create New Branch'}
+        subtitle="Configure branch office information, code, and address."
+      >
+        <form onSubmit={handleSave} className="space-y-4 text-xs">
+          <div>
+            <Select
+              label="Affiliated Brand *"
+              value={brandId}
+              onChange={setBrandId}
+              options={brands.map(b => ({ value: b.id, label: `${b.brand_name} (${b.brand_code})` }))}
+            />
           </div>
-        </div>
-      )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Branch Code *</label>
+              <input
+                type="text"
+                value={branchCode}
+                onChange={e => setBranchCode(e.target.value)}
+                placeholder="e.g. 6A, CM, PP, SR"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold text-slate-900"
+              />
+            </div>
+            <div>
+              <Select
+                label="Status"
+                value={status}
+                onChange={val => setStatus(val as 'Active' | 'Inactive')}
+                options={['Active', 'Inactive']}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">Branch Display Name *</label>
+            <input
+              type="text"
+              value={branchName}
+              onChange={e => setBranchName(e.target.value)}
+              placeholder="e.g. BYD Chroy Changva 6A"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-900"
+            />
+          </div>
+
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">Service Center Name</label>
+            <input
+              type="text"
+              value={serviceCenterName}
+              onChange={e => setServiceCenterName(e.target.value)}
+              placeholder="e.g. BYD Sales & Service Center 6A"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900"
+            />
+          </div>
+
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">Branch Address</label>
+            <textarea
+              rows={2}
+              value={address}
+              onChange={e => setAddress(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Telephone</label>
+              <input
+                type="text"
+                value={telephone}
+                onChange={e => setTelephone(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900"
+              />
+            </div>
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900"
+              />
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setModalOpen(false)}
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-black rounded-xl shadow-xs cursor-pointer"
+            >
+              Save Branch
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

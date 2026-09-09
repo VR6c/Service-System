@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useConfirm, useAlert, useToast } from '../context/DialogContext';
+import { Modal } from '../components/common/Modal';
 import { StorageService } from '../services/storageService';
 import type { Brand } from '../types';
-import { Building2, Plus, Edit2, Trash2, Upload, Image as ImageIcon, X } from 'lucide-react';
+import { Building2, Plus, Edit2, Trash2, Upload, Image as ImageIcon } from 'lucide-react';
 import { BYDLogo } from '../components/common/BYDLogo';
 import { DENZALogo } from '../components/common/DENZALogo';
 import { Select } from '../components/common/Select';
 
 export const Brands: React.FC = () => {
   const { brands, refreshBrandsAndBranches } = useAuth();
+  const confirm = useConfirm();
+  const showAlert = useAlert();
+  const showToast = useToast();
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
 
@@ -47,7 +53,7 @@ export const Brands: React.FC = () => {
     setEditingBrand(b);
     setBrandCode(b.brand_code);
     setBrandName(b.brand_name);
-    setLogoType(b.logo_type || (b.brand_code.toLowerCase().includes('denza') ? 'denza' : 'byd'));
+    setLogoType(b.logo_type || 'byd');
     setLogoUrl(b.logo_url || '');
     setServiceCenterName(b.service_center_name);
     setLocalCompanyName(b.local_company_name || '');
@@ -61,17 +67,34 @@ export const Brands: React.FC = () => {
   };
 
   const handleDeleteBrand = async (b: Brand) => {
-    if (confirm(`Are you sure you want to delete brand "${b.brand_name}"? This will also remove any affiliated branches.`)) {
+    const isConfirmed = await confirm({
+      title: 'Delete Automotive Brand',
+      message: `Are you sure you want to delete brand "${b.brand_name}"? This will also remove any affiliated branches.`,
+      details: `Code: ${b.brand_code} • Document Prefix: ${b.document_prefix}`,
+      confirmText: 'Delete Brand',
+      type: 'danger'
+    });
+
+    if (isConfirmed) {
       await StorageService.deleteBrand(b.id);
       refreshBrandsAndBranches();
+      showToast({
+        type: 'success',
+        title: 'Brand Deleted',
+        message: `Brand "${b.brand_name}" has been deleted successfully.`
+      });
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        alert('File size exceeds 2MB limit. Please choose a smaller image.');
+        await showAlert({
+          title: 'File Too Large',
+          message: 'File size exceeds 2MB limit. Please choose a smaller image file.',
+          type: 'warning'
+        });
         return;
       }
       const reader = new FileReader();
@@ -85,24 +108,28 @@ export const Brands: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!brandCode || !brandName) {
-      alert('Brand Code and Brand Name are required.');
+    if (!brandCode.trim() || !brandName.trim()) {
+      await showAlert({
+        title: 'Missing Required Information',
+        message: 'Brand Code and Brand Name are required.',
+        type: 'warning'
+      });
       return;
     }
 
     const brandData: Brand = {
       id: editingBrand ? editingBrand.id : `brand-${Date.now()}`,
-      brand_code: brandCode,
-      brand_name: brandName,
+      brand_code: brandCode.trim(),
+      brand_name: brandName.trim(),
       logo_type: logoType,
       logo_url: logoUrl,
-      service_center_name: serviceCenterName,
-      local_company_name: localCompanyName,
-      address,
-      telephone,
-      email,
-      document_prefix: documentPrefix,
-      receipt_prefix: receiptPrefix,
+      service_center_name: serviceCenterName.trim(),
+      local_company_name: localCompanyName.trim(),
+      address: address.trim(),
+      telephone: telephone.trim(),
+      email: email.trim(),
+      document_prefix: documentPrefix.trim(),
+      receipt_prefix: receiptPrefix.trim(),
       status,
       created_at: editingBrand ? editingBrand.created_at : new Date().toISOString().split('T')[0],
       updated_at: new Date().toISOString().split('T')[0]
@@ -110,6 +137,11 @@ export const Brands: React.FC = () => {
 
     await StorageService.saveBrand(brandData);
     refreshBrandsAndBranches();
+    showToast({
+      type: 'success',
+      title: editingBrand ? 'Brand Settings Saved' : 'Brand Created',
+      message: `Brand "${brandName}" was saved successfully.`
+    });
     setModalOpen(false);
   };
 
@@ -212,240 +244,198 @@ export const Brands: React.FC = () => {
       </div>
 
       {/* Modal */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4 my-8">
-            <h3 className="text-lg font-black text-slate-900 font-heading">
-              {editingBrand ? 'Edit Brand Settings' : 'Create New Brand'}
-            </h3>
-
-            <form onSubmit={handleSave} className="space-y-3 text-xs">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Brand Code *</label>
-                  <input
-                    type="text"
-                    value={brandCode}
-                    onChange={e => setBrandCode(e.target.value)}
-                    placeholder="BYD or DENZA"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Brand Name *</label>
-                  <input
-                    type="text"
-                    value={brandName}
-                    onChange={e => setBrandName(e.target.value)}
-                    placeholder="BYD Auto Cambodia"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold"
-                  />
-                </div>
-              </div>
-
-              {/* Logo Settings */}
-              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="font-bold text-slate-800 flex items-center gap-1.5 text-xs">
-                    <ImageIcon className="w-4 h-4 text-red-600" />
-                    Brand Logo Picture (BYD / DENZA / Custom)
-                  </label>
-                  <span className="text-[10px] font-semibold text-slate-500">Saved to local database</span>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => { setLogoType('byd'); setLogoUrl(''); }}
-                    className={`px-3 py-2.5 rounded-xl border text-center font-bold text-[11px] flex flex-col items-center justify-center gap-1.5 transition cursor-pointer ${
-                      logoType === 'byd' && !logoUrl ? 'border-red-600 bg-red-50 text-red-700 shadow-2xs' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    <BYDLogo variant="red" className="h-4" />
-                    <span>BYD Standard</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => { setLogoType('denza'); setLogoUrl(''); }}
-                    className={`px-3 py-2.5 rounded-xl border text-center font-bold text-[11px] flex flex-col items-center justify-center gap-1.5 transition cursor-pointer ${
-                      logoType === 'denza' && !logoUrl ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-2xs' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    <DENZALogo variant="blue" className="h-4" />
-                    <span>DENZA Luxury</span>
-                  </button>
-
-                  <label
-                    className={`px-3 py-2.5 rounded-xl border text-center font-bold text-[11px] flex flex-col items-center justify-center gap-1.5 transition cursor-pointer ${
-                      logoUrl || logoType === 'custom' ? 'border-purple-600 bg-purple-50 text-purple-700 shadow-2xs' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    <Upload className="w-4 h-4 text-purple-600" />
-                    <span>Upload from PC</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-
-                {/* Custom Image Upload or URL Input */}
-                {(logoType === 'custom' || logoUrl) && (
-                  <div className="space-y-2 pt-1 border-t border-slate-200/80">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={logoUrl}
-                        onChange={e => {
-                          setLogoUrl(e.target.value);
-                          setLogoType('custom');
-                        }}
-                        placeholder="Paste image URL or attach local PC picture file..."
-                        className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-mono"
-                      />
-                      <label className="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer shrink-0">
-                        <Upload className="w-3.5 h-3.5" />
-                        <span>Browse PC</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          className="hidden"
-                        />
-                      </label>
-                    </div>
-
-                    {logoUrl && (
-                      <div className="flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
-                        <div className="flex items-center gap-3">
-                          <div className="bg-slate-100 p-1.5 rounded-lg border border-slate-200">
-                            <img src={logoUrl} alt="Logo Preview" className="h-8 max-w-[120px] object-contain" />
-                          </div>
-                          <div>
-                            <span className="text-xs font-bold text-slate-900 block">Attached Picture Ready</span>
-                            <span className="text-[10px] text-emerald-600 font-semibold">Saved directly to local database</span>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => { setLogoUrl(''); setLogoType('byd'); }}
-                          className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer"
-                          title="Remove attached picture"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Service Center Name</label>
-                <input
-                  type="text"
-                  value={serviceCenterName}
-                  onChange={e => setServiceCenterName(e.target.value)}
-                  placeholder="BYD SALES & SERVICE CENTER"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-semibold"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Local Khmer Company Name</label>
-                <input
-                  type="text"
-                  value={localCompanyName}
-                  onChange={e => setLocalCompanyName(e.target.value)}
-                  placeholder="មិនមែនជាប្រកាសជាចំនាយឬប្រកាសពន្ធ"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Headquarters Address</label>
-                <textarea
-                  rows={2}
-                  value={address}
-                  onChange={e => setAddress(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Telephone</label>
-                  <input
-                    type="text"
-                    value={telephone}
-                    onChange={e => setTelephone(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Quotation Prefix</label>
-                  <input
-                    type="text"
-                    value={documentPrefix}
-                    onChange={e => setDocumentPrefix(e.target.value)}
-                    placeholder="BYD"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Receipt Prefix</label>
-                  <input
-                    type="text"
-                    value={receiptPrefix}
-                    onChange={e => setReceiptPrefix(e.target.value)}
-                    placeholder="BYD60M"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold text-red-700"
-                  />
-                </div>
-                <div>
-                  <Select
-                    label="Status"
-                    value={status}
-                    onChange={val => setStatus(val as 'Active' | 'Inactive')}
-                    options={['Active', 'Inactive']}
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-black rounded-xl shadow-xs"
-                >
-                  Save Brand
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        maxWidth="lg"
+        title={editingBrand ? 'Edit Brand Settings' : 'Create New Brand'}
+        subtitle="Configure brand credentials, logo styling, and document prefixes."
+      >
+        <form onSubmit={handleSave} className="space-y-4 text-xs">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Brand Code *</label>
+              <input
+                type="text"
+                value={brandCode}
+                onChange={e => setBrandCode(e.target.value)}
+                placeholder="BYD or DENZA"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold text-slate-900"
+              />
+            </div>
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Brand Name *</label>
+              <input
+                type="text"
+                value={brandName}
+                onChange={e => setBrandName(e.target.value)}
+                placeholder="BYD Auto Cambodia"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-900"
+              />
+            </div>
           </div>
-        </div>
-      )}
+
+          {/* Logo Settings */}
+          <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="font-bold text-slate-800 flex items-center gap-1.5 text-xs">
+                <ImageIcon className="w-4 h-4 text-red-600" />
+                <span>Brand Logo Style</span>
+              </label>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setLogoType('byd')}
+                className={`flex flex-col items-center justify-center p-2.5 rounded-xl border transition cursor-pointer ${
+                  logoType === 'byd' ? 'bg-white border-red-600 ring-2 ring-red-600/20 shadow-xs' : 'bg-white border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                <BYDLogo className="h-6 w-auto" />
+                <span className="text-[10px] font-bold text-slate-700 mt-1">BYD Standard</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setLogoType('denza')}
+                className={`flex flex-col items-center justify-center p-2.5 rounded-xl border transition cursor-pointer ${
+                  logoType === 'denza' ? 'bg-white border-red-600 ring-2 ring-red-600/20 shadow-xs' : 'bg-white border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                <DENZALogo className="h-6 w-auto" />
+                <span className="text-[10px] font-bold text-slate-700 mt-1">DENZA Luxury</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setLogoType('custom')}
+                className={`flex flex-col items-center justify-center p-2.5 rounded-xl border transition cursor-pointer ${
+                  logoType === 'custom' ? 'bg-white border-red-600 ring-2 ring-red-600/20 shadow-xs' : 'bg-white border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                {logoUrl ? (
+                  <img src={logoUrl} alt="Custom" className="h-6 w-auto max-w-full object-contain" />
+                ) : (
+                  <Upload className="w-5 h-5 text-slate-400" />
+                )}
+                <span className="text-[10px] font-bold text-slate-700 mt-1">Custom Logo</span>
+              </button>
+            </div>
+
+            {logoType === 'custom' && (
+              <div className="pt-2 border-t border-slate-200/80">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-red-50 file:text-red-700 hover:file:bg-red-100 cursor-pointer"
+                />
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">Service Center Name</label>
+            <input
+              type="text"
+              value={serviceCenterName}
+              onChange={e => setServiceCenterName(e.target.value)}
+              placeholder="e.g. BYD After-Sales Service Center"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900"
+            />
+          </div>
+
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">Local Legal Company Name</label>
+            <input
+              type="text"
+              value={localCompanyName}
+              onChange={e => setLocalCompanyName(e.target.value)}
+              placeholder="e.g. HARMONY AUTOMOBILE CAMBODIA CO., LTD."
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900"
+            />
+          </div>
+
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">Headquarter / Main Address</label>
+            <textarea
+              rows={2}
+              value={address}
+              onChange={e => setAddress(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Telephone</label>
+              <input
+                type="text"
+                value={telephone}
+                onChange={e => setTelephone(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900"
+              />
+            </div>
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Quotation Prefix</label>
+              <input
+                type="text"
+                value={documentPrefix}
+                onChange={e => setDocumentPrefix(e.target.value)}
+                placeholder="BYD"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold text-slate-900"
+              />
+            </div>
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Receipt Prefix</label>
+              <input
+                type="text"
+                value={receiptPrefix}
+                onChange={e => setReceiptPrefix(e.target.value)}
+                placeholder="BYD60M"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold text-red-700"
+              />
+            </div>
+            <div>
+              <Select
+                label="Status"
+                value={status}
+                onChange={val => setStatus(val as 'Active' | 'Inactive')}
+                options={['Active', 'Inactive']}
+              />
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setModalOpen(false)}
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-black rounded-xl shadow-xs cursor-pointer"
+            >
+              Save Brand
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

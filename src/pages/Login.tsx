@@ -2,15 +2,15 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { StorageService } from '../services/storageService';
 import { BYDLogo } from '../components/common/BYDLogo';
-import { Lock, Mail, ShieldCheck, UserCheck, ArrowRight, Sparkles, Eye, EyeOff } from 'lucide-react';
+import { Lock, Mail, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 export const Login: React.FC = () => {
   const { login } = useAuth();
   const settings = StorageService.getSettings();
   const customLogoUrl = settings.byd_logo_url || settings.header_logo_url || '';
 
-  const [email, setEmail] = useState('admin@byd.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
@@ -21,12 +21,6 @@ export const Login: React.FC = () => {
     if (!success) {
       setError('Invalid email or password. Please check your credentials.');
     }
-  };
-
-  const handleQuickLogin = (quickEmail: string) => {
-    setEmail(quickEmail);
-    setPassword('password123');
-    login(quickEmail, 'password123');
   };
 
   return (
@@ -103,44 +97,6 @@ export const Login: React.FC = () => {
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
-
-        {/* Quick Demo Accounts */}
-        <div className="mt-6 pt-6 border-t border-slate-100 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-black uppercase text-slate-400 font-heading tracking-wider flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-red-500" /> Demo Quick Access
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('admin@byd.com')}
-              className="p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-left transition cursor-pointer flex items-center gap-2 group"
-            >
-              <div className="w-7 h-7 rounded-lg bg-red-100 text-red-600 font-black text-xs flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-slate-800 truncate group-hover:text-red-600">Admin</p>
-                <p className="text-[10px] text-slate-400 truncate">admin@byd.com</p>
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('huot.phanit@byd.com')}
-              className="p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-left transition cursor-pointer flex items-center gap-2 group"
-            >
-              <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-600 font-black text-xs flex items-center justify-center shrink-0">
-                <UserCheck className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-slate-800 truncate group-hover:text-blue-600">Service Advisor</p>
-                <p className="text-[10px] text-slate-400 truncate">huot.phanit@byd.com</p>
-              </div>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );

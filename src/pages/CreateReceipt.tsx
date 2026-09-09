@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useAlert, useToast } from '../context/DialogContext';
 import { StorageService } from '../services/storageService';
 import { sendTelegramReminder } from '../services/telegramService';
 import type { Receipt, ReceiptStatus, Quotation } from '../types';
@@ -33,6 +34,8 @@ export const CreateReceipt: React.FC<CreateReceiptProps> = ({
   onSaved
 }) => {
   const { currentUser } = useAuth();
+  const showAlert = useAlert();
+  const showToast = useToast();
   const settings = StorageService.getSettings();
 
   const docForm = useDocumentForm({
@@ -41,12 +44,12 @@ export const CreateReceipt: React.FC<CreateReceiptProps> = ({
     initialCustomerName: editingReceipt?.customer_name || initialQuotation?.customer_name || '',
     initialPhone: editingReceipt?.phone || initialQuotation?.phone || '',
     initialPlateNo: editingReceipt?.plate_no || initialQuotation?.plate_no || '',
-    initialVehicleModel: editingReceipt?.vehicle_model || initialQuotation?.vehicle_model || '',
-    initialColor: editingReceipt?.color || initialQuotation?.color || '',
-    initialVin: editingReceipt?.vin || initialQuotation?.vin || '',
-    initialMileage: editingReceipt?.mileage ?? initialQuotation?.mileage ?? 0,
+    initialVehicleModel: editingReceipt?.vehicle_model || initialQuotation?.vehicle_model || 'BYD SEAL',
+    initialColor: editingReceipt?.color || initialQuotation?.color || 'Ski White',
+    initialVin: editingReceipt?.vin || initialQuotation?.vin || 'LC0BYDSEAL2026',
+    initialMileage: editingReceipt?.mileage ?? initialQuotation?.mileage ?? 15000,
     initialBattery: editingReceipt?.battery || initialQuotation?.battery || 'SoC 85%',
-    initialDescription: editingReceipt?.description || initialQuotation?.description || ''
+    initialDescription: editingReceipt?.description || initialQuotation?.description || 'Scheduled EV Maintenance & Diagnostic Check'
   });
 
   const feeState = useFeeItems({
@@ -95,8 +98,13 @@ export const CreateReceipt: React.FC<CreateReceiptProps> = ({
   }, [docForm.selectedBrandId, docForm.selectedBranchId, editingReceipt]);
 
   const handleSendTelegramNow = async () => {
-    if (!docForm.customerName || !docForm.vehicleModel || !docForm.plateNo) {
-      alert('Please fill in Customer Name, Vehicle Model, and Plate Number first.');
+    if (!docForm.customerName.trim() || !docForm.vehicleModel.trim() || !docForm.plateNo.trim()) {
+      await showAlert({
+        title: 'Customer & Vehicle Details Required',
+        message: 'Please fill in Customer Name, Vehicle Model, and Plate Number first.',
+        type: 'warning',
+        confirmText: 'Understood'
+      });
       return;
     }
     const res = await sendTelegramReminder({
@@ -108,15 +116,29 @@ export const CreateReceipt: React.FC<CreateReceiptProps> = ({
     });
 
     if (res.success) {
-      alert(`✅ Telegram Reminder Sent!\n\nCustomer: ${docForm.customerName}\nVehicle: ${docForm.vehicleModel}\nPlate: ${docForm.plateNo}\nRemind Date: ${remindDate}`);
+      showToast({
+        type: 'success',
+        title: 'Telegram Reminder Sent',
+        message: `Customer: ${docForm.customerName} • Vehicle: ${docForm.vehicleModel} • Plate: ${docForm.plateNo}`
+      });
     } else {
-      alert(`⚠️ Telegram Notification Error:\n${res.message}`);
+      await showAlert({
+        title: 'Telegram Notification Error',
+        message: res.message || 'Failed to dispatch Telegram reminder.',
+        type: 'error',
+        confirmText: 'OK'
+      });
     }
   };
 
   const handleSave = async () => {
-    if (!docForm.customerName || !docForm.phone || !docForm.plateNo) {
-      alert('Please fill in Customer Name, Phone Number, and Plate Number.');
+    if (!docForm.customerName.trim() || !docForm.phone.trim() || !docForm.plateNo.trim()) {
+      await showAlert({
+        title: 'Required Information Missing',
+        message: 'Please fill in Customer Name, Phone Number, and Plate Number before saving the receipt.',
+        type: 'warning',
+        confirmText: 'Understood'
+      });
       return;
     }
 
@@ -161,6 +183,11 @@ export const CreateReceipt: React.FC<CreateReceiptProps> = ({
     };
 
     await StorageService.saveReceipt(savedRecord);
+    showToast({
+      type: 'success',
+      title: 'Receipt Saved Successfully',
+      message: `Receipt #${receiptNo} has been saved.`
+    });
     setSavedReceipt(savedRecord);
     setIsPreviewOpen(true);
     if (onSaved) onSaved(savedRecord);
