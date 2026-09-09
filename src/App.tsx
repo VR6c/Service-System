@@ -19,6 +19,7 @@ import { Settings } from './pages/Settings';
 import type { Quotation, Receipt } from './types';
 import { LanguageProvider } from './context/LanguageContext';
 import { DialogProvider } from './context/DialogContext';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 import { StorageService } from './services/storageService';
 
@@ -282,13 +283,18 @@ const MainApp: React.FC = () => {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <LanguageProvider>
-        <DialogProvider>
-          <MainApp />
-        </DialogProvider>
-      </LanguageProvider>
-    </AuthProvider>
+    <ErrorBoundary
+      fallbackTitle="Application Notice"
+      fallbackMessage="An unexpected error occurred in the system. Click reload to refresh the application."
+    >
+      <AuthProvider>
+        <LanguageProvider>
+          <DialogProvider>
+            <MainApp />
+          </DialogProvider>
+        </LanguageProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

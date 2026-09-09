@@ -133,7 +133,7 @@ export const FeeItemsTable: React.FC<FeeItemsTableProps> = ({
                 </td>
                 <td className="py-2.5 px-3 text-right font-extrabold text-slate-900">
                   {currencySymbol}
-                  {item.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {Number(item.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </td>
                 {!readOnly && (
                   <td className="py-2.5 px-3 text-center">
@@ -170,7 +170,7 @@ export const FeeItemsTable: React.FC<FeeItemsTableProps> = ({
             <span>Subtotal:</span>
             <span className="font-extrabold text-slate-900">
               {currencySymbol}
-              {subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {Number(subtotal || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
           {vat > 0 && (
@@ -178,7 +178,7 @@ export const FeeItemsTable: React.FC<FeeItemsTableProps> = ({
               <span>VAT:</span>
               <span className="font-extrabold text-slate-900">
                 {currencySymbol}
-                {vat.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {Number(vat || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
           )}
@@ -186,7 +186,7 @@ export const FeeItemsTable: React.FC<FeeItemsTableProps> = ({
             <span>Total Amount:</span>
             <span className="text-blue-600 font-heading">
               {currencySymbol}
-              {totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {Number(totalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
         </div>

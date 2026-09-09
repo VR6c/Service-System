@@ -349,7 +349,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
           <div className="mt-3 pt-2 border-t border-slate-100 flex items-center gap-1 text-[11px] font-bold text-emerald-600">
-            <span>${totalQuotationAmount.toLocaleString()}</span>
+            <span>${Number(totalQuotationAmount || 0).toLocaleString()}</span>
             <span className="text-slate-400 font-normal">estimated</span>
           </div>
         </div>
@@ -384,7 +384,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Revenue</p>
               <div className="flex items-baseline gap-1 mt-0.5">
                 <span className="text-2xl font-extrabold text-slate-900 font-heading">
-                  ${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                  ${Number(totalRevenue || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                 </span>
               </div>
               <p className="text-[10px] text-slate-400 font-semibold leading-none">Total service revenue</p>
@@ -573,7 +573,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   <tr key={idx} className="hover:bg-slate-50/80 transition">
                     <td className="py-3.5 px-3 font-bold text-slate-900">{w.name}</td>
                     <td className="py-3.5 px-3 text-center font-bold text-slate-700">{w.receipts}</td>
-                    <td className="py-3.5 px-3 text-right font-extrabold text-slate-900">${w.amount.toLocaleString()}</td>
+                    <td className="py-3.5 px-3 text-right font-extrabold text-slate-900">${Number(w.amount || 0).toLocaleString()}</td>
                     <td className="py-3.5 px-3 w-36">
                       <div className="flex items-center gap-2">
                         <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -622,7 +622,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     <td className="py-3 px-3 font-bold text-slate-900 font-mono text-[11px]">{r.receipt_no}</td>
                     <td className="py-3 px-3 font-bold text-slate-800">{r.customer_name}</td>
                     <td className="py-3 px-3 text-slate-600 text-[11px]">{r.vehicle_model} / <span className="font-semibold">{r.plate_no}</span></td>
-                    <td className="py-3 px-3 text-right font-extrabold text-slate-900">${r.total_amount.toFixed(2)}</td>
+                    <td className="py-3 px-3 text-right font-extrabold text-slate-900">${Number(r.total_amount || 0).toFixed(2)}</td>
                     <td className="py-3 px-3 text-center">
                       <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${
                         r.status === 'Completed'

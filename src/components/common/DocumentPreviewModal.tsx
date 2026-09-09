@@ -5,6 +5,7 @@ import { QuotationPDF } from '../pdf/QuotationPDF';
 import { ReceiptPDF } from '../pdf/ReceiptPDF';
 import { exportToPDF, printDocument } from '../../utils/pdfExport';
 import { Printer, Download, X, FileText } from 'lucide-react';
+import { ErrorBoundary } from './ErrorBoundary';
 
 interface DocumentPreviewModalProps {
   type: 'quotation' | 'receipt';
@@ -117,12 +118,18 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
 
         {/* Modal Body Scrollable Preview */}
         <div className="flex-1 overflow-y-auto p-6 bg-slate-100/90 flex justify-center print:bg-white print:p-0">
-          {type === 'quotation' && quotation && (
-            <QuotationPDF quotation={quotation} brand={brand} branch={branch} />
-          )}
-          {type === 'receipt' && receipt && (
-            <ReceiptPDF receipt={receipt} brand={brand} branch={branch} />
-          )}
+          <ErrorBoundary
+            fallbackTitle="Unable to preview document"
+            fallbackMessage="An error occurred while generating the document preview. The document data might contain unexpected values."
+            onReset={onClose}
+          >
+            {type === 'quotation' && quotation && (
+              <QuotationPDF quotation={quotation} brand={brand} branch={branch} />
+            )}
+            {type === 'receipt' && receipt && (
+              <ReceiptPDF receipt={receipt} brand={brand} branch={branch} />
+            )}
+          </ErrorBoundary>
         </div>
       </div>
     </div>,

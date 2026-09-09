@@ -10,8 +10,13 @@ export const useFeeItems = (options: UseFeeItemsOptions = {}) => {
   const { initialItems = [], defaultVatRate = 0 } = options;
 
   const [feeItems, setFeeItems] = useState<FeeItem[]>(() =>
-    initialItems.length > 0
-      ? initialItems.map(item => ({ ...item }))
+    initialItems && initialItems.length > 0
+      ? initialItems.map(item => ({
+          ...item,
+          quantity: Number(item.quantity) || 0,
+          unit_price: Number(item.unit_price) || 0,
+          amount: Number(item.amount) || 0
+        }))
       : [
           {
             id: 'item-1',
@@ -69,10 +74,14 @@ export const useFeeItems = (options: UseFeeItemsOptions = {}) => {
     setFeeItems(prev =>
       prev.map(item => {
         if (item.id !== id) return item;
-        const updated = { ...item, [field]: value };
+        let formattedValue = value;
+        if (field === 'quantity' || field === 'unit_price' || field === 'amount') {
+          formattedValue = value === '' ? 0 : Number(value);
+        }
+        const updated = { ...item, [field]: formattedValue };
         if (field === 'quantity' || field === 'unit_price') {
-          const qty = field === 'quantity' ? Number(value) || 0 : item.quantity;
-          const price = field === 'unit_price' ? Number(value) || 0 : item.unit_price;
+          const qty = Number(field === 'quantity' ? formattedValue : item.quantity) || 0;
+          const price = Number(field === 'unit_price' ? formattedValue : item.unit_price) || 0;
           updated.amount = Math.round(qty * price * 100) / 100;
         }
         return updated;

@@ -406,11 +406,51 @@ app.delete('/api/users/:id', async (req, res) => {
   }
 });
 
+function cleanQuotationData(q) {
+  if (!q || typeof q !== 'object') return q;
+  return {
+    ...q,
+    subtotal: Number(q.subtotal) || 0,
+    vat: Number(q.vat) || 0,
+    total_amount: Number(q.total_amount) || 0,
+    mileage: Number(q.mileage) || 0,
+    fee_items: Array.isArray(q.fee_items)
+      ? q.fee_items.map((item, idx) => ({
+          ...item,
+          id: item?.id || `item-${idx}`,
+          quantity: Number(item?.quantity) || 0,
+          unit_price: Number(item?.unit_price) || 0,
+          amount: Number(item?.amount) || 0
+        }))
+      : []
+  };
+}
+
+function cleanReceiptData(r) {
+  if (!r || typeof r !== 'object') return r;
+  return {
+    ...r,
+    subtotal: Number(r.subtotal) || 0,
+    vat: Number(r.vat) || 0,
+    total_amount: Number(r.total_amount) || 0,
+    mileage: Number(r.mileage) || 0,
+    fee_items: Array.isArray(r.fee_items)
+      ? r.fee_items.map((item, idx) => ({
+          ...item,
+          id: item?.id || `item-${idx}`,
+          quantity: Number(item?.quantity) || 0,
+          unit_price: Number(item?.unit_price) || 0,
+          amount: Number(item?.amount) || 0
+        }))
+      : []
+  };
+}
+
 // QUOTATIONS
 app.get('/api/quotations', async (req, res) => {
   try {
     const quotations = await QuotationModel.find().sort({ createdAt: -1 }).lean();
-    res.json(quotations);
+    res.json(quotations.map(cleanQuotationData));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -418,8 +458,9 @@ app.get('/api/quotations', async (req, res) => {
 
 app.post('/api/quotations', async (req, res) => {
   try {
-    const quotation = await QuotationModel.create(req.body);
-    res.json(quotation);
+    const cleaned = cleanQuotationData(req.body);
+    const quotation = await QuotationModel.create(cleaned);
+    res.json(cleanQuotationData(quotation.toObject ? quotation.toObject() : quotation));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -428,8 +469,9 @@ app.post('/api/quotations', async (req, res) => {
 app.put('/api/quotations/bulk', async (req, res) => {
   try {
     await QuotationModel.deleteMany({});
-    const quotations = await QuotationModel.insertMany(req.body);
-    res.json(quotations);
+    const cleanedList = Array.isArray(req.body) ? req.body.map(cleanQuotationData) : [];
+    const quotations = await QuotationModel.insertMany(cleanedList);
+    res.json(quotations.map(q => cleanQuotationData(q.toObject ? q.toObject() : q)));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -437,8 +479,9 @@ app.put('/api/quotations/bulk', async (req, res) => {
 
 app.put('/api/quotations/:id', async (req, res) => {
   try {
-    const quotation = await QuotationModel.findOneAndUpdate({ id: req.params.id }, req.body, { new: true, upsert: true });
-    res.json(quotation);
+    const cleaned = cleanQuotationData(req.body);
+    const quotation = await QuotationModel.findOneAndUpdate({ id: req.params.id }, cleaned, { new: true, upsert: true }).lean();
+    res.json(cleanQuotationData(quotation));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -457,7 +500,7 @@ app.delete('/api/quotations/:id', async (req, res) => {
 app.get('/api/receipts', async (req, res) => {
   try {
     const receipts = await ReceiptModel.find().sort({ createdAt: -1 }).lean();
-    res.json(receipts);
+    res.json(receipts.map(cleanReceiptData));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -465,8 +508,9 @@ app.get('/api/receipts', async (req, res) => {
 
 app.post('/api/receipts', async (req, res) => {
   try {
-    const receipt = await ReceiptModel.create(req.body);
-    res.json(receipt);
+    const cleaned = cleanReceiptData(req.body);
+    const receipt = await ReceiptModel.create(cleaned);
+    res.json(cleanReceiptData(receipt.toObject ? receipt.toObject() : receipt));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -475,8 +519,9 @@ app.post('/api/receipts', async (req, res) => {
 app.put('/api/receipts/bulk', async (req, res) => {
   try {
     await ReceiptModel.deleteMany({});
-    const receipts = await ReceiptModel.insertMany(req.body);
-    res.json(receipts);
+    const cleanedList = Array.isArray(req.body) ? req.body.map(cleanReceiptData) : [];
+    const receipts = await ReceiptModel.insertMany(cleanedList);
+    res.json(receipts.map(r => cleanReceiptData(r.toObject ? r.toObject() : r)));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -484,8 +529,9 @@ app.put('/api/receipts/bulk', async (req, res) => {
 
 app.put('/api/receipts/:id', async (req, res) => {
   try {
-    const receipt = await ReceiptModel.findOneAndUpdate({ id: req.params.id }, req.body, { new: true, upsert: true });
-    res.json(receipt);
+    const cleaned = cleanReceiptData(req.body);
+    const receipt = await ReceiptModel.findOneAndUpdate({ id: req.params.id }, cleaned, { new: true, upsert: true }).lean();
+    res.json(cleanReceiptData(receipt));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

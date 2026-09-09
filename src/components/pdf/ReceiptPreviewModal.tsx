@@ -4,6 +4,7 @@ import { ReceiptPDF } from './ReceiptPDF';
 import { useLanguage } from '../../context/LanguageContext';
 import { exportToPDF, printDocument } from '../../utils/pdfExport';
 import { Printer, Download, X } from 'lucide-react';
+import { ErrorBoundary } from '../common/ErrorBoundary';
 
 interface ReceiptPreviewModalProps {
   receipt: Receipt;
@@ -74,7 +75,13 @@ export const ReceiptPreviewModal: React.FC<ReceiptPreviewModalProps> = ({
 
         {/* Modal Body - Scrollable A4 Document */}
         <div ref={containerRef} className="flex-1 overflow-y-auto p-6 bg-slate-100 flex justify-center print:bg-white print:p-0">
-          <ReceiptPDF receipt={receipt} brand={brand} branch={branch} />
+          <ErrorBoundary
+            fallbackTitle="Unable to preview receipt"
+            fallbackMessage="An error occurred while rendering the receipt document. Please try again or check receipt fields."
+            onReset={onClose}
+          >
+            <ReceiptPDF receipt={receipt} brand={brand} branch={branch} />
+          </ErrorBoundary>
         </div>
       </div>
     </div>

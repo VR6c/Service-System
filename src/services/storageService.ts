@@ -819,8 +819,9 @@ export class StorageService {
       if (res.ok) {
         const data: Quotation[] = await res.json();
         if (data && Array.isArray(data)) {
-          localStorage.setItem(QUOTATIONS_KEY, JSON.stringify(data));
-          return data;
+          const normalized = data.map(q => this.normalizeQuotation(q));
+          localStorage.setItem(QUOTATIONS_KEY, JSON.stringify(normalized));
+          return normalized;
         }
       }
     } catch (err) {
@@ -829,22 +830,56 @@ export class StorageService {
     return this.getQuotations();
   }
 
+  static normalizeQuotation(quotation: Quotation): Quotation {
+    if (!quotation) return quotation;
+    return {
+      ...quotation,
+      subtotal: Number(quotation.subtotal) || 0,
+      vat: Number(quotation.vat) || 0,
+      total_amount: Number(quotation.total_amount) || 0,
+      mileage: Number(quotation.mileage) || 0,
+      fee_items: Array.isArray(quotation.fee_items)
+        ? quotation.fee_items.map((item, idx) => ({
+            ...item,
+            id: item?.id || `item-${idx}`,
+            description: item?.description || '',
+            quantity: Number(item?.quantity) || 0,
+            unit_price: Number(item?.unit_price) || 0,
+            amount: Number(item?.amount) || 0,
+            sap_no: item?.sap_no || '',
+            paint_check: item?.paint_check || '',
+            image_url: item?.image_url || ''
+          }))
+        : []
+    };
+  }
+
   static getQuotations(): Quotation[] {
     const data = localStorage.getItem(QUOTATIONS_KEY);
     if (!data) {
-      localStorage.setItem(QUOTATIONS_KEY, JSON.stringify(INITIAL_QUOTATIONS));
-      return INITIAL_QUOTATIONS;
+      const normalized = INITIAL_QUOTATIONS.map(q => this.normalizeQuotation(q));
+      localStorage.setItem(QUOTATIONS_KEY, JSON.stringify(normalized));
+      return normalized;
     }
-    return JSON.parse(data);
+    try {
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed)) {
+        return parsed.map(q => this.normalizeQuotation(q));
+      }
+      return [];
+    } catch {
+      return [];
+    }
   }
 
   static async saveQuotations(quotations: Quotation[]): Promise<void> {
-    localStorage.setItem(QUOTATIONS_KEY, JSON.stringify(quotations));
+    const clean = quotations.map(q => this.normalizeQuotation(q));
+    localStorage.setItem(QUOTATIONS_KEY, JSON.stringify(clean));
     try {
       await fetch('/api/quotations/bulk', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(quotations)
+        body: JSON.stringify(clean)
       });
     } catch (err) {
       console.warn('MongoDB sync error (quotations bulk):', err);
@@ -852,22 +887,23 @@ export class StorageService {
   }
 
   static async saveQuotation(quotation: Quotation): Promise<void> {
+    const clean = this.normalizeQuotation(quotation);
     const existing = this.getQuotations();
-    const index = existing.findIndex(q => q.id === quotation.id);
+    const index = existing.findIndex(q => q.id === clean.id);
     if (index >= 0) {
-      existing[index] = quotation;
+      existing[index] = clean;
     } else {
-      existing.unshift(quotation);
+      existing.unshift(clean);
     }
     localStorage.setItem(QUOTATIONS_KEY, JSON.stringify(existing));
     try {
-      await fetch(`/api/quotations/${quotation.id}`, {
+      await fetch(`/api/quotations/${clean.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(quotation)
+        body: JSON.stringify(clean)
       });
     } catch (err) {
-      console.warn(`MongoDB sync error (quotation ${quotation.id}):`, err);
+      console.warn(`MongoDB sync error (quotation ${clean.id}):`, err);
     }
   }
 
@@ -882,14 +918,39 @@ export class StorageService {
   }
 
   // RECEIPTS
+  static normalizeReceipt(receipt: Receipt): Receipt {
+    if (!receipt) return receipt;
+    return {
+      ...receipt,
+      subtotal: Number(receipt.subtotal) || 0,
+      vat: Number(receipt.vat) || 0,
+      total_amount: Number(receipt.total_amount) || 0,
+      mileage: Number(receipt.mileage) || 0,
+      fee_items: Array.isArray(receipt.fee_items)
+        ? receipt.fee_items.map((item, idx) => ({
+            ...item,
+            id: item?.id || `item-${idx}`,
+            description: item?.description || '',
+            quantity: Number(item?.quantity) || 0,
+            unit_price: Number(item?.unit_price) || 0,
+            amount: Number(item?.amount) || 0,
+            sap_no: item?.sap_no || '',
+            stock_yes_no: item?.stock_yes_no || 'YES',
+            warranty_yes_no: item?.warranty_yes_no || 'YES'
+          }))
+        : []
+    };
+  }
+
   static async fetchReceipts(): Promise<Receipt[]> {
     try {
       const res = await fetch('/api/receipts');
       if (res.ok) {
         const data: Receipt[] = await res.json();
         if (data && Array.isArray(data)) {
-          localStorage.setItem(RECEIPTS_KEY, JSON.stringify(data));
-          return data;
+          const normalized = data.map(r => this.normalizeReceipt(r));
+          localStorage.setItem(RECEIPTS_KEY, JSON.stringify(normalized));
+          return normalized;
         }
       }
     } catch (err) {
@@ -901,19 +962,29 @@ export class StorageService {
   static getReceipts(): Receipt[] {
     const data = localStorage.getItem(RECEIPTS_KEY);
     if (!data) {
-      localStorage.setItem(RECEIPTS_KEY, JSON.stringify(INITIAL_RECEIPTS));
-      return INITIAL_RECEIPTS;
+      const normalized = INITIAL_RECEIPTS.map(r => this.normalizeReceipt(r));
+      localStorage.setItem(RECEIPTS_KEY, JSON.stringify(normalized));
+      return normalized;
     }
-    return JSON.parse(data);
+    try {
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed)) {
+        return parsed.map(r => this.normalizeReceipt(r));
+      }
+      return [];
+    } catch {
+      return [];
+    }
   }
 
   static async saveReceipts(receipts: Receipt[]): Promise<void> {
-    localStorage.setItem(RECEIPTS_KEY, JSON.stringify(receipts));
+    const clean = receipts.map(r => this.normalizeReceipt(r));
+    localStorage.setItem(RECEIPTS_KEY, JSON.stringify(clean));
     try {
       await fetch('/api/receipts/bulk', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(receipts)
+        body: JSON.stringify(clean)
       });
     } catch (err) {
       console.warn('MongoDB sync error (receipts bulk):', err);
@@ -921,22 +992,23 @@ export class StorageService {
   }
 
   static async saveReceipt(receipt: Receipt): Promise<void> {
+    const clean = this.normalizeReceipt(receipt);
     const existing = this.getReceipts();
-    const index = existing.findIndex(r => r.id === receipt.id);
+    const index = existing.findIndex(r => r.id === clean.id);
     if (index >= 0) {
-      existing[index] = receipt;
+      existing[index] = clean;
     } else {
-      existing.unshift(receipt);
+      existing.unshift(clean);
     }
     localStorage.setItem(RECEIPTS_KEY, JSON.stringify(existing));
     try {
-      await fetch(`/api/receipts/${receipt.id}`, {
+      await fetch(`/api/receipts/${clean.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(receipt)
+        body: JSON.stringify(clean)
       });
     } catch (err) {
-      console.warn(`MongoDB sync error (receipt ${receipt.id}):`, err);
+      console.warn(`MongoDB sync error (receipt ${clean.id}):`, err);
     }
   }
 
@@ -1036,10 +1108,12 @@ export class StorageService {
         localStorage.setItem(USERS_KEY, JSON.stringify(resU.value));
       }
       if (resQ.status === 'fulfilled' && resQ.value && Array.isArray(resQ.value)) {
-        localStorage.setItem(QUOTATIONS_KEY, JSON.stringify(resQ.value));
+        const normalized = resQ.value.map((q: Quotation) => this.normalizeQuotation(q));
+        localStorage.setItem(QUOTATIONS_KEY, JSON.stringify(normalized));
       }
       if (resR.status === 'fulfilled' && resR.value && Array.isArray(resR.value)) {
-        localStorage.setItem(RECEIPTS_KEY, JSON.stringify(resR.value));
+        const normalized = resR.value.map((r: Receipt) => this.normalizeReceipt(r));
+        localStorage.setItem(RECEIPTS_KEY, JSON.stringify(normalized));
       }
       if (resS.status === 'fulfilled' && resS.value) {
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(resS.value));

@@ -39,8 +39,23 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({ quotation, brand, se
 
   const termsList = rawTerms.split('\n').map(t => t.trim()).filter(Boolean);
 
+  // Guard against null/undefined quotation
+  if (!quotation) return null;
+
   // Fill up table rows to minimum 4 rows for clean print appearance
-  const displayItems = [...quotation.fee_items];
+  const rawItems = Array.isArray(quotation.fee_items) ? quotation.fee_items : [];
+  const displayItems = rawItems.map((item, idx) => ({
+    ...item,
+    id: item?.id || `empty-${idx}`,
+    description: item?.description || '',
+    quantity: Number(item?.quantity) || 0,
+    unit_price: Number(item?.unit_price) || 0,
+    amount: Number(item?.amount) || 0,
+    sap_no: item?.sap_no || '',
+    paint_check: item?.paint_check || '',
+    image_url: item?.image_url || ''
+  }));
+
   while (displayItems.length < 4) {
     displayItems.push({
       id: `empty-${displayItems.length}`,
@@ -49,7 +64,8 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({ quotation, brand, se
       unit_price: 0,
       amount: 0,
       sap_no: '',
-      paint_check: ''
+      paint_check: '',
+      image_url: ''
     });
   }
 
@@ -153,7 +169,9 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({ quotation, brand, se
             </div>
             <div className="flex">
               <span className="font-extrabold text-slate-900 w-40 shrink-0">គីឡូ / MILEAGE :</span>
-              <span className="font-bold text-slate-800">{quotation.mileage ? `${quotation.mileage.toLocaleString()} km` : ''}</span>
+              <span className="font-bold text-slate-800">
+                {quotation.mileage ? `${Number(quotation.mileage).toLocaleString()} km` : ''}
+              </span>
             </div>
             <div className="flex">
               <span className="font-extrabold text-slate-900 w-40 shrink-0">កម្រិតប្រេង / FUEL GAUGE :</span>
@@ -206,8 +224,8 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({ quotation, brand, se
                     <td className="py-1 px-1 border-r border-slate-800 text-center font-bold">{idx + 1}</td>
                     <td className="py-1 px-1 border-r border-slate-800 text-center font-mono">{item.sap_no || ''}</td>
                     <td className="py-1 px-2 border-r border-slate-800 font-semibold">{item.description}</td>
-                    <td className="py-1 px-1 border-r border-slate-800 text-center font-bold">{isEmpty ? '' : item.quantity}</td>
-                    <td className="py-1 px-1 border-r border-slate-800 text-center font-mono">{isEmpty ? '' : `$ ${item.unit_price.toFixed(2)}`}</td>
+                    <td className="py-1 px-1 border-r border-slate-800 text-center font-bold">{isEmpty ? '' : (Number(item.quantity) > 0 ? Number(item.quantity) : '')}</td>
+                    <td className="py-1 px-1 border-r border-slate-800 text-center font-mono">{isEmpty ? '' : `$ ${Number(item.unit_price || 0).toFixed(2)}`}</td>
                     <td className="py-1 px-1 border-r border-slate-800 text-center">
                       {item.image_url ? (
                         <img src={item.image_url} alt="" className="h-5 w-5 object-contain mx-auto" />
@@ -218,7 +236,7 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({ quotation, brand, se
                       {isEmpty ? (
                         <span className="flex justify-between w-full"><span>$</span><span>-</span></span>
                       ) : (
-                        `$ ${item.amount.toFixed(2)}`
+                        `$ ${Number(item.amount || 0).toFixed(2)}`
                       )}
                     </td>
                   </tr>
@@ -235,7 +253,7 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({ quotation, brand, se
               </div>
               <div className="w-32 py-1.5 px-3 border-l border-slate-800 text-right font-mono flex justify-between">
                 <span>$</span>
-                <span>{quotation.subtotal > 0 ? quotation.subtotal.toFixed(2) : '-'}</span>
+                <span>{Number(quotation.subtotal) > 0 ? Number(quotation.subtotal).toFixed(2) : '-'}</span>
               </div>
             </div>
 
@@ -245,7 +263,7 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({ quotation, brand, se
               </div>
               <div className="w-32 py-1.5 px-3 border-l border-slate-800 text-right font-mono flex justify-between">
                 <span>$</span>
-                <span>{quotation.vat > 0 ? quotation.vat.toFixed(2) : '-'}</span>
+                <span>{Number(quotation.vat) > 0 ? Number(quotation.vat).toFixed(2) : '-'}</span>
               </div>
             </div>
 
@@ -255,7 +273,7 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({ quotation, brand, se
               </div>
               <div className="w-32 py-1.5 px-3 border-l border-slate-800 text-right font-mono font-extrabold flex justify-between">
                 <span>$</span>
-                <span>{quotation.total_amount > 0 ? quotation.total_amount.toFixed(2) : '_________'}</span>
+                <span>{Number(quotation.total_amount) > 0 ? Number(quotation.total_amount).toFixed(2) : '_________'}</span>
               </div>
             </div>
           </div>

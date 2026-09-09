@@ -8,6 +8,7 @@ import type { Quotation } from '../types';
 import { QuotationPDF } from '../components/pdf/QuotationPDF';
 import { exportToPDF, printDocument } from '../utils/pdfExport';
 import { Select } from '../components/common/Select';
+import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import {
   FileText,
   Search,
@@ -341,7 +342,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
                       <span>{q.vehicle_model}</span>
                     </td>
                     <td className="py-3.5 px-5 text-right font-mono font-black text-slate-900 text-sm">
-                      ${q.total_amount.toFixed(2)}
+                      ${Number(q.total_amount || 0).toFixed(2)}
                     </td>
                     <td className="py-3.5 px-5 text-center">
                       <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
@@ -497,7 +498,13 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
           }
           bodyClassName="p-4 sm:p-6 bg-slate-100"
         >
-          <QuotationPDF quotation={selectedQuotation} settings={settings} />
+          <ErrorBoundary
+            fallbackTitle="Unable to preview quotation"
+            fallbackMessage="An unexpected error occurred while rendering the quotation document."
+            onReset={() => setSelectedQuotation(null)}
+          >
+            <QuotationPDF quotation={selectedQuotation} settings={settings} />
+          </ErrorBoundary>
         </Modal>
       )}
     </div>

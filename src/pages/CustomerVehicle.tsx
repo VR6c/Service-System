@@ -461,7 +461,7 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
                         <div className="space-y-0.5">
                           <div className="flex items-center gap-1 font-mono font-bold text-slate-800 text-[11px]">
                             <Gauge className="w-3 h-3 text-slate-400" />
-                            <span>{r.mileage ? `${r.mileage.toLocaleString()} km` : 'N/A'}</span>
+                            <span>{r.mileage ? `${Number(r.mileage).toLocaleString()} km` : 'N/A'}</span>
                           </div>
                           <div className="flex items-center gap-1 text-[10px] text-slate-400 font-medium">
                             <Calendar className="w-3 h-3 text-slate-400" />
@@ -698,7 +698,7 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
                         <span className="text-[10px] font-bold uppercase tracking-wider">Odometer</span>
                       </div>
                       <span className="font-mono font-black text-slate-900 text-xs">
-                        {selectedCustomer.mileage ? `${selectedCustomer.mileage.toLocaleString()} km` : 'N/A'}
+                        {selectedCustomer.mileage ? `${Number(selectedCustomer.mileage).toLocaleString()} km` : 'N/A'}
                       </span>
                     </div>
 
@@ -798,7 +798,7 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
                           <div className="flex items-center gap-3 shrink-0">
                             <div className="text-right">
                               <p className="font-mono font-black text-slate-900 text-xs">
-                                ${h.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                ${Number(h.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                               </p>
                               <p className="text-[10px] text-slate-400 font-mono">{h.date}</p>
                             </div>

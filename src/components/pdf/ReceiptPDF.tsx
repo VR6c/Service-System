@@ -40,8 +40,23 @@ export const ReceiptPDF: React.FC<ReceiptPDFProps> = ({
   const isDenza = (matchedBrand?.brand_code || receipt.brand_name || '').toUpperCase().includes('DENZA') ||
     receipt.receipt_no.toUpperCase().startsWith('DENZA');
 
+  // Guard against null/undefined receipt
+  if (!receipt) return null;
+
   // Fill up to 5 rows for authentic document height matching File 1
-  const displayedItems = [...receipt.fee_items];
+  const rawItems = Array.isArray(receipt.fee_items) ? receipt.fee_items : [];
+  const displayedItems = rawItems.map((item, idx) => ({
+    ...item,
+    id: item?.id || `item-${idx}`,
+    description: item?.description || '',
+    quantity: Number(item?.quantity) || 0,
+    unit_price: Number(item?.unit_price) || 0,
+    amount: Number(item?.amount) || 0,
+    sap_no: item?.sap_no || '',
+    stock_yes_no: item?.stock_yes_no || 'YES',
+    warranty_yes_no: item?.warranty_yes_no || 'YES'
+  }));
+
   while (displayedItems.length < 5) {
     displayedItems.push({
       id: `empty-${displayedItems.length}`,
@@ -148,7 +163,9 @@ export const ReceiptPDF: React.FC<ReceiptPDFProps> = ({
                 </div>
                 <div className="flex justify-between mt-1">
                   <span className="font-normal w-16">Milage:</span>
-                  <span className="font-semibold text-black flex-1">{receipt.mileage ? `${receipt.mileage.toLocaleString()} km` : ''}</span>
+                  <span className="font-semibold text-black flex-1">
+                    {receipt.mileage ? `${Number(receipt.mileage).toLocaleString()} km` : ''}
+                  </span>
                 </div>
               </td>
               <td className="p-2 border-r border-black align-top w-[25%]">
@@ -221,7 +238,7 @@ export const ReceiptPDF: React.FC<ReceiptPDFProps> = ({
                     {item.quantity > 0 ? item.quantity : ''}
                   </td>
                   <td className="py-1 px-2 border-r border-black font-mono font-semibold text-right">
-                    {item.unit_price > 0 ? `$${item.unit_price.toFixed(2)}` : ''}
+                    {Number(item.unit_price) > 0 ? `$${Number(item.unit_price).toFixed(2)}` : ''}
                   </td>
                   <td className="py-1 px-1 border-r border-slate-800 border-r border-black text-[9pt] text-center align-middle">
                     {item.description ? (
@@ -248,7 +265,7 @@ export const ReceiptPDF: React.FC<ReceiptPDFProps> = ({
                   <div className="flex justify-between items-center text-[10.5pt]">
                     <span>Amount included VAT10% ( USD ) :</span>
                     <span className="font-mono text-[11pt] font-extrabold text-black">
-                      $ {receipt.total_amount ? receipt.total_amount.toFixed(2) : '-'}
+                      $ {Number(receipt.total_amount) > 0 ? Number(receipt.total_amount).toFixed(2) : '-'}
                     </span>
                   </div>
                 </td>

@@ -9,6 +9,7 @@ import type { Receipt } from '../types';
 import { ReceiptPDF } from '../components/pdf/ReceiptPDF';
 import { exportToPDF, printDocument } from '../utils/pdfExport';
 import { Select } from '../components/common/Select';
+import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import {
   FileCheck,
   Search,
@@ -218,7 +219,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
               </span>
             </div>
             <p className="text-xs text-slate-500 font-semibold mt-0.5">
-              Total Filtered Revenue: <span className="font-mono font-bold text-emerald-600">${totalAmountSum.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              Total Filtered Revenue: <span className="font-mono font-bold text-emerald-600">${Number(totalAmountSum || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
             </p>
           </div>
         </div>
@@ -364,7 +365,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                         <span>{r.vehicle_model}</span>
                       </td>
                       <td className="py-3.5 px-5 text-right font-mono font-black text-slate-900 text-sm">
-                        ${r.total_amount.toFixed(2)}
+                        ${Number(r.total_amount || 0).toFixed(2)}
                       </td>
                       <td className="py-3.5 px-5 text-center">
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
@@ -493,7 +494,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                 title="Download receipt as PDF"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>PDF</span>
+                <span className="hidden sm:inline">PDF</span>
               </button>
               <button
                 type="button"
@@ -508,26 +509,34 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
           }
           bodyClassName="p-4 sm:p-6 bg-slate-100"
         >
-          <ReceiptPDF
-            receipt={selectedReceipt}
-            brand={brands.find(b => b.id === selectedReceipt.brand_id)}
-            branch={branches.find(br => br.id === selectedReceipt.branch_id)}
-            settings={settings}
-          />
+          <ErrorBoundary
+            fallbackTitle="Unable to preview receipt"
+            fallbackMessage="An unexpected error occurred while rendering the receipt document."
+            onReset={() => setSelectedReceipt(null)}
+          >
+            <ReceiptPDF
+              receipt={selectedReceipt}
+              brand={brands.find(b => b.id === selectedReceipt.brand_id)}
+              branch={branches.find(br => br.id === selectedReceipt.branch_id)}
+              settings={settings}
+            />
+          </ErrorBoundary>
         </Modal>
       )}
 
       {/* Off-screen document used by the direct table download action. */}
       {downloadReceipt && (
         <div className="contents" aria-hidden="true">
-          <ReceiptPDF
-            documentId="receipt-download-document"
-            className="fixed left-[-10000px] top-0 pointer-events-none"
-            receipt={downloadReceipt}
-            brand={brands.find(b => b.id === downloadReceipt.brand_id)}
-            branch={branches.find(br => br.id === downloadReceipt.branch_id)}
-            settings={settings}
-          />
+          <ErrorBoundary>
+            <ReceiptPDF
+              documentId="receipt-download-document"
+              className="fixed left-[-10000px] top-0 pointer-events-none"
+              receipt={downloadReceipt}
+              brand={brands.find(b => b.id === downloadReceipt.brand_id)}
+              branch={branches.find(br => br.id === downloadReceipt.branch_id)}
+              settings={settings}
+            />
+          </ErrorBoundary>
         </div>
       )}
     </div>

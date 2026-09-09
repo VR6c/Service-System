@@ -106,7 +106,7 @@ export const Reports: React.FC = () => {
       `"${r.customer}"`,
       `"${r.phone}"`,
       `"${r.vehicle}"`,
-      r.amount.toFixed(2),
+      Number(r.amount || 0).toFixed(2),
       `"${r.created_by}"`,
       `"${r.date}"`
     ]);
@@ -261,7 +261,7 @@ export const Reports: React.FC = () => {
           <div>
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Report Total Amount</span>
             <div className="text-3xl font-black text-emerald-700 font-heading mt-1">
-              ${totalSum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ${Number(totalSum || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
@@ -317,7 +317,7 @@ export const Reports: React.FC = () => {
                     <td className="py-2.5 px-3 text-slate-600">{row.phone}</td>
                     <td className="py-2.5 px-3 text-slate-700 font-medium">{row.vehicle}</td>
                     <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
-                      ${row.amount.toFixed(2)}
+                      ${Number(row.amount || 0).toFixed(2)}
                     </td>
                     <td className="py-2.5 px-3 text-slate-600">{row.created_by}</td>
                     <td className="py-2.5 px-3 text-slate-500">{row.date}</td>
@@ -329,7 +329,7 @@ export const Reports: React.FC = () => {
               <tr className="bg-slate-50 font-bold border-t-2 border-slate-300 text-xs">
                 <td colSpan={7} className="py-3 px-3 text-right text-slate-900 uppercase">Grand Total:</td>
                 <td className="py-3 px-3 text-right font-mono text-sm text-emerald-800 font-black">
-                  ${totalSum.toFixed(2)}
+                  ${Number(totalSum || 0).toFixed(2)}
                 </td>
                 <td colSpan={2}></td>
               </tr>
