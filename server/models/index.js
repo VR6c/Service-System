@@ -25,6 +25,8 @@ const BranchSchema = new mongoose.Schema(
   {
     id: { type: String, required: true, unique: true },
     brand_id: { type: String, required: true },
+    supported_brand_ids: { type: [String], default: [] },
+    is_dual_brand: { type: Boolean, default: false },
     branch_code: { type: String, required: true },
     branch_name: { type: String, required: true },
     service_center_name: { type: String, default: '' },
@@ -48,6 +50,8 @@ const UserSchema = new mongoose.Schema(
     brand_id: { type: String },
     branch_id: { type: String },
     branch: { type: String, default: '' },
+    assigned_brand_ids: { type: [String], default: [] },
+    active_brand_id: { type: String },
     status: { type: String, default: 'Active' },
     created_date: { type: String },
     default_brand_id: { type: String },

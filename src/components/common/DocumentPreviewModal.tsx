@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type { Quotation, Receipt, Brand, Branch } from '../../types';
 import { QuotationPDF } from '../pdf/QuotationPDF';
 import { ReceiptPDF } from '../pdf/ReceiptPDF';
@@ -24,6 +25,22 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
   isOpen,
   onClose
 }) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const docNo = type === 'quotation' ? quotation?.quotation_no : receipt?.receipt_no;
@@ -40,11 +57,25 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
     await exportToPDF(elementId, filename);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/75 backdrop-blur-sm p-4 overflow-y-auto print:p-0 print:bg-white print:static animate-fade-in font-sans">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden print:shadow-none print:max-w-none print:max-h-none print:w-full border border-slate-200/80 animate-pop-scale">
+  return createPortal(
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto print:p-0 print:bg-white print:static animate-fade-in font-sans"
+    >
+      {/* Full-screen Backdrop overlay */}
+      <div
+        className="fixed inset-0 bg-slate-950/75 backdrop-blur-md transition-all cursor-pointer print:hidden"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      <div
+        className="relative bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden print:shadow-none print:max-w-none print:max-h-none print:w-full border border-slate-200/90 ring-1 ring-black/5 animate-pop-scale z-10"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Modal Header Toolbar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200/90 bg-slate-50/90 print:hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200/90 bg-slate-50/90 print:hidden shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
               <FileText className="w-5 h-5" />
@@ -76,7 +107,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
             </button>
             <button
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200/70 rounded-xl transition ml-1"
+              className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200/70 rounded-xl transition ml-1 cursor-pointer"
               title="Close Preview"
             >
               <X className="w-5 h-5" />
@@ -94,6 +125,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

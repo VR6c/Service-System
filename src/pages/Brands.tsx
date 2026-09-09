@@ -189,9 +189,8 @@ export const Brands: React.FC = () => {
                   </div>
                 </div>
 
-                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                  b.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500'
-                }`}>
+                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${b.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500'
+                  }`}>
                   {b.status}
                 </span>
               </div>
@@ -269,7 +268,7 @@ export const Brands: React.FC = () => {
                 type="text"
                 value={brandName}
                 onChange={e => setBrandName(e.target.value)}
-                placeholder="BYD Auto Cambodia"
+                placeholder="BYD Cambodia"
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-900"
               />
             </div>
@@ -288,9 +287,8 @@ export const Brands: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setLogoType('byd')}
-                className={`flex flex-col items-center justify-center p-2.5 rounded-xl border transition cursor-pointer ${
-                  logoType === 'byd' ? 'bg-white border-red-600 ring-2 ring-red-600/20 shadow-xs' : 'bg-white border-slate-200 hover:bg-slate-100'
-                }`}
+                className={`flex flex-col items-center justify-center p-2.5 rounded-xl border transition cursor-pointer ${logoType === 'byd' ? 'bg-white border-red-600 ring-2 ring-red-600/20 shadow-xs' : 'bg-white border-slate-200 hover:bg-slate-100'
+                  }`}
               >
                 <BYDLogo className="h-6 w-auto" />
                 <span className="text-[10px] font-bold text-slate-700 mt-1">BYD Standard</span>
@@ -299,9 +297,8 @@ export const Brands: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setLogoType('denza')}
-                className={`flex flex-col items-center justify-center p-2.5 rounded-xl border transition cursor-pointer ${
-                  logoType === 'denza' ? 'bg-white border-red-600 ring-2 ring-red-600/20 shadow-xs' : 'bg-white border-slate-200 hover:bg-slate-100'
-                }`}
+                className={`flex flex-col items-center justify-center p-2.5 rounded-xl border transition cursor-pointer ${logoType === 'denza' ? 'bg-white border-red-600 ring-2 ring-red-600/20 shadow-xs' : 'bg-white border-slate-200 hover:bg-slate-100'
+                  }`}
               >
                 <DENZALogo className="h-6 w-auto" />
                 <span className="text-[10px] font-bold text-slate-700 mt-1">DENZA Luxury</span>
@@ -310,9 +307,8 @@ export const Brands: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setLogoType('custom')}
-                className={`flex flex-col items-center justify-center p-2.5 rounded-xl border transition cursor-pointer ${
-                  logoType === 'custom' ? 'bg-white border-red-600 ring-2 ring-red-600/20 shadow-xs' : 'bg-white border-slate-200 hover:bg-slate-100'
-                }`}
+                className={`flex flex-col items-center justify-center p-2.5 rounded-xl border transition cursor-pointer ${logoType === 'custom' ? 'bg-white border-red-600 ring-2 ring-red-600/20 shadow-xs' : 'bg-white border-slate-200 hover:bg-slate-100'
+                  }`}
               >
                 {logoUrl ? (
                   <img src={logoUrl} alt="Custom" className="h-6 w-auto max-w-full object-contain" />

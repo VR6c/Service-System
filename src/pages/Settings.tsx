@@ -627,9 +627,8 @@ export const Settings: React.FC = () => {
             </button>
 
             {telegramStatusMsg && (
-              <span className={`text-xs font-bold px-3 py-1.5 rounded-lg border ${
-                telegramStatusMsg.success ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'
-              }`}>
+              <span className={`text-xs font-bold px-3 py-1.5 rounded-lg border ${telegramStatusMsg.success ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'
+                }`}>
                 {telegramStatusMsg.text}
               </span>
             )}
@@ -680,9 +679,8 @@ export const Settings: React.FC = () => {
                           <span className="text-[10px] font-mono font-bold text-slate-500">Code: {b.brand_code}</span>
                         </div>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${
-                        b.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-200 text-slate-600'
-                      }`}>
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${b.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-200 text-slate-600'
+                        }`}>
                         {b.status}
                       </span>
                     </div>
@@ -836,71 +834,93 @@ export const Settings: React.FC = () => {
         subtitle="Configure brand credentials, logo styling, and document prefixes."
       >
         <form onSubmit={handleBrandSave} className="space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Brand Code *</label>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Brand Code *</label>
+              <input
+                type="text"
+                required
+                value={brandCode}
+                onChange={e => setBrandCode(e.target.value)}
+                placeholder="e.g. BYD, DENZA, TOYOTA"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold"
+              />
+            </div>
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Brand Name *</label>
+              <input
+                type="text"
+                required
+                value={brandName}
+                onChange={e => setBrandName(e.target.value)}
+                placeholder="e.g. BYD Cambodia"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold"
+              />
+            </div>
+          </div>
+
+          {/* Logo Settings */}
+          <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="font-bold text-slate-800 flex items-center gap-1.5 text-xs">
+                <ImageIcon className="w-4 h-4 text-red-600" />
+                Brand Logo Picture (BYD / DENZA / Custom)
+              </label>
+              <span className="text-[10px] font-semibold text-slate-500">Saved to local database</span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => { setLogoType('byd'); setLogoUrl(''); }}
+                className={`px-3 py-2.5 rounded-xl border text-center font-bold text-[11px] flex flex-col items-center justify-center gap-1.5 transition cursor-pointer ${logoType === 'byd' && !logoUrl ? 'border-red-600 bg-red-50 text-red-700 shadow-2xs' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
+                  }`}
+              >
+                <BYDLogo variant="red" className="h-4" />
+                <span>BYD Standard</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => { setLogoType('denza'); setLogoUrl(''); }}
+                className={`px-3 py-2.5 rounded-xl border text-center font-bold text-[11px] flex flex-col items-center justify-center gap-1.5 transition cursor-pointer ${logoType === 'denza' && !logoUrl ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-2xs' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
+                  }`}
+              >
+                <DENZALogo variant="blue" className="h-4" />
+                <span>DENZA</span>
+              </button>
+
+              <label
+                className={`px-3 py-2.5 rounded-xl border text-center font-bold text-[11px] flex flex-col items-center justify-center gap-1.5 transition cursor-pointer ${logoUrl || logoType === 'custom' ? 'border-purple-600 bg-purple-50 text-purple-700 shadow-2xs' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
+                  }`}
+              >
+                <Upload className="w-4 h-4 text-purple-600" />
+                <span>Upload from PC</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleBrandImageUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
+            {(logoType === 'custom' || logoUrl) && (
+              <div className="space-y-2 pt-1 border-t border-slate-200/80">
+                <div className="flex items-center gap-2">
                   <input
                     type="text"
-                    required
-                    value={brandCode}
-                    onChange={e => setBrandCode(e.target.value)}
-                    placeholder="e.g. BYD, DENZA, TOYOTA"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold"
+                    value={logoUrl}
+                    onChange={e => {
+                      setLogoUrl(e.target.value);
+                      setLogoType('custom');
+                    }}
+                    placeholder="Paste image URL or attach local PC picture file..."
+                    className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-mono"
                   />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Brand Name *</label>
-                  <input
-                    type="text"
-                    required
-                    value={brandName}
-                    onChange={e => setBrandName(e.target.value)}
-                    placeholder="e.g. BYD Auto Cambodia"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold"
-                  />
-                </div>
-              </div>
-
-              {/* Logo Settings */}
-              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="font-bold text-slate-800 flex items-center gap-1.5 text-xs">
-                    <ImageIcon className="w-4 h-4 text-red-600" />
-                    Brand Logo Picture (BYD / DENZA / Custom)
-                  </label>
-                  <span className="text-[10px] font-semibold text-slate-500">Saved to local database</span>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => { setLogoType('byd'); setLogoUrl(''); }}
-                    className={`px-3 py-2.5 rounded-xl border text-center font-bold text-[11px] flex flex-col items-center justify-center gap-1.5 transition cursor-pointer ${
-                      logoType === 'byd' && !logoUrl ? 'border-red-600 bg-red-50 text-red-700 shadow-2xs' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    <BYDLogo variant="red" className="h-4" />
-                    <span>BYD Standard</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => { setLogoType('denza'); setLogoUrl(''); }}
-                    className={`px-3 py-2.5 rounded-xl border text-center font-bold text-[11px] flex flex-col items-center justify-center gap-1.5 transition cursor-pointer ${
-                      logoType === 'denza' && !logoUrl ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-2xs' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    <DENZALogo variant="blue" className="h-4" />
-                    <span>DENZA Luxury</span>
-                  </button>
-
-                  <label
-                    className={`px-3 py-2.5 rounded-xl border text-center font-bold text-[11px] flex flex-col items-center justify-center gap-1.5 transition cursor-pointer ${
-                      logoUrl || logoType === 'custom' ? 'border-purple-600 bg-purple-50 text-purple-700 shadow-2xs' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    <Upload className="w-4 h-4 text-purple-600" />
-                    <span>Upload from PC</span>
+                  <label className="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer shrink-0">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Browse PC</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -910,156 +930,131 @@ export const Settings: React.FC = () => {
                   </label>
                 </div>
 
-                {(logoType === 'custom' || logoUrl) && (
-                  <div className="space-y-2 pt-1 border-t border-slate-200/80">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={logoUrl}
-                        onChange={e => {
-                          setLogoUrl(e.target.value);
-                          setLogoType('custom');
-                        }}
-                        placeholder="Paste image URL or attach local PC picture file..."
-                        className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-mono"
-                      />
-                      <label className="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer shrink-0">
-                        <Upload className="w-3.5 h-3.5" />
-                        <span>Browse PC</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleBrandImageUpload}
-                          className="hidden"
-                        />
-                      </label>
-                    </div>
-
-                    {logoUrl && (
-                      <div className="flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
-                        <div className="flex items-center gap-3">
-                          <div className="bg-slate-100 p-1.5 rounded-lg border border-slate-200">
-                            <img src={logoUrl} alt="Logo Preview" className="h-8 max-w-[120px] object-contain" />
-                          </div>
-                          <div>
-                            <span className="text-xs font-bold text-slate-900 block">Attached Picture Ready</span>
-                            <span className="text-[10px] text-emerald-600 font-semibold">Saved directly to local database</span>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => { setLogoUrl(''); setLogoType('byd'); }}
-                          className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer"
-                          title="Remove attached picture"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
+                {logoUrl && (
+                  <div className="flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-slate-100 p-1.5 rounded-lg border border-slate-200">
+                        <img src={logoUrl} alt="Logo Preview" className="h-8 max-w-[120px] object-contain" />
                       </div>
-                    )}
+                      <div>
+                        <span className="text-xs font-bold text-slate-900 block">Attached Picture Ready</span>
+                        <span className="text-[10px] text-emerald-600 font-semibold">Saved directly to local database</span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => { setLogoUrl(''); setLogoType('byd'); }}
+                      className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer"
+                      title="Remove attached picture"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
                 )}
               </div>
+            )}
+          </div>
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Service Center Name</label>
-                <input
-                  type="text"
-                  value={serviceCenterName}
-                  onChange={e => setServiceCenterName(e.target.value)}
-                  placeholder="e.g. BYD SALES & SERVICE CENTER"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-semibold"
-                />
-              </div>
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">Service Center Name</label>
+            <input
+              type="text"
+              value={serviceCenterName}
+              onChange={e => setServiceCenterName(e.target.value)}
+              placeholder="e.g. BYD SALES & SERVICE CENTER"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-semibold"
+            />
+          </div>
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Local Khmer Company Name</label>
-                <input
-                  type="text"
-                  value={localCompanyName}
-                  onChange={e => setLocalCompanyName(e.target.value)}
-                  placeholder="e.g. មិនមែនជាប្រកាសជាចំនាយឬប្រកាសពន្ធ"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"
-                />
-              </div>
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">Local Khmer Company Name</label>
+            <input
+              type="text"
+              value={localCompanyName}
+              onChange={e => setLocalCompanyName(e.target.value)}
+              placeholder="e.g. មិនមែនជាប្រកាសជាចំនាយឬប្រកាសពន្ធ"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"
+            />
+          </div>
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Headquarters Address</label>
-                <textarea
-                  rows={2}
-                  value={address}
-                  onChange={e => setAddress(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5"
-                />
-              </div>
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">Headquarters Address</label>
+            <textarea
+              rows={2}
+              value={address}
+              onChange={e => setAddress(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5"
+            />
+          </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Telephone</label>
-                  <input
-                    type="text"
-                    value={telephone}
-                    onChange={e => setTelephone(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"
-                  />
-                </div>
-              </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Telephone</label>
+              <input
+                type="text"
+                value={telephone}
+                onChange={e => setTelephone(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"
+              />
+            </div>
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"
+              />
+            </div>
+          </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Quotation Prefix</label>
-                  <input
-                    type="text"
-                    value={documentPrefix}
-                    onChange={e => setDocumentPrefix(e.target.value)}
-                    placeholder="BYD"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Receipt Prefix</label>
-                  <input
-                    type="text"
-                    value={receiptPrefix}
-                    onChange={e => setReceiptPrefix(e.target.value)}
-                    placeholder="BYD60M"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold text-red-700"
-                  />
-                </div>
-                <div>
-                  <Select
-                    label="Status"
-                    value={status}
-                    onChange={val => setStatus(val as 'Active' | 'Inactive')}
-                    options={['Active', 'Inactive']}
-                  />
-                </div>
-              </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Quotation Prefix</label>
+              <input
+                type="text"
+                value={documentPrefix}
+                onChange={e => setDocumentPrefix(e.target.value)}
+                placeholder="BYD"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold"
+              />
+            </div>
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Receipt Prefix</label>
+              <input
+                type="text"
+                value={receiptPrefix}
+                onChange={e => setReceiptPrefix(e.target.value)}
+                placeholder="BYD60M"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold text-red-700"
+              />
+            </div>
+            <div>
+              <Select
+                label="Status"
+                value={status}
+                onChange={val => setStatus(val as 'Active' | 'Inactive')}
+                options={['Active', 'Inactive']}
+              />
+            </div>
+          </div>
 
-              <div className="pt-4 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setBrandModalOpen(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-black rounded-xl shadow-xs"
-                >
-                  Save Brand
-                </button>
-              </div>
-            </form>
+          <div className="pt-4 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setBrandModalOpen(false)}
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-black rounded-xl shadow-xs"
+            >
+              Save Brand
+            </button>
+          </div>
+        </form>
       </Modal>
     </div>
   );

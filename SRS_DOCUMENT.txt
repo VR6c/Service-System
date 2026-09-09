@@ -1,0 +1,682 @@
+================================================================================
+                    SOFTWARE REQUIREMENTS SPECIFICATION (SRS)
+          Automotive Service Management System (BYD & DENZA Service Centers)
+================================================================================
+
+Document Information:
+- Project Name: Automotive Service Management System
+- Organization: BYD Cambodia & DENZA
+- Version: 1.1.0
+- Compliance Standard: IEEE Std 830-1998
+- Date: September 2026
+- Status: Approved / Production-Ready Specification
+- Classification: Confidential / Enterprise Technical Specification
+
+--------------------------------------------------------------------------------
+TABLE OF CONTENTS
+--------------------------------------------------------------------------------
+1. INTRODUCTION
+   1.1 Purpose
+   1.2 Scope of the System
+   1.3 Definitions, Acronyms, and Abbreviations
+   1.4 References
+   1.5 Document Overview
+
+2. OVERALL DESCRIPTION
+   2.1 Product Perspective & System Architecture
+   2.2 Product Functions (High-Level Functional Decomposition)
+   2.3 User Classes, Operational Role Constraints & Characteristics
+   2.4 Operating Environment & Technology Stack
+   2.5 Design & Implementation Constraints (Physical vs. Logical Boundaries)
+   2.6 Assumptions & Dependencies
+
+3. EXTERNAL INTERFACE REQUIREMENTS
+   3.1 User Interfaces (Dynamic Intake Scope, Scoped Table Views, Branding)
+   3.2 Hardware Interfaces
+   3.3 Software & Cloud Interfaces (MongoDB, Node.js, Vercel)
+   3.4 Communication Interfaces (Telegram Bot API, Canvas/PDF Engine)
+
+4. SYSTEM FEATURES & DETAILED FUNCTIONAL REQUIREMENTS
+   4.1 Authentication & Role-Based Access Control (RBAC)
+   4.2 Multi-Brand & Multi-Branch Workshop Management (Dual-Brand Facilities)
+   4.3 Quotation Management Lifecycle & Prefix-Isolated Sequence Engine
+   4.4 Quotation-to-Receipt Conversion Engine
+   4.5 Service Receipt & EV Repair Order Processing
+   4.6 Spare Parts & Labor Fee Calculation Matrix
+   4.7 Quality Assurance (QA) & Multi-Stage Handover Sign-off
+   4.8 Telegram Notification & Customer Service Reminders
+   4.9 Customer & Vehicle Intelligence Directory
+   4.10 Executive Dashboard & Real-Time Workshop Analytics
+   4.11 Financial Reporting, CSV Data Export & Print Engine
+   4.12 System Settings & Bilingual Document Customization
+   4.13 Security Audit & Activity Logging
+   4.14 Universal Command Palette (Keyboard Navigation)
+   4.15 Bilingual Localization (English & Khmer)
+   4.16 Scoped Table Views & Operational Filtering
+
+5. DATA MODELS & DATABASE DESIGN
+   5.1 Entity Relationship Overview & Relational Integrity
+   5.2 Data Dictionary (Branch, User, Quotation, Receipt, Brand, FeeItem)
+   5.3 Data Persistence, Numbering Isolation & Synchronization Strategy
+
+6. NON-FUNCTIONAL REQUIREMENTS (NFRs)
+   6.1 Performance Requirements
+   6.2 Security Requirements & Data Protection
+   6.3 Reliability, Availability & Fault Tolerance
+   6.4 Maintainability & Extensibility
+   6.5 Usability & Accessibility
+   6.6 Print Fidelity & Output Accuracy
+
+7. APPENDICES & TRACEABILITY MATRIX
+   7.1 Requirement to Code File Traceability Matrix
+   7.2 Document Lifecycle State Transitions
+
+
+================================================================================
+1. INTRODUCTION
+================================================================================
+
+1.1 PURPOSE
+-----------
+This Software Requirements Specification (SRS) document details the complete
+functional and non-functional specifications for the Automotive Service Management
+System. The system is designed to digitize, streamline, and govern all dealership
+aftersales operations, electric vehicle (EV) maintenance workflows, quotations,
+billing receipts, inspection sign-offs, customer reminders, and multi-branch
+business analytics for authorized automotive distributors (specifically configured
+for BYD Cambodia and DENZA).
+
+This document serves as the foundational technical agreement between business
+stakeholders, service advisors, workshop engineers, quality assurance personnel,
+software architects, and maintenance developers.
+
+
+1.2 SCOPE OF THE SYSTEM
+-----------------------
+The Automotive Service Management System is a centralized, web-based enterprise
+application that replaces manual paper receipts, disconnected spreadsheets, and
+fragmented messaging.
+
+Core Capabilities & Operational Scope:
+- Role-Based Authentication & Operational Boundaries: Access control strictly
+  distinguishing System Administrators from Service Advisors (SAs). SAs are
+  physically constrained to exactly 1 workshop branch, while logically permitted
+  to service up to 2 automotive brands (BYD and DENZA) supported at that branch.
+- Multi-Brand & Multi-Branch Workshop Management: Hierarchical structuring of
+  automotive brands (BYD, DENZA) and physical service workshops across
+  geographical locations (Chroy Changva 6A, Phnom Penh Flagship, Siem Reap Center,
+  City Mall Hub), including dual-brand certified facilities.
+- Prefix & Numbering Isolation Engine: Deterministic, non-guessing sequence
+  generation isolating document counters by active brand prefix ({PREFIX}-QT...
+  for quotations and {PREFIX}60M-... for receipts).
+- Dynamic Intake UX & Document Letterhead Switching: Prominent top brand context
+  toggles for dual-brand SAs with instant sequence preview recalculation and
+  letterhead swapping; single-brand SAs operate under fixed brand locks.
+- Quotation Lifecycle Engine: Drafting, pricing, tax computation, versioning,
+  status tracking, and 1-click conversion into active Service Receipts.
+- Service Receipt & Work Order Processing: Vehicle intake parameters, battery
+  State-of-Charge (SoC) tracking, spare parts/labor fee schedules, old parts
+  disposition, and multi-step workshop sign-offs (Technician, QA Inspector,
+  Assistant Manager, Accounting, Delivery Person, Customer).
+- Scoped Operational Table Views: Automatic scoping of quotation and receipt
+  lists to the SA's assigned workshop facility, equipped with top-level brand
+  filtering tabs (All Brands | BYD | DENZA).
+- Automated Telegram Bot Messaging: Instant dispatch of formatted repair reminders
+  and customer notices to designated Telegram service channels.
+- Customer & Vehicle Directory: Automatic aggregation and tracking of customer
+  profiles, vehicle models, plate numbers, VINs, service histories, and cumulative
+  spending.
+- Executive Analytics & Business Intelligence: Interactive dashboards displaying
+  revenue trends, monthly/weekly performance, workshop output comparisons, and
+  advisor rankings using responsive charts.
+- Financial Reporting & Export Engine: Granular transaction reporting with multiple
+  date ranges, brand/branch filtering, CSV data export, and print summaries.
+- High-Fidelity Document Printing & PDF Generation: Factory-grade A4 portrait
+  document generation matching factory layout standards, with bilingual headings
+  (Khmer & English), dual-logo support, and isolated iframe print handling.
+- Bilingual Interface & Keyboard Navigation: Real-time English/Khmer localization
+  and a universal command palette (Ctrl+K / Cmd+K).
+
+
+1.3 DEFINITIONS, ACRONYMS, AND ABBREVIATIONS
+--------------------------------------------
+- SRS: Software Requirements Specification (IEEE Std 830-1998 compliant)
+- EV: Electric Vehicle
+- BYD: Build Your Dreams (Automotive Brand)
+- DENZA: Luxury New Energy Vehicle joint brand
+- SA: Service Advisor (Front-desk personnel handling vehicle intake and customer communication)
+- QA: Quality Assurance (Workshop technician and vehicle final inspection)
+- SoC: State of Charge (High-voltage battery percentage of an electric vehicle)
+- VIN: Vehicle Identification Number (17-character ISO standard chassis number)
+- SAP No.: Systems, Applications & Products inventory part identification number
+- VAT: Value Added Tax (standard 0% or configured 10% rate)
+- RBAC: Role-Based Access Control
+- Dual-Brand Facility: A singular physical workshop location certified and equipped
+  to service multiple distinct vehicle makes (specifically BYD and DENZA).
+- Branch-Brand Affinity: Business validation rule dictating that personnel or operations
+  assigned to a physical branch may only handle brands explicitly supported by that branch.
+
+
+1.4 REFERENCES
+--------------
+- IEEE Std 830-1998: IEEE Recommended Practice for Software Requirements Specifications.
+- React 19.2 Documentation: https://react.dev
+- Express 5.2 Framework Guide: https://expressjs.com
+- MongoDB 6.0+ Schema Specifications: https://www.mongodb.com/docs/manual/
+- Telegram Bot API 7.0+: https://core.telegram.org/bots/api
+- jsPDF 4.2 & html2canvas 1.4 API References.
+
+
+1.5 DOCUMENT OVERVIEW
+---------------------
+Section 2 provides the overall high-level architectural decomposition, user
+classes, operational constraints, and technology stack. Section 3 outlines
+external interface requirements including UI/UX dynamics, hardware interfaces,
+and communications. Section 4 specifies detailed functional requirements with
+unique requirement IDs. Section 5 formalizes the data models, database dictionary,
+and numbering isolation algorithms. Section 6 defines non-functional benchmarks.
+Section 7 concludes with the requirement-to-code traceability matrix and document
+lifecycle state machine.
+
+
+================================================================================
+2. OVERALL DESCRIPTION
+================================================================================
+
+2.1 PRODUCT PERSPECTIVE & SYSTEM ARCHITECTURE
+---------------------------------------------
+The system is architected as a modern, decoupled Single Page Application (SPA)
+backed by a RESTful Express micro-service and a persistent MongoDB database.
+
+System Component Architecture:
++------------------------------------------------------------------------------+
+|                          BROWSER CLIENT (REACT 19 SPA)                       |
+|                                                                              |
+|  +--------------------+   +-----------------------+   +-------------------+  |
+|  | AuthContext (RBAC) |   | useDocumentForm Hook  |   | LanguageContext   |  |
+|  | SA 1-Branch Lock   |   | Brand Toggle [BYD|DEN]|   | English / Khmer   |  |
+|  +--------------------+   +-----------------------+   +-------------------+  |
+|             |                         |                         |            |
+|  +--------------------+   +-----------------------+   +-------------------+  |
+|  | Scoped Table Views |   | High-Res Print Engine |   | Command Palette   |  |
+|  | Branch-Locked List |   | A4 jsPDF/html2canvas  |   | (Cmd+K / Ctrl+K)  |  |
+|  +--------------------+   +-----------------------+   +-------------------+  |
++------------------------------------------------------------------------------+
+         | (Local State / Offline Cache)       | (Direct HTTPS)        | (REST API JSON)
+         v                                     v                       v
++------------------+                 +------------------+    +-----------------+
+| Browser Storage  |                 | Telegram Bot API |    | Express Backend |
+| Cache & Fallback |                 | /sendMessage     |    | api/index.js    |
++------------------+                 +------------------+    +-----------------+
+                                                                       | (Mongoose ODM)
+                                                                       v
+                                                             +-----------------+
+                                                             | MongoDB Atlas   |
+                                                             | Clustered DB    |
+                                                             +-----------------+
+
+
+2.2 PRODUCT FUNCTIONS (HIGH-LEVEL FUNCTIONAL DECOMPOSITION)
+----------------------------------------------------------
+1. Authentication & Security:
+   - Email/password authentication with persistent browser sessions.
+   - Strict operational role segregation: Administrator vs. Service Advisor.
+   - Service Advisor profile binding: Exactly 1 branch and up to 2 brands.
+
+2. Multi-Brand & Multi-Branch Workshop Administration:
+   - Configuration of automotive brands (BYD, DENZA) with document prefixes,
+     VAT numbers, addresses, and official logos.
+   - Physical branch modeling with supported brand associations (single-brand vs dual-brand).
+   - Strict Branch-Brand Affinity enforcement during staff configuration.
+
+3. Quotation & Work Order Authoring:
+   - Dynamic intake scope adapting to SA brand assignment:
+     * 1 assigned brand: locked brand dropdown.
+     * 2 assigned brands: prominent header toggle ([ BYD ] | [ DENZA ]).
+   - Instant sequence recalculation and letterhead swapping upon toggle.
+   - Line items calculation matrix for spare parts and labor with real-time VAT.
+   - 1-Click Quotation-to-Receipt conversion engine.
+
+4. Service Receipt & Workshop Execution:
+   - EV-specific intake parameters (SoC battery %, check-in/out times, custody flags).
+   - 8-stage workshop quality inspection and sign-off hierarchy.
+   - Isolated receipt numbering sequence (BYD60M-YYMM-XXX vs DENZA60M-YYMM-XXX).
+
+5. Table Listing & Operational Scoping:
+   - Default scoping of Quotation and Receipt lists to SA's assigned branch.
+   - Top-level brand filtering tabs ([ All Brands ] | [ BYD ] | [ DENZA ]).
+   - Full global visibility and filtering controls for Administrators.
+
+6. Service Alerts & External Dispatch:
+   - Direct Telegram Bot notification dispatch for scheduled service reminders.
+
+7. Intelligence & Financial Reporting:
+   - Customer and vehicle intelligence aggregation from service records.
+   - Visual executive dashboard with revenue analytics and advisor rankings.
+   - Filterable financial reports with instant CSV data export.
+
+
+2.3 USER CLASSES, OPERATIONAL ROLE CONSTRAINTS & CHARACTERISTICS
+----------------------------------------------------------------
+1. System Administrator:
+   - Target Users: Workshop General Managers, Operations Directors, IT Admins.
+   - Scope: Global system access across all physical branches and automotive brands.
+   - Capabilities: Creation/editing of brands, branches, staff profiles, system settings,
+     activity logs, financial reports, quotations, receipts, and global dashboards.
+
+2. Service Advisor (SA):
+   - Target Users: Front-desk service advisors, workshop receptionists, service writers.
+   - Operational Role Constraints:
+     * Exactly 1 Physical Branch: An SA is physically employed on a specific workshop floor
+       (e.g., Chroy Changva 6A). The SA can NEVER be assigned to multiple branches.
+     * Up to 2 Brands: An SA can service 1 or up to 2 vehicle lines (BYD and/or DENZA)
+       operating out of their assigned workshop facility.
+     * Branch-Brand Affinity: The brands assigned to an SA MUST be a subset of the brands
+       supported by the SA's branch. If Branch X only supports BYD, the SA cannot service DENZA.
+   - Operational Permissions:
+     * Quotation & Receipt authoring, editing, status tracking, and printing.
+     * Automatic scoping of list views to their assigned branch.
+     * Brand context selection via header toggle for authorized dual-brand operations.
+     * Restricted from system settings, staff management, and branch/brand administration.
+
+
+2.4 OPERATING ENVIRONMENT & TECHNOLOGY STACK
+--------------------------------------------
+- Client Platforms: Modern Chromium browsers (Chrome 110+, Edge 110+), Safari 16+,
+  Firefox 115+ on Desktop (macOS, Windows, Linux) and iPad/Android Tablets.
+- Frontend Framework: React 19.2.8, TypeScript 6.0.2, Vite 6.4.3, Tailwind CSS 4.3.3,
+  Lucide React 1.31.0, Recharts 3.10.1, jsPDF 4.2.1, html2canvas 1.4.1.
+- Backend Framework: Node.js (v18.x - v24.x), Express 5.2.1, Mongoose 9.9.5, CORS 2.8.6.
+- Database: MongoDB Atlas 6.0+ with local fallback caching.
+
+
+2.5 DESIGN & IMPLEMENTATION CONSTRAINTS
+---------------------------------------
+1. Physical vs. Logical Boundaries:
+   A physical branch (e.g. Chroy Changva 6A) represents a singular physical building,
+   workshop floor, and tool bay. However, logically it can house dual-brand operations
+   servicing both BYD and DENZA vehicles. The system MUST maintain this distinction:
+   physical assets (branch location, contact info, staff presence) are singular, while
+   logical assets (brand logos, prefixes, legal entity names, VAT certificates) are partitioned.
+
+2. Branch-Brand Affinity Constraint:
+   The system MUST strictly validate that an SA cannot be assigned to an automotive brand
+   that their assigned branch does not support. Validation must execute both on frontend
+   staff management forms and backend database update endpoints.
+
+3. Prefix & Numbering Isolation:
+   Document numbering must never guess or share sequence sequences across brands.
+   Quotation numbers ({PREFIX}-QT{YYMM}-{SEQ}) and Receipt numbers ({PREFIX}{YYMM}-{SEQ})
+   must maintain independent, monotonic auto-incrementing counters isolated strictly
+   by the brand prefix.
+
+4. Document Print Fidelity:
+   Printed receipts and quotations must strictly fit an A4 portrait canvas (210mm x 297mm)
+   with 190mm content width and zero vertical clipping across all pages.
+
+5. Unicode Khmer Typography:
+   All official printed headers and UI elements must render Unicode Khmer fonts
+   (e.g., Kantumruy Pro / Battambang) without character overlap, clipping, or font fallback failures.
+
+
+2.6 ASSUMPTIONS & DEPENDENCIES
+------------------------------
+- Dealerships maintain active internet connectivity for MongoDB Atlas and Telegram API access.
+- Service advisors access the application via modern desktop browsers or workshop tablets.
+- Automotive brands BYD and DENZA operate with distinct legal entity titles and prefixes.
+
+
+================================================================================
+3. EXTERNAL INTERFACE REQUIREMENTS
+================================================================================
+
+3.1 USER INTERFACES
+-------------------
+1. Intake Form Dynamic Scope (CreateQuotation.tsx & CreateReceipt.tsx):
+   - Single-Brand SA Mode: When an SA is assigned exactly 1 brand, the brand dropdown
+     is locked/read-only with an explicit indicator badge. The branch is locked to the SA's branch.
+   - Dual-Brand SA Mode: When an SA is assigned 2 brands (BYD and DENZA), the form renders
+     a prominent, high-contrast segmented toggle banner at the very top:
+     +--------------------------------------------------------------------+
+     |  ACTIVE BRAND CONTEXT:   [ (o) BYD ]   |   [ ( ) DENZA ] |
+     +--------------------------------------------------------------------+
+   - Real-Time Reactive Re-scoping:
+     * Clicking the alternate brand toggle immediately recalculates the sequence preview
+       (e.g. dynamically switching from 'BYD-QT2609-001' to 'DENZA-QT2609-001').
+     * The document letterhead, company legal name, VAT registration, address, and
+       logo immediately swap to the selected brand context.
+     * All previously entered customer details, vehicle parameters, and fee items are
+       strictly preserved without data reset.
+
+2. Scoped Table Views (QuotationList.tsx & ReceiptList.tsx):
+   - Default Branch Scoping: Service Advisors opening Quotation or Receipt lists are
+     automatically scoped to their assigned branch floor (e.g. 'BYD Chroy Changva 6A').
+   - Top Brand Filter Tabs: Positioned at the top of the table header:
+     [ All Brands (N) ]  |  [ BYD (N) ]  |  [ DENZA (N) ]
+     The tabs restrict filtering to the brands assigned to the active SA.
+   - Administrator Override: Administrators retain full unconstrained dropdown controls
+     to inspect all branches and all brands nationwide.
+
+3. Design Language & Visual Tokens:
+   - Primary BYD Red: #E31B23
+   - Primary DENZA Blue: #1E40AF / #3B82F6
+   - Slate Neutral Palette: #0F172A (Text), #F8FAFC (App Background), #FFFFFF (Surfaces)
+   - Border Radii: rounded-xl (12px) and rounded-2xl (16px)
+
+
+3.2 HARDWARE INTERFACES
+-----------------------
+- Laser and thermal A4 office printers connecting via standard OS print dialogs.
+- Tablet touchscreens for workshop floor intake and customer signature sign-offs.
+
+
+3.3 SOFTWARE & CLOUD INTERFACES
+-------------------------------
+- REST API: Express backend exposed at /api/* accepting JSON payloads up to 50MB.
+- Database: MongoDB 6.0+ via Mongoose ODM.
+- Hosting: Vercel serverless deployment with Node.js backend integration.
+
+
+3.4 COMMUNICATION INTERFACES
+----------------------------
+- Telegram Bot API: Secure HTTPS POST requests to https://api.telegram.org/bot<TOKEN>/sendMessage.
+
+
+================================================================================
+4. SYSTEM FEATURES & DETAILED FUNCTIONAL REQUIREMENTS
+================================================================================
+
+4.1 AUTHENTICATION & ROLE-BASED ACCESS CONTROL (RBAC)
+-----------------------------------------------------
+- REQ-AUTH-001 (User Login):
+  Users authenticate using email and password credentials.
+- REQ-AUTH-002 (Role Differentiation):
+  Two distinct roles: 'Admin' (full enterprise authority) and 'Service Advisor' (branch operations).
+- REQ-AUTH-003 (Role & User Switching):
+  Fast user switching in development/admin mode to audit varying staff permission profiles.
+- REQ-AUTH-004 (SA 1-Branch Assignment):
+  A Service Advisor user profile MUST be linked to exactly one physical branch ID (branch_id).
+- REQ-AUTH-005 (SA Up-to-2 Brands Assignment):
+  A Service Advisor profile contains assigned_brand_ids: string[], permitting 1 or up to 2
+  brand assignments, constrained to the brands supported by the assigned branch.
+- REQ-AUTH-006 (Branch-Brand Affinity Enforcement):
+  The system MUST reject any user creation or modification that assigns a brand to an SA
+  which is not contained in the selected branch's supported_brand_ids.
+- REQ-AUTH-007 (Session Persistence):
+  Active sessions and selected active brand context persist across browser refreshes.
+
+
+4.2 MULTI-BRAND & MULTI-BRANCH WORKSHOP MANAGEMENT
+--------------------------------------------------
+- REQ-ORG-001 (Brand Management):
+  Admin interface to create and update brand profiles: id, brand_code, brand_name,
+  logo_type, logo_url, service_center_name, local_company_name, address, telephone,
+  email, document_prefix, receipt_prefix, status.
+- REQ-ORG-002 (Branch Physical & Logical Modeling):
+  Branches represent physical facilities with supported_brand_ids: string[] and is_dual_brand: boolean.
+- REQ-ORG-003 (Dual-Brand Branch Capability):
+  A branch may be configured as a dual-brand facility (e.g. Chroy Changva 6A supporting
+  both 'brand-byd' and 'brand-denza'), allowing SAs bound to that branch to service both makes.
+- REQ-ORG-004 (Cascading Branch Selection):
+  In administrative views, selecting a brand filters available branches to those supporting that brand.
+
+
+4.3 QUOTATION MANAGEMENT LIFECYCLE
+----------------------------------
+- REQ-QTN-001 (Quotation Number Generation):
+  Generates sequential, branded quotation numbers: {PREFIX}-QT{YYMM}-{SEQ} (e.g. BYD-QT2609-001).
+- REQ-QTN-002 (Prefix & Numbering Isolation):
+  Quotation sequence counters MUST be calculated independently per brand prefix.
+  A quotation for BYD must never advance or increment the sequence counter for DENZA.
+- REQ-QTN-003 (Dynamic Intake Scope):
+  When creating a quotation, if the SA has 2 assigned brands, display a prominent top toggle
+  [ BYD ] | [ DENZA ]. Switching the toggle immediately recalculates the quotation sequence preview.
+- REQ-QTN-004 (Letterhead Swapping):
+  Toggling brand context swaps company name, VAT number, address, and logo on the quotation canvas.
+- REQ-QTN-005 (Fee Items Matrix):
+  Dynamic line items for spare parts and labor with real-time Line Amount, Subtotal, VAT, and Total.
+- REQ-QTN-006 (Quotation Statuses):
+  Supported statuses: Draft, Quotation, Pending, Accepted, Converted, Cancelled, Expired.
+
+
+4.4 QUOTATION-TO-RECEIPT CONVERSION ENGINE
+------------------------------------------
+- REQ-CNV-001 (One-Click Conversion):
+  Single-click action to convert an Accepted quotation into an official Service Receipt.
+- REQ-CNV-002 (Data & Brand Preservation):
+  Transfers all customer data, vehicle parameters, fee items, and selected brand/branch
+  identities without re-entry or manual selection.
+- REQ-CNV-003 (Traceability Linkage):
+  The created receipt retains quotation_id, and source quotation status updates to 'Converted'.
+
+
+4.5 SERVICE RECEIPT & EV REPAIR ORDER PROCESSING
+------------------------------------------------
+- REQ-RCP-001 (Receipt Number Generation):
+  Generates branded receipt numbers adhering to isolated brand rules (e.g. BYD60M-2609-001
+  vs DENZA60M-2609-001).
+- REQ-RCP-002 (Intake Form Dynamic Scope):
+  If the SA has 2 assigned brands, render top toggle [ BYD ] | [ DENZA ]. Switching recalculates
+  receipt number preview and updates letterhead branding. If 1 brand, lock the brand context.
+- REQ-RCP-003 (EV Intake Parameters):
+  Records battery State of Charge (SoC %), in_time, out_time, buy_time, and estimated completion date.
+- REQ-RCP-004 (Custody & Parts Disposition):
+  Tracks is_owner, is_sender, old_parts_action ('Take away' | 'Give up'), and warehouse keeper.
+- REQ-RCP-005 (Multi-Stage Handover Sign-offs):
+  8-stage sign-off chain: Technician, QA Inspector, Assistant Manager, Accounting, Delivery Person, Customer.
+
+
+4.6 SCOPED TABLE VIEWS & OPERATIONAL FILTERING
+----------------------------------------------
+- REQ-FLT-001 (Default SA Branch Scoping):
+  When a Service Advisor opens QuotationList.tsx or ReceiptList.tsx, the list automatically
+  defaults to records belonging to the SA's assigned branch_id.
+- REQ-FLT-002 (Top Brand Segmented Filter):
+  Quotation and Receipt lists provide top-level segmented filter tabs:
+  [ All Brands ] | [ BYD ] | [ DENZA ] (restricted to the SA's assigned brands).
+- REQ-FLT-003 (Admin Nationwide View):
+  Administrators have unconstrained access to filter by any branch or brand across the country.
+
+
+4.7 TELEGRAM NOTIFICATIONS & REMINDERS
+--------------------------------------
+- REQ-TEL-001 (Automated Dispatch):
+  Instant dispatch of maintenance reminders and customer repair notices to Telegram channels.
+
+
+4.8 CUSTOMER & VEHICLE INTELLIGENCE DIRECTORY
+---------------------------------------------
+- REQ-DIR-001 (Dynamic Synthesis):
+  Aggregates unique customer and vehicle profiles across all quotations and receipts with
+  cumulative service history, visit frequency, and lifetime spend.
+
+
+4.9 EXECUTIVE DASHBOARD & REAL-TIME ANALYTICS
+---------------------------------------------
+- REQ-DSH-001 (KPIs & Revenue Trends):
+  Real-time metrics: Total Revenue, Active Quotations, Completed Receipts, and Branch Breakdown.
+
+
+4.10 A4 PRINTING & HIGH-FIDELITY PDF GENERATION
+-----------------------------------------------
+- REQ-PDF-001 (A4 Portrait Layout):
+  Generates factory-compliant A4 portrait documents (190mm content width) with bilingual
+  Khmer/English headers, verified against thermal and laser office printers.
+
+
+================================================================================
+5. DATA MODELS & DATABASE DESIGN
+================================================================================
+
+5.1 ENTITY RELATIONSHIP OVERVIEW
+--------------------------------
++----------------+          +------------------------+          +---------------------+
+|     Brand      | 1      * |         Branch         | 1      * |        User         |
+|----------------|----------|------------------------|----------|---------------------|
+| id (PK)        |          | id (PK)                |          | id (PK)             |
+| brand_code     |          | branch_code            |          | role (Admin|SA)     |
+| brand_name     |          | branch_name            |          | branch_id (FK: 1)   |
+| doc_prefix     |          | supported_brand_ids [] |          | assigned_brand_ids[]|
+| receipt_prefix |          | is_dual_brand (bool)   |          | active_brand_id (FK)|
++----------------+          +------------------------+          +---------------------+
+                                         |                                  |
+                                         | 1                              1 |
+                                         |                                  |
+                                         v *                                v *
+                            +---------------------------------------------------+
+                            |           Quotation / Service Receipt             |
+                            |---------------------------------------------------|
+                            | id (PK)                                           |
+                            | quotation_no / receipt_no (Prefix-Isolated)       |
+                            | brand_id (FK)                                     |
+                            | branch_id (FK)                                    |
+                            | customer_name, phone, plate_no, vin, battery, etc.|
+                            | fee_items: [{ description, qty, price, amount }]  |
+                            | subtotal, vat, total_amount                       |
+                            +---------------------------------------------------+
+
+
+5.2 DATA DICTIONARY
+-------------------
+1. BRAND ENTITY (Brand):
+- id (String, PK, Unique): Brand unique identifier (e.g. 'brand-byd', 'brand-denza')
+- brand_code (String, Required): e.g. 'BYD', 'DENZA'
+- brand_name (String, Required): e.g. 'BYD', 'DENZA'
+- logo_type (String): 'byd' | 'denza' | 'custom'
+- logo_url (String): Custom logo image URL
+- service_center_name (String): Branded workshop header
+- local_company_name (String): Official Khmer legal entity title
+- address (String): Legal headquarters address
+- telephone, email (String): Contact credentials
+- document_prefix (String): e.g. 'BYD', 'DENZA'
+- receipt_prefix (String): e.g. 'BYD60M', 'DENZA60M'
+- status (String): 'Active' | 'Inactive'
+
+2. BRANCH ENTITY (Branch):
+- id (String, PK, Unique): Branch unique identifier (e.g. 'b-byd-6a')
+- branch_code (String, Required): Short code ('6A', 'SR', 'CM', 'PP')
+- branch_name (String, Required): Physical facility name (e.g. 'BYD Chroy Changva 6A')
+- service_center_name (String): Specific center display name
+- supported_brand_ids (Array<String>, Required): Brand IDs serviced at this facility
+  (e.g. ['brand-byd'] for single brand, or ['brand-byd', 'brand-denza'] for dual-brand)
+- is_dual_brand (Boolean): True if branch services multiple brands
+- address (String): Physical workshop address
+- telephone, email (String): Workshop front-desk contact
+- status (String): 'Active' | 'Inactive'
+
+3. USER ENTITY (User):
+- id (String, PK, Unique): Staff ID (e.g. 'u-1')
+- name (String, Required): Full staff name
+- email (String, Required): Login email address
+- password (String): Authentication credential
+- role (String, Required): 'Admin' | 'Service Advisor'
+- branch_id (String, FK, Required for SA): Exactly 1 bound physical workshop branch
+- branch (String): Display name of assigned branch
+- assigned_brand_ids (Array<String>, Required for SA): 1 to 2 brand IDs serviced by SA.
+  Validation: Must be a non-empty subset of Branch.supported_brand_ids.
+- active_brand_id (String, FK): Preselected/active brand context for document authoring
+- default_sa (String): Default advisor signature string
+- status (String): 'Active' | 'Inactive'
+
+4. QUOTATION ENTITY (Quotation):
+- id (String, PK, Unique): Quotation unique identifier
+- quotation_no (String, Required): Branded sequence (e.g. BYD-QT2609-001)
+- brand_id (String, FK): Active brand context at creation
+- branch_id (String, FK): Physical workshop where quotation was issued
+- customer_name, phone, plate_no, vehicle_model, color, vin, battery (String)
+- mileage (Number): Vehicle odometer in km
+- fee_items (Array<FeeItem>): Item descriptions, SAP numbers, quantities, prices, line totals
+- subtotal, vat, total_amount (Number): Real-time financial calculations
+- status (String): 'Draft' | 'Quotation' | 'Pending' | 'Accepted' | 'Converted' | 'Cancelled' | 'Expired'
+- created_by, created_by_name (String): Author SA information
+- created_date, remind_date (String): ISO date strings
+
+5. SERVICE RECEIPT ENTITY (Receipt):
+- Inherits all vehicle, customer, fee item, and financial fields from Quotation
+- receipt_no (String, Required): Branded sequence (e.g. BYD60M-2609-001)
+- quotation_id (String, Optional): Source quotation linkage
+- in_time, out_time, buy_time, estimated_repaired_date (String)
+- is_owner, is_sender (Boolean), old_parts_action ('Take away' | 'Give up')
+- completion (Object): 8-stage sign-offs (technician, qa, assistant manager, accounting, delivery, customer)
+- status (String): 'Pending' | 'Completed' | 'Delivered' | 'Cancelled'
+
+
+5.3 PREFIX & NUMBERING ISOLATION ALGORITHM
+------------------------------------------
+To ensure zero sequence collisions between brands:
+1. For Quotations:
+   - Identify active brand prefix: Prefix = `${brandCode}-QT${yy}${mm}-`
+   - Filter existing quotations matching Prefix strictly:
+     matches = quotations.filter(q => q.quotation_no.startsWith(Prefix))
+   - Next Sequence = Max(matches.sequence) + 1
+   - Return `${Prefix}${String(NextSequence).padStart(3, '0')}`
+2. For Service Receipts:
+   - Identify active receipt prefix: Prefix = `${receiptPrefix}${yy}${mm}-`
+   - Filter existing receipts matching Prefix strictly:
+     matches = receipts.filter(r => r.receipt_no.startsWith(Prefix))
+   - Next Sequence = Max(matches.sequence) + 1
+   - Return `${Prefix}${String(NextSequence).padStart(3, '0')}`
+
+
+================================================================================
+6. NON-FUNCTIONAL REQUIREMENTS (NFRs)
+================================================================================
+- NFR-PRF-001: Sequence preview recalculation upon brand toggle must complete in < 50ms.
+- NFR-SEC-001: Backend API must validate that SA cannot submit records for brands
+  outside their assigned_brand_ids.
+- NFR-REL-001: LocalStorage fallback cache ensures continuous intake during intermittent network loss.
+- NFR-PRN-001: A4 print output must guarantee exact 190mm width without clipping or page overflowing.
+
+
+================================================================================
+7. APPENDICES & TRACEABILITY MATRIX
+================================================================================
+
+7.1 REQUIREMENT TO CODE FILE TRACEABILITY MATRIX
+------------------------------------------------
+- SA 1-Branch & Up-to-2 Brands Role Model:
+  * src/types/index.ts (Branch, User)
+  * server/models/index.js (BranchSchema, UserSchema)
+  * src/pages/Users.tsx (Staff administration modal with dynamic brand checkbox capping)
+
+- Dynamic Intake Scope & Brand Toggle UX:
+  * src/pages/CreateQuotation.tsx ([ BYD ] | [ DENZA ] top banner toggle)
+  * src/pages/CreateReceipt.tsx ([ BYD ] | [ DENZA ] top banner toggle)
+  * src/hooks/useDocumentForm.ts (Dynamic brand/branch state management)
+  * src/components/common/BrandBranchSelector.tsx (Locked branch / dynamic brand switcher)
+
+- Prefix & Sequence Numbering Isolation:
+  * src/services/storageService.ts (generateQuotationNo, generateReceiptNo)
+  * api/index.js (REST API endpoints)
+
+- Scoped Table Views:
+  * src/pages/QuotationList.tsx (Default branch filter + top brand filter tabs)
+  * src/pages/ReceiptList.tsx (Default branch filter + top brand filter tabs)
+
+- A4 Printing & Letterhead Engine:
+  * src/components/pdf/QuotationPDF.tsx
+  * src/components/pdf/ReceiptPDF.tsx
+  * src/utils/pdfExport.ts
+
+
+7.2 DOCUMENT LIFECYCLE STATE TRANSITIONS
+----------------------------------------
+[Draft Quotation]
+       |
+       v
+[Issued Quotation] ---> [Cancelled / Expired]
+       |
+       v
+[Accepted Quotation]
+       |
+       +---> (1-Click Convert) ---> [Pending Service Receipt]
+                                              |
+                                              v
+                                    [Completed Service Receipt]
+                                              |
+                                              v
+                                    [Delivered Service Receipt]
+
+================================================================================
+                        END OF SRS DOCUMENT
+================================================================================

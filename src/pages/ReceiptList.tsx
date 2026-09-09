@@ -39,13 +39,27 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
   const showToast = useToast();
   const settings = StorageService.getSettings();
 
+  const isSA = currentUser?.role === 'Service Advisor';
+  const defaultBranch = isSA ? (currentUser?.branch_id || currentUser?.default_branch_id || 'ALL') : 'ALL';
+
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedBrandFilter, setSelectedBrandFilter] = useState<string>('ALL');
-  const [selectedBranchFilter, setSelectedBranchFilter] = useState<string>('ALL');
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState<string>(defaultBranch);
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
   const [downloadReceipt, setDownloadReceipt] = useState<Receipt | null>(null);
+
+  useEffect(() => {
+    if (isSA && (currentUser?.branch_id || currentUser?.default_branch_id)) {
+      setSelectedBranchFilter(currentUser.branch_id || currentUser.default_branch_id || 'ALL');
+    }
+    if (isSA && currentUser?.assigned_brand_ids?.length) {
+      if (selectedBrandFilter !== 'ALL' && !currentUser.assigned_brand_ids.includes(selectedBrandFilter)) {
+        setSelectedBrandFilter('ALL');
+      }
+    }
+  }, [isSA, currentUser, selectedBrandFilter]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -133,7 +147,61 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans animate-fade-in">
+      {/* Top Scoped Branch & Brand Filter Tabs */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 px-4 rounded-2xl border border-slate-200/90 shadow-2xs">
+        <div className="flex items-center gap-2 text-xs">
+          <Building className="w-4 h-4 text-slate-500 shrink-0" />
+          <span className="font-bold text-slate-700">Workshop Scope:</span>
+          {isSA ? (
+            <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-extrabold text-[11px]">
+              {currentUser.branch || 'Assigned Branch'} (Scoped)
+            </span>
+          ) : (
+            <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 font-bold text-[11px]">
+              {selectedBranchFilter === 'ALL' ? 'All Workshop Branches' : (branches.find(b => b.id === selectedBranchFilter)?.branch_name || 'Selected Branch')}
+            </span>
+          )}
+        </div>
+
+        {/* Top Brand Filter Tabs: [ All Brands ] | [ BYD ] | [ DENZA ] */}
+        <div className="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200/80 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={() => setSelectedBrandFilter('ALL')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+              selectedBrandFilter === 'ALL'
+                ? 'bg-white text-slate-900 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            All Brands
+          </button>
+          {brands
+            .filter(b => !isSA || (currentUser?.assigned_brand_ids?.length ? currentUser.assigned_brand_ids.includes(b.id) : true))
+            .map(b => {
+              const isSelected = selectedBrandFilter === b.id;
+              const isByd = b.brand_code === 'BYD';
+              return (
+                <button
+                  key={b.id}
+                  type="button"
+                  onClick={() => setSelectedBrandFilter(b.id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                    isSelected
+                      ? isByd
+                        ? 'bg-red-600 text-white shadow-xs'
+                        : 'bg-blue-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {b.brand_code}
+                </button>
+              );
+            })}
+        </div>
+      </div>
+
       {/* Header & Quick Filter Banner */}
       <div className="bg-white text-slate-900 p-5 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4 no-print">
         <div className="flex items-center gap-3.5">
@@ -211,20 +279,27 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
           </div>
 
           {/* Branch Filter */}
-          <div className="w-44">
-            <Select
-              icon={<GitBranch className="w-3.5 h-3.5" />}
-              value={selectedBranchFilter}
-              onChange={setSelectedBranchFilter}
-              options={[
-                { value: 'ALL', label: 'All Branches' },
-                ...branches
-                  .filter(br => selectedBrandFilter === 'ALL' || br.brand_id === selectedBrandFilter)
-                  .map(br => ({ value: br.id, label: br.branch_name }))
-              ]}
-              size="sm"
-            />
-          </div>
+          {isSA ? (
+            <div className="w-48 px-3 py-2 bg-slate-100/90 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 flex items-center gap-1.5 truncate">
+              <GitBranch className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <span className="truncate">{currentUser?.branch || 'Branch Floor'}</span>
+            </div>
+          ) : (
+            <div className="w-44">
+              <Select
+                icon={<GitBranch className="w-3.5 h-3.5" />}
+                value={selectedBranchFilter}
+                onChange={setSelectedBranchFilter}
+                options={[
+                  { value: 'ALL', label: 'All Branches' },
+                  ...branches
+                    .filter(br => selectedBrandFilter === 'ALL' || (br.supported_brand_ids?.includes(selectedBrandFilter) ?? br.brand_id === selectedBrandFilter))
+                    .map(br => ({ value: br.id, label: br.branch_name }))
+                ]}
+                size="sm"
+              />
+            </div>
+          )}
 
           <button
             onClick={onCreateNew}

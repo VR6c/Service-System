@@ -20,7 +20,9 @@ export const Reports: React.FC = () => {
 
   const availableBranches = useMemo(() => {
     if (selectedBrandId === 'all') return branches;
-    return branches.filter(b => b.brand_id === selectedBrandId);
+    return branches.filter(
+      b => (b.supported_brand_ids && b.supported_brand_ids.includes(selectedBrandId)) || b.brand_id === selectedBrandId
+    );
   }, [branches, selectedBrandId]);
 
   const isDateInFilter = (dateStr: string): boolean => {
@@ -162,17 +164,15 @@ export const Reports: React.FC = () => {
           <div className="flex items-center bg-slate-100 p-1 rounded-xl font-bold">
             <button
               onClick={() => setReportType('receipt')}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                reportType === 'receipt' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-900'
-              }`}
+              className={`px-3 py-1.5 rounded-lg transition ${reportType === 'receipt' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-900'
+                }`}
             >
               Receipt Report
             </button>
             <button
               onClick={() => setReportType('quotation')}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                reportType === 'quotation' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-900'
-              }`}
+              className={`px-3 py-1.5 rounded-lg transition ${reportType === 'quotation' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-900'
+                }`}
             >
               Quotation Report
             </button>
@@ -274,7 +274,7 @@ export const Reports: React.FC = () => {
       <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
         <div className="mb-4 hidden print:block">
           <h1 className="text-xl font-black text-slate-900">
-            BYD & DENZA OFFICIAL {reportType.toUpperCase()} REPORT
+            BYD & DENZA{reportType.toUpperCase()} REPORT
           </h1>
           <p className="text-xs text-slate-600">Generated Date: {new Date().toLocaleDateString()}</p>
         </div>

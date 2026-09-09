@@ -93,7 +93,7 @@ const MainApp: React.FC = () => {
       case 'quotation-create':
         return (
           <CreateQuotation
-            key={editingQuotation?.id || 'new-quotation'}
+            key={editingQuotation?.id || editingQuotation?.plate_no || `new-quotation-${currentUser.id}`}
             editingQuotation={editingQuotation}
             onSaved={() => {
               setEditingQuotation(null);
@@ -129,7 +129,7 @@ const MainApp: React.FC = () => {
       case 'receipt-create':
         return (
           <CreateReceipt
-            key={editingReceipt?.id || convertedQuotation?.id || 'new-receipt'}
+            key={editingReceipt?.id || editingReceipt?.plate_no || convertedQuotation?.id || `new-receipt-${currentUser.id}`}
             initialQuotation={convertedQuotation}
             editingReceipt={editingReceipt}
             onSaved={() => {
@@ -165,7 +165,62 @@ const MainApp: React.FC = () => {
         );
       case 'customers':
       case 'vehicles':
-        return <CustomerVehicle />;
+        return (
+          <CustomerVehicle
+            onCreateQuotation={(cust) => {
+              setEditingQuotation({
+                id: '',
+                quotation_no: '',
+                customer_name: cust.name,
+                phone: cust.phone,
+                plate_no: cust.plateNumber,
+                vehicle_model: cust.vehicleModel,
+                color: cust.color,
+                vin: cust.vin || '',
+                mileage: cust.mileage || 0,
+                battery: cust.battery || '',
+                created_date: new Date().toISOString().slice(0, 10),
+                valid_until: new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10),
+                status: 'Quotation',
+                subtotal: 0,
+                discount_amount: 0,
+                vat_rate: 0,
+                vat_amount: 0,
+                total_amount: 0,
+                fee_items: [],
+                description: `Inspection & Maintenance for ${cust.vehicleModel}`,
+                branch_name: cust.branch
+              } as unknown as Quotation);
+              setActiveTab('quotation-create');
+            }}
+            onCreateReceipt={(cust) => {
+              setEditingReceipt({
+                id: '',
+                receipt_no: '',
+                customer_name: cust.name,
+                phone: cust.phone,
+                plate_no: cust.plateNumber,
+                vehicle_model: cust.vehicleModel,
+                color: cust.color,
+                vin: cust.vin || '',
+                mileage: cust.mileage || 0,
+                battery: cust.battery || '',
+                created_date: new Date().toISOString().slice(0, 10),
+                status: 'In Service',
+                subtotal: 0,
+                discount_amount: 0,
+                vat: 0,
+                total_amount: 0,
+                fee_items: [],
+                description: `Service Intake for ${cust.vehicleModel}`,
+                branch_name: cust.branch
+              } as unknown as Receipt);
+              setActiveTab('receipt-create');
+            }}
+            onViewQuotation={() => handleViewQuotation()}
+            onViewReceipt={() => handleViewReceipt()}
+          />
+        );
       case 'activity-log':
         return isAdmin ? <ActivityLog /> : <Dashboard onViewQuotation={handleViewQuotation} onViewReceipt={handleViewReceipt} onSelectTab={setActiveTab} />;
       case 'reports':

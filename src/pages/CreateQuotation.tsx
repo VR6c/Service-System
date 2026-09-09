@@ -14,7 +14,9 @@ import {
   FileText,
   Save,
   Eye,
-  ArrowRight
+  ArrowRight,
+  Sparkles,
+  Building2
 } from 'lucide-react';
 
 interface CreateQuotationProps {
@@ -28,7 +30,7 @@ export const CreateQuotation: React.FC<CreateQuotationProps> = ({
   onConvertToReceipt,
   editingQuotation
 }) => {
-  const { currentUser } = useAuth();
+  const { currentUser, switchActiveBrand } = useAuth();
   const showAlert = useAlert();
   const showToast = useToast();
   const settings = StorageService.getSettings();
@@ -46,6 +48,11 @@ export const CreateQuotation: React.FC<CreateQuotationProps> = ({
     initialBattery: editingQuotation?.battery || 'SoC 85%',
     initialDescription: editingQuotation?.description || 'Scheduled EV Maintenance & Diagnostic Check'
   });
+
+  const handleBrandChange = (brandId: string) => {
+    docForm.setSelectedBrandId(brandId);
+    switchActiveBrand(brandId);
+  };
 
   const feeState = useFeeItems({
     initialItems: editingQuotation?.fee_items,
@@ -117,6 +124,70 @@ export const CreateQuotation: React.FC<CreateQuotationProps> = ({
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto font-sans animate-fade-in pb-12">
+      {/* Prominent Active Brand Context Toggle at the very top (Dynamic Scope) */}
+      {(docForm.isDualBrandSA || (currentUser?.role === 'Admin' && docForm.brands.length > 1)) && (
+        <div className="bg-white rounded-2xl p-4 shadow-2xs border border-slate-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center border border-amber-200/80 shrink-0">
+              <Sparkles className="w-5 h-5 text-amber-500" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black uppercase tracking-wider text-slate-500">Active Brand Context:</span>
+                <span className="text-xs font-black text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-lg border border-blue-200">
+                  {currentUser?.role === 'Service Advisor' ? currentUser.branch : docForm.currentBranch?.branch_name}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 mt-1">
+                Switching context dynamically recalculates document sequence: <span className="font-mono font-extrabold text-slate-900">{quotationNo}</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Prominent [ BYD ] | [ DENZA ] Toggle Buttons */}
+          <div className="flex items-center p-1.5 bg-slate-100 rounded-xl border border-slate-200/80 self-start sm:self-auto">
+            {docForm.brands
+              .filter(b => currentUser?.role === 'Admin' || docForm.saAssignedBrands.includes(b.id))
+              .map(brand => {
+                const isSelected = docForm.selectedBrandId === brand.id;
+                const isByd = brand.brand_code === 'BYD';
+                return (
+                  <button
+                    key={brand.id}
+                    type="button"
+                    onClick={() => handleBrandChange(brand.id)}
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-black tracking-wider transition-all cursor-pointer ${isSelected
+                        ? isByd
+                          ? 'bg-red-600 text-white shadow-xs'
+                          : 'bg-blue-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                      }`}
+                  >
+                    <span>{isByd ? 'BYD' : 'DENZA'}</span>
+                    {isSelected && <span className="w-2 h-2 rounded-full bg-white animate-pulse" />}
+                  </button>
+                );
+              })}
+          </div>
+        </div>
+      )}
+
+      {/* Single-Brand SA Scope Locked Notice */}
+      {docForm.isSingleBrandLocked && (
+        <div className="bg-white rounded-2xl p-3.5 px-5 shadow-2xs border border-slate-200/90 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2.5 font-bold text-slate-700">
+            <Building2 className="w-4 h-4 text-slate-400" />
+            <span>Assigned Workshop Floor: <span className="font-extrabold text-slate-900">{currentUser?.branch}</span></span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-semibold text-slate-400">Locked Brand Scope:</span>
+            <span className="px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider bg-red-50 text-red-700 border border-red-200">
+              {docForm.currentBrand?.brand_name}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Header Banner */}
       <div className="bg-white rounded-2xl p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4 border border-slate-200/90">
         <div className="flex items-center gap-3.5">
@@ -173,8 +244,10 @@ export const CreateQuotation: React.FC<CreateQuotationProps> = ({
         branches={docForm.branches}
         selectedBrandId={docForm.selectedBrandId}
         selectedBranchId={docForm.selectedBranchId}
-        onBrandChange={docForm.setSelectedBrandId}
+        onBrandChange={handleBrandChange}
         onBranchChange={docForm.setSelectedBranchId}
+        isBranchLocked={docForm.isBranchLocked}
+        isBrandLocked={docForm.isSingleBrandLocked}
       />
 
       {/* Customer & Vehicle Form Component */}

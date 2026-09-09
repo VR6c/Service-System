@@ -3,7 +3,7 @@ export type UserRole = 'Admin' | 'Service Advisor';
 export interface Brand {
   id: string;
   brand_code: string; // e.g. 'BYD' | 'DENZA'
-  brand_name: string; // e.g. 'BYD Auto' | 'DENZA'
+  brand_name: string; // e.g. 'BYD' | 'DENZA'
   logo_type?: 'byd' | 'denza' | 'custom';
   logo_url?: string;
   service_center_name: string; // e.g. 'BYD SALES & SERVICE CENTER'
@@ -21,6 +21,8 @@ export interface Brand {
 export interface Branch {
   id: string;
   brand_id: string;
+  supported_brand_ids?: string[]; // e.g. ['brand-byd', 'brand-denza']
+  is_dual_brand?: boolean;
   branch_code: string; // e.g. '6A', 'CITYMALL', 'SR', 'PP'
   branch_name: string; // e.g. 'Chroy Changva 6A', 'Phnom Penh Flagship', 'Siem Reap Service Center'
   service_center_name?: string;
@@ -39,8 +41,10 @@ export interface User {
   password?: string;
   role: UserRole;
   brand_id?: string;
-  branch_id?: string;
+  branch_id?: string; // Exactly 1 branch for Service Advisor
   branch: string; // Display name e.g. "BYD 6A" or "DENZA Phnom Penh"
+  assigned_brand_ids?: string[]; // Up to 2 brands for Service Advisor
+  active_brand_id?: string; // Current active brand context
   status: 'Active' | 'Inactive';
   created_date: string;
 

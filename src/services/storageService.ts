@@ -12,7 +12,7 @@ export const INITIAL_BRANDS: Brand[] = [
   {
     id: 'brand-byd',
     brand_code: 'BYD',
-    brand_name: 'BYD Auto Cambodia',
+    brand_name: 'BYD Cambodia',
     logo_type: 'byd',
     logo_url: '',
     service_center_name: 'BYD SALES & SERVICE CENTER',
@@ -29,7 +29,7 @@ export const INITIAL_BRANDS: Brand[] = [
   {
     id: 'brand-denza',
     brand_code: 'DENZA',
-    brand_name: 'DENZA Luxury Electric Mobility',
+    brand_name: 'DENZA',
     logo_type: 'denza',
     logo_url: '',
     service_center_name: 'DENZA EXECUTIVE SERVICE CENTER',
@@ -49,9 +49,11 @@ export const INITIAL_BRANCHES: Branch[] = [
   {
     id: 'b-byd-6a',
     brand_id: 'brand-byd',
+    supported_brand_ids: ['brand-byd', 'brand-denza'],
+    is_dual_brand: true,
     branch_code: '6A',
     branch_name: 'BYD Chroy Changva 6A',
-    service_center_name: 'BYD Sales & Service Center 6A',
+    service_center_name: 'BYD & DENZA Dual-Brand Service Center 6A',
     address: 'Lot No. 52, National Road 6A, Chroy Changva, Phnom Penh',
     telephone: '+855 17 555 811',
     email: 'byd.6a@automotive.com.kh',
@@ -62,6 +64,8 @@ export const INITIAL_BRANCHES: Branch[] = [
   {
     id: 'b-byd-cm',
     brand_id: 'brand-byd',
+    supported_brand_ids: ['brand-byd'],
+    is_dual_brand: false,
     branch_code: 'CM',
     branch_name: 'BYD City Mall Service Center',
     service_center_name: 'BYD City Mall Service Hub',
@@ -75,6 +79,8 @@ export const INITIAL_BRANCHES: Branch[] = [
   {
     id: 'b-byd-sr',
     brand_id: 'brand-byd',
+    supported_brand_ids: ['brand-byd'],
+    is_dual_brand: false,
     branch_code: 'SR',
     branch_name: 'BYD Siem Reap Center',
     service_center_name: 'BYD Siem Reap Service Center',
@@ -88,6 +94,8 @@ export const INITIAL_BRANCHES: Branch[] = [
   {
     id: 'b-denza-pp',
     brand_id: 'brand-denza',
+    supported_brand_ids: ['brand-denza', 'brand-byd'],
+    is_dual_brand: true,
     branch_code: 'PP',
     branch_name: 'DENZA Phnom Penh Flagship',
     service_center_name: 'DENZA Executive Care Hub Phnom Penh',
@@ -101,6 +109,8 @@ export const INITIAL_BRANCHES: Branch[] = [
   {
     id: 'b-denza-sr',
     brand_id: 'brand-denza',
+    supported_brand_ids: ['brand-denza'],
+    is_dual_brand: false,
     branch_code: 'SR',
     branch_name: 'DENZA Siem Reap Lounge & Service',
     service_center_name: 'DENZA Siem Reap Executive Center',
@@ -123,6 +133,8 @@ export const INITIAL_USERS: User[] = [
     brand_id: 'brand-byd',
     branch_id: 'b-byd-sr',
     branch: 'BYD Siem Reap',
+    assigned_brand_ids: ['brand-byd'],
+    active_brand_id: 'brand-byd',
     status: 'Active',
     created_date: '2026-01-15',
     default_brand_id: 'brand-byd',
@@ -138,6 +150,8 @@ export const INITIAL_USERS: User[] = [
     brand_id: 'brand-byd',
     branch_id: 'b-byd-6a',
     branch: 'BYD Chroy Changva 6A',
+    assigned_brand_ids: ['brand-byd', 'brand-denza'],
+    active_brand_id: 'brand-byd',
     status: 'Active',
     created_date: '2026-02-01',
     default_brand_id: 'brand-byd',
@@ -153,6 +167,8 @@ export const INITIAL_USERS: User[] = [
     brand_id: 'brand-byd',
     branch_id: 'b-byd-sr',
     branch: 'BYD Siem Reap',
+    assigned_brand_ids: ['brand-byd', 'brand-denza'],
+    active_brand_id: 'brand-byd',
     status: 'Active',
     created_date: '2026-01-01'
   }
@@ -164,7 +180,7 @@ export const INITIAL_QUOTATIONS: Quotation[] = [
     quotation_no: 'BYD-QT2608-001',
     brand_id: 'brand-byd',
     branch_id: 'b-byd-sr',
-    brand_name: 'BYD Auto Cambodia',
+    brand_name: 'BYD Cambodia',
     branch_name: 'BYD Siem Reap',
     customer_name: 'Chan Ponlok',
     phone: '+855 12 111 222',
@@ -192,7 +208,7 @@ export const INITIAL_QUOTATIONS: Quotation[] = [
     quotation_no: 'BYD-QT2608-002',
     brand_id: 'brand-byd',
     branch_id: 'b-byd-sr',
-    brand_name: 'BYD Auto Cambodia',
+    brand_name: 'BYD Cambodia',
     branch_name: 'BYD Siem Reap',
     customer_name: 'Lonh Sreymom',
     phone: '+855 12 333 444',
@@ -220,7 +236,7 @@ export const INITIAL_QUOTATIONS: Quotation[] = [
     quotation_no: 'BYD-QT2608-003',
     brand_id: 'brand-byd',
     branch_id: 'b-byd-sr',
-    brand_name: 'BYD Auto Cambodia',
+    brand_name: 'BYD Cambodia',
     branch_name: 'BYD Siem Reap',
     customer_name: 'Try Chenda',
     phone: '+855 12 555 666',
@@ -248,7 +264,7 @@ export const INITIAL_QUOTATIONS: Quotation[] = [
     quotation_no: 'BYD-QT2608-004',
     brand_id: 'brand-byd',
     branch_id: 'b-byd-sr',
-    brand_name: 'BYD Auto Cambodia',
+    brand_name: 'BYD Cambodia',
     branch_name: 'BYD Siem Reap',
     customer_name: 'Thun Chenda',
     phone: '+855 12 777 888',
@@ -279,7 +295,7 @@ export const INITIAL_RECEIPTS: Receipt[] = [
     receipt_no: 'BYD-SR2608-001',
     brand_id: 'brand-byd',
     branch_id: 'b-byd-sr',
-    brand_name: 'BYD Auto Cambodia',
+    brand_name: 'BYD Cambodia',
     branch_name: 'BYD Siem Reap',
     quotation_id: 'q-101',
     customer_name: 'Sokunthy CHENG',
@@ -318,7 +334,7 @@ export const INITIAL_RECEIPTS: Receipt[] = [
     receipt_no: 'BYD-SR2608-002',
     brand_id: 'brand-byd',
     branch_id: 'b-byd-sr',
-    brand_name: 'BYD Auto Cambodia',
+    brand_name: 'BYD Cambodia',
     branch_name: 'BYD Siem Reap',
     customer_name: 'Oun Sopheaktra',
     phone: '+855 12 999 222',
@@ -356,7 +372,7 @@ export const INITIAL_RECEIPTS: Receipt[] = [
     receipt_no: 'BYD-SR2608-003',
     brand_id: 'brand-byd',
     branch_id: 'b-byd-sr',
-    brand_name: 'BYD Auto Cambodia',
+    brand_name: 'BYD Cambodia',
     branch_name: 'BYD Siem Reap',
     customer_name: 'Vireak Sophearet',
     phone: '+855 12 999 333',
@@ -394,7 +410,7 @@ export const INITIAL_RECEIPTS: Receipt[] = [
     receipt_no: 'BYD-SR2608-004',
     brand_id: 'brand-byd',
     branch_id: 'b-byd-sr',
-    brand_name: 'BYD Auto Cambodia',
+    brand_name: 'BYD Cambodia',
     branch_name: 'BYD Siem Reap',
     customer_name: 'Leng Vichera',
     phone: '+855 12 999 444',
@@ -432,7 +448,7 @@ export const INITIAL_RECEIPTS: Receipt[] = [
     receipt_no: 'BYD-SR2608-005',
     brand_id: 'brand-byd',
     branch_id: 'b-byd-sr',
-    brand_name: 'BYD Auto Cambodia',
+    brand_name: 'BYD Cambodia',
     branch_name: 'BYD Siem Reap',
     customer_name: 'Phat Sophanna',
     phone: '+855 12 999 555',
@@ -586,6 +602,33 @@ export class StorageService {
     }
   }
 
+  // Helper to ensure all branches have supported_brand_ids populated (auto-upgrade legacy cached records)
+  static ensureBranchSupportedBrands(rawBranches: Branch[]): Branch[] {
+    return rawBranches.map(br => {
+      const isDual = Boolean(
+        br.is_dual_brand ||
+        br.branch_code === '6A' ||
+        br.id === 'b-byd-6a' ||
+        br.id === 'b-denza-pp' ||
+        (br.branch_name && br.branch_name.toLowerCase().includes('6a'))
+      );
+      const defaultSupported = isDual ? ['brand-byd', 'brand-denza'] : (br.brand_id ? [br.brand_id] : ['brand-byd']);
+
+      if (br.supported_brand_ids && br.supported_brand_ids.length > 0) {
+        if (isDual && br.supported_brand_ids.length < 2) {
+          return { ...br, is_dual_brand: true, supported_brand_ids: ['brand-byd', 'brand-denza'] };
+        }
+        return { ...br, is_dual_brand: br.is_dual_brand ?? (br.supported_brand_ids.length > 1) };
+      }
+
+      return {
+        ...br,
+        is_dual_brand: isDual,
+        supported_brand_ids: defaultSupported
+      };
+    });
+  }
+
   // BRANCHES
   static async fetchBranches(): Promise<Branch[]> {
     try {
@@ -593,8 +636,9 @@ export class StorageService {
       if (res.ok) {
         const data: Branch[] = await res.json();
         if (data && data.length > 0) {
-          localStorage.setItem(BRANCHES_KEY, JSON.stringify(data));
-          return data;
+          const upgraded = this.ensureBranchSupportedBrands(data);
+          localStorage.setItem(BRANCHES_KEY, JSON.stringify(upgraded));
+          return upgraded;
         }
       }
     } catch (err) {
@@ -609,7 +653,17 @@ export class StorageService {
       localStorage.setItem(BRANCHES_KEY, JSON.stringify(INITIAL_BRANCHES));
       return INITIAL_BRANCHES;
     }
-    return JSON.parse(data);
+    try {
+      const parsed: Branch[] = JSON.parse(data);
+      const upgraded = this.ensureBranchSupportedBrands(parsed);
+      const needsUpdate = parsed.some((b, i) => !b.supported_brand_ids || b.supported_brand_ids.length < (upgraded[i]?.supported_brand_ids?.length || 0));
+      if (needsUpdate) {
+        localStorage.setItem(BRANCHES_KEY, JSON.stringify(upgraded));
+      }
+      return upgraded;
+    } catch {
+      return INITIAL_BRANCHES;
+    }
   }
 
   static async saveBranches(branches: Branch[]): Promise<void> {
@@ -662,14 +716,34 @@ export class StorageService {
   }
 
   // USERS
+  static normalizeUser(user: User): User {
+    let assigned = user.assigned_brand_ids;
+    if (!assigned || assigned.length === 0) {
+      if (user.role === 'Admin') {
+        assigned = ['brand-byd', 'brand-denza'];
+      } else if (user.branch_id === 'b-byd-6a' || user.branch_id === 'b-denza-pp') {
+        assigned = ['brand-byd', 'brand-denza'];
+      } else {
+        assigned = [user.brand_id || 'brand-byd'];
+      }
+    }
+    const activeBrand = user.active_brand_id || user.default_brand_id || user.brand_id || assigned[0] || 'brand-byd';
+    return {
+      ...user,
+      assigned_brand_ids: assigned,
+      active_brand_id: activeBrand
+    };
+  }
+
   static async fetchUsers(): Promise<User[]> {
     try {
       const res = await fetch('/api/users');
       if (res.ok) {
         const data: User[] = await res.json();
         if (data && data.length > 0) {
-          localStorage.setItem(USERS_KEY, JSON.stringify(data));
-          return data;
+          const normalized = data.map(u => this.normalizeUser(u));
+          localStorage.setItem(USERS_KEY, JSON.stringify(normalized));
+          return normalized;
         }
       }
     } catch (err) {
@@ -681,14 +755,17 @@ export class StorageService {
   static getUsers(): User[] {
     const data = localStorage.getItem(USERS_KEY);
     if (!data) {
-      localStorage.setItem(USERS_KEY, JSON.stringify(INITIAL_USERS));
-      return INITIAL_USERS;
+      const normalized = INITIAL_USERS.map(u => this.normalizeUser(u));
+      localStorage.setItem(USERS_KEY, JSON.stringify(normalized));
+      return normalized;
     }
     try {
-      return JSON.parse(data);
+      const parsed: User[] = JSON.parse(data);
+      return parsed.map(u => this.normalizeUser(u));
     } catch {
-      localStorage.setItem(USERS_KEY, JSON.stringify(INITIAL_USERS));
-      return INITIAL_USERS;
+      const normalized = INITIAL_USERS.map(u => this.normalizeUser(u));
+      localStorage.setItem(USERS_KEY, JSON.stringify(normalized));
+      return normalized;
     }
   }
 
@@ -981,7 +1058,8 @@ export class StorageService {
       return null;
     }
     try {
-      return JSON.parse(data);
+      const parsed: User = JSON.parse(data);
+      return this.normalizeUser(parsed);
     } catch {
       return null;
     }
@@ -995,7 +1073,7 @@ export class StorageService {
     }
   }
 
-  // DOCUMENT NUMBER GENERATION
+  // DOCUMENT NUMBER GENERATION (Strict Prefix & Numbering Isolation)
   static generateQuotationNo(brand_id?: string, _branch_id?: string): string {
     const quotations = this.getQuotations();
     const brands = this.getBrands();
@@ -1007,9 +1085,12 @@ export class StorageService {
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const prefix = `${brandCode}-QT${yy}${mm}-`;
 
-    const sequences = quotations.map(q => {
-      const match = q.quotation_no.match(/(\d+)$/);
-      return match ? parseInt(match[1], 10) : 0;
+    // Strictly isolate sequence: only evaluate quotations matching this specific brand prefix
+    const matchingQuotations = quotations.filter(q => q.quotation_no && q.quotation_no.startsWith(prefix));
+    const sequences = matchingQuotations.map(q => {
+      const numPart = q.quotation_no.slice(prefix.length);
+      const val = parseInt(numPart, 10);
+      return isNaN(val) ? 0 : val;
     });
 
     const nextSequence = (sequences.length > 0 ? Math.max(0, ...sequences) : 0) + 1;
@@ -1020,16 +1101,19 @@ export class StorageService {
     const receipts = this.getReceipts();
     const brands = this.getBrands();
     const selectedBrand = brands.find(b => b.id === brand_id) || brands[0];
-    const receiptPrefix = selectedBrand?.receipt_prefix || 'BYD60M';
+    const receiptPrefix = selectedBrand?.receipt_prefix || (selectedBrand?.brand_code === 'DENZA' ? 'DENZA60M' : 'BYD60M');
 
     const d = new Date();
     const yy = String(d.getFullYear()).slice(-2);
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const prefix = `${receiptPrefix}${yy}${mm}-`;
 
-    const sequences = receipts.map(r => {
-      const match = r.receipt_no.match(/(\d+)$/);
-      return match ? parseInt(match[1], 10) : 0;
+    // Strictly isolate sequence: only evaluate receipts matching this specific receipt prefix
+    const matchingReceipts = receipts.filter(r => r.receipt_no && r.receipt_no.startsWith(prefix));
+    const sequences = matchingReceipts.map(r => {
+      const numPart = r.receipt_no.slice(prefix.length);
+      const val = parseInt(numPart, 10);
+      return isNaN(val) ? 0 : val;
     });
 
     const nextSequence = (sequences.length > 0 ? Math.max(0, ...sequences) : 0) + 1;

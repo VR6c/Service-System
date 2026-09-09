@@ -11,6 +11,7 @@ interface AuthContextType {
   logout: () => void;
   switchRole: (role: UserRole) => void;
   switchUser: (userId: string) => void;
+  switchActiveBrand: (brandId: string) => void;
   addUser: (user: Omit<User, 'id' | 'created_date'>) => void;
   updateUser: (id: string, user: Partial<User>) => void;
   deleteUser: (id: string) => void;
@@ -78,6 +79,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const switchActiveBrand = (brandId: string) => {
+    if (!currentUser) return;
+    const updatedUser: User = { ...currentUser, active_brand_id: brandId };
+    setCurrentUser(updatedUser);
+    StorageService.setCurrentUser(updatedUser);
+    const loadedUsers = StorageService.getUsers();
+    const updatedUsers = loadedUsers.map(u => (u.id === currentUser.id ? updatedUser : u));
+    setUsers(updatedUsers);
+    StorageService.saveUser(updatedUser);
+  };
+
   const addUser = async (userData: Omit<User, 'id' | 'created_date'>) => {
     const newUser: User = {
       ...userData,
@@ -126,6 +138,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         switchRole,
         switchUser,
+        switchActiveBrand,
         addUser,
         updateUser,
         deleteUser,

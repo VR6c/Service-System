@@ -50,7 +50,7 @@ async function seedInitialDataIfNeeded() {
         {
           id: 'brand-byd',
           brand_code: 'BYD',
-          brand_name: 'BYD Auto Cambodia',
+          brand_name: 'BYD Cambodia',
           logo_type: 'byd',
           logo_url: '',
           service_center_name: 'BYD SALES & SERVICE CENTER',
@@ -87,9 +87,11 @@ async function seedInitialDataIfNeeded() {
         {
           id: 'b-byd-6a',
           brand_id: 'brand-byd',
+          supported_brand_ids: ['brand-byd', 'brand-denza'],
+          is_dual_brand: true,
           branch_code: '6A',
           branch_name: 'BYD Chroy Changva 6A',
-          service_center_name: 'BYD Sales & Service Center 6A',
+          service_center_name: 'BYD & DENZA Sales & Service Center 6A',
           address: 'Lot No. 52, National Road 6A, Chroy Changva, Phnom Penh',
           telephone: '+855 17 555 811',
           email: 'byd.6a@automotive.com.kh',
@@ -100,6 +102,8 @@ async function seedInitialDataIfNeeded() {
         {
           id: 'b-byd-cm',
           brand_id: 'brand-byd',
+          supported_brand_ids: ['brand-byd'],
+          is_dual_brand: false,
           branch_code: 'CM',
           branch_name: 'BYD City Mall Service Center',
           service_center_name: 'BYD City Mall Service Hub',
@@ -113,6 +117,8 @@ async function seedInitialDataIfNeeded() {
         {
           id: 'b-byd-sr',
           brand_id: 'brand-byd',
+          supported_brand_ids: ['brand-byd'],
+          is_dual_brand: false,
           branch_code: 'SR',
           branch_name: 'BYD Siem Reap Center',
           service_center_name: 'BYD Siem Reap Service Center',
@@ -126,6 +132,8 @@ async function seedInitialDataIfNeeded() {
         {
           id: 'b-denza-pp',
           brand_id: 'brand-denza',
+          supported_brand_ids: ['brand-denza', 'brand-byd'],
+          is_dual_brand: true,
           branch_code: 'PP',
           branch_name: 'DENZA Phnom Penh Flagship',
           service_center_name: 'DENZA Executive Care Hub Phnom Penh',
@@ -139,6 +147,8 @@ async function seedInitialDataIfNeeded() {
         {
           id: 'b-denza-sr',
           brand_id: 'brand-denza',
+          supported_brand_ids: ['brand-denza'],
+          is_dual_brand: false,
           branch_code: 'SR',
           branch_name: 'DENZA Siem Reap Lounge & Service',
           service_center_name: 'DENZA Siem Reap Executive Center',
@@ -161,6 +171,8 @@ async function seedInitialDataIfNeeded() {
           brand_id: 'brand-byd',
           branch_id: 'b-byd-sr',
           branch: 'BYD Siem Reap',
+          assigned_brand_ids: ['brand-byd'],
+          active_brand_id: 'brand-byd',
           status: 'Active',
           created_date: '2026-01-15',
           default_brand_id: 'brand-byd',
@@ -176,6 +188,8 @@ async function seedInitialDataIfNeeded() {
           brand_id: 'brand-byd',
           branch_id: 'b-byd-6a',
           branch: 'BYD Chroy Changva 6A',
+          assigned_brand_ids: ['brand-byd', 'brand-denza'],
+          active_brand_id: 'brand-byd',
           status: 'Active',
           created_date: '2026-02-01',
           default_brand_id: 'brand-byd',
@@ -191,6 +205,8 @@ async function seedInitialDataIfNeeded() {
           brand_id: 'brand-byd',
           branch_id: 'b-byd-sr',
           branch: 'BYD Siem Reap',
+          assigned_brand_ids: ['brand-byd', 'brand-denza'],
+          active_brand_id: 'brand-byd',
           status: 'Active',
           created_date: '2026-01-01'
         }
@@ -217,7 +233,7 @@ async function seedInitialDataIfNeeded() {
         quotation_header_khmer_title: 'មិនអាចយកប្រកាសជាចំណាយឬប្រកាសពន្ធ',
         quotation_deposit_term: 'កក់ប្រាក់ 30% ពេលព្រមព្រៀង',
         quotation_payment_term: 'ទូទាត់ប្រាក់ 70% ពេលទទួលបានសេវាកម្ម',
-        quotation_bank_details: 'ABA Bank: 000 111 222 (BYD Auto Cambodia)',
+        quotation_bank_details: 'ABA Bank: 000 111 222 (BYD Cambodia)',
         quotation_expiration_term: 'សម្រង់តម្លៃនេះមានសុពលភាព 14 ថ្ងៃ',
         quotation_terms: 'សូមពិនិត្យព័ត៌មានលម្អិតមុនពេលធ្វើការអនុម័ត',
         telegram_bot_token: '',
@@ -290,7 +306,17 @@ app.delete('/api/brands/:id', async (req, res) => {
 app.get('/api/branches', async (req, res) => {
   try {
     const branches = await BranchModel.find().lean();
-    res.json(branches);
+    const upgraded = branches.map(b => {
+      const isDual = b.is_dual_brand || b.branch_code === '6A' || b.id === 'b-byd-6a' || b.id === 'b-denza-pp' || (b.branch_name && b.branch_name.toLowerCase().includes('6a'));
+      return {
+        ...b,
+        is_dual_brand: isDual,
+        supported_brand_ids: (b.supported_brand_ids && b.supported_brand_ids.length > 0)
+          ? b.supported_brand_ids
+          : (isDual ? ['brand-byd', 'brand-denza'] : (b.brand_id ? [b.brand_id] : ['brand-byd']))
+      };
+    });
+    res.json(upgraded);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
