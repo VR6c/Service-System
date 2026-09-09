@@ -3,6 +3,7 @@ import { History, Search, Filter, RefreshCw, X } from 'lucide-react';
 import { Select } from '../components/common/Select';
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/common/Pagination';
+import { AnimatedCounter } from '../components/common/AnimatedCounter';
 
 interface AuditLogItem {
   id: string;
@@ -100,18 +101,18 @@ export const ActivityLog: React.FC = () => {
   });
 
   return (
-    <div className="space-y-6 pb-12 animate-fade-in font-sans">
+    <div className="space-y-6 pb-12 font-sans">
       {/* Top Banner */}
-      <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-2xs border border-slate-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5 min-w-0">
-          <div className="p-3 bg-purple-50 text-purple-600 rounded-2xl border border-purple-100 shadow-2xs shrink-0 font-bold">
-            <History className="w-6 h-6 stroke-[2.5]" />
+      <div className="bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-2xs border border-slate-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
+        <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-purple-50 text-purple-600 rounded-2xl border border-purple-100 flex items-center justify-center shadow-xs shrink-0">
+            <History className="w-6 h-6 stroke-[2.2]" />
           </div>
           <div className="min-w-0">
             <h1 className="text-lg sm:text-xl font-extrabold text-slate-900 font-heading tracking-tight truncate">
               System Activity Log
             </h1>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
+            <p className="text-xs text-slate-500 font-medium mt-0.5 sm:mt-1 leading-relaxed">
               Real-time audit trail and security compliance records for all user actions
             </p>
           </div>
@@ -119,7 +120,7 @@ export const ActivityLog: React.FC = () => {
 
         <button
           onClick={() => window.location.reload()}
-          className="btn-navy shrink-0 w-full sm:w-auto justify-center flex items-center gap-2 px-4 py-2.5 rounded-xl cursor-pointer"
+          className="btn-navy shrink-0 w-full sm:w-auto justify-center flex items-center gap-2 px-4 py-2.5 rounded-xl cursor-pointer active:scale-[0.98]"
         >
           <RefreshCw className="w-4 h-4" />
           <span>Refresh Logs</span>
@@ -140,8 +141,7 @@ export const ActivityLog: React.FC = () => {
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
-              title="Clear search"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -150,7 +150,7 @@ export const ActivityLog: React.FC = () => {
 
         <div className="flex items-center gap-2.5 w-full sm:w-auto shrink-0 justify-between sm:justify-end">
           <span className="text-[11px] font-bold text-slate-400 px-1 truncate shrink-0">
-            {filteredLogs.length} of {logs.length} entries
+            <AnimatedCounter value={filteredLogs.length} /> of <AnimatedCounter value={logs.length} /> entries
           </span>
           <div className="w-full sm:w-52 flex-1 sm:flex-none">
             <Select
@@ -187,7 +187,7 @@ export const ActivityLog: React.FC = () => {
             paginatedLogs.map((log, idx) => (
               <div
                 key={log.id}
-                className={`p-4 sm:p-5 hover:bg-slate-50/70 transition-colors space-y-2.5 animate-slide-up stagger-${Math.min(idx + 1, 5)}`}
+                className={`transaction-card p-4 sm:p-5 space-y-2.5 animate-slide-up stagger-${Math.min(idx + 1, 5)}`}
               >
                 {/* Top: User, Role & Status */}
                 <div className="flex items-start justify-between gap-3">
@@ -262,7 +262,7 @@ export const ActivityLog: React.FC = () => {
                 </tr>
               ) : (
                 paginatedLogs.map((log, idx) => (
-                  <tr key={log.id} className={`hover:bg-slate-50/80 transition-colors animate-slide-up stagger-${Math.min(idx + 1, 5)}`}>
+                  <tr key={log.id} className={`transaction-row animate-slide-up stagger-${Math.min(idx + 1, 5)}`}>
                     <td className="py-3.5 px-5 font-mono font-semibold text-slate-500 text-[11px]">
                       {log.timestamp}
                     </td>
@@ -289,7 +289,7 @@ export const ActivityLog: React.FC = () => {
                           ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                           : 'bg-blue-50 text-blue-700 border border-blue-200'
                       }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${
+                        <span className={`w-1.5 h-1.5 rounded-full animate-smooth-pulse ${
                           log.status === 'Success' ? 'bg-emerald-500' : 'bg-blue-500'
                         }`}></span>
                         {log.status}

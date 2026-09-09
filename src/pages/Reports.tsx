@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Download, Printer, BarChart3, Building, GitBranch, Calendar, FileText, FileCheck, Phone, Car } from 'lucide-react';
 import { DatePicker } from '../components/common/DatePicker';
 import { Select } from '../components/common/Select';
+import { AnimatedCounter } from '../components/common/AnimatedCounter';
 
 export const Reports: React.FC = () => {
   const { brands, branches } = useAuth();
@@ -260,7 +261,9 @@ export const Reports: React.FC = () => {
         <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex items-center justify-between">
           <div>
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Documents</span>
-            <div className="text-3xl font-black text-slate-900 font-heading mt-1">{reportData.length}</div>
+            <div className="text-3xl font-black text-slate-900 font-heading mt-1">
+              <AnimatedCounter value={reportData.length} />
+            </div>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
             {reportType === 'receipt' ? <FileCheck className="w-6 h-6" /> : <FileText className="w-6 h-6" />}
@@ -271,7 +274,7 @@ export const Reports: React.FC = () => {
           <div>
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Report Total Amount</span>
             <div className="text-3xl font-black text-emerald-700 font-heading mt-1">
-              ${Number(totalSum || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              <AnimatedCounter value={totalSum} prefix="$" decimals={2} />
             </div>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
@@ -305,7 +308,7 @@ export const Reports: React.FC = () => {
               {reportData.map((row, idx) => (
                 <div
                   key={idx}
-                  className={`p-4 sm:p-5 hover:bg-slate-50/70 transition-colors space-y-3 animate-slide-up stagger-${Math.min(idx + 1, 5)}`}
+                  className={`p-4 sm:p-5 transaction-card space-y-3 animate-slide-up stagger-${Math.min(idx + 1, 5)}`}
                 >
                   {/* Top: Doc No, Date & Amount */}
                   <div className="flex items-start justify-between gap-3">
@@ -393,7 +396,7 @@ export const Reports: React.FC = () => {
                 </tr>
               ) : (
                 reportData.map((row, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                  <tr key={idx} className={`transaction-row animate-slide-up stagger-${Math.min(idx + 1, 5)}`}>
                     <td className="py-3.5 px-4 text-slate-400 font-medium">{idx + 1}</td>
                     <td className="py-3.5 px-4">
                       <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-slate-100/90 border border-slate-200/90 text-slate-800 font-mono font-bold text-xs shadow-2xs">

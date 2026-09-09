@@ -144,7 +144,7 @@ export const Select: React.FC<SelectProps> = ({
           </span>
         </div>
         <ChevronDown
-          className={`${iconSizes[size]} text-slate-400 shrink-0 transition-transform duration-200 ${
+          className={`${iconSizes[size]} text-slate-400 shrink-0 transition-transform duration-200 ease-out ${
             isOpen ? 'rotate-180 text-blue-600' : ''
           }`}
         />
@@ -153,8 +153,8 @@ export const Select: React.FC<SelectProps> = ({
       {isOpen && (
         <div
           className={`absolute z-50 ${
-            direction === 'up' ? 'bottom-full mb-1.5' : 'mt-1'
-          } ${menuClassName ? menuClassName : 'w-full min-w-[140px]'} bg-white border border-slate-200/90 rounded-xl shadow-xl py-1.5 max-h-60 overflow-y-auto focus:outline-none animate-pop-scale`}
+            direction === 'up' ? 'bottom-full mb-1.5 origin-bottom' : 'mt-1 origin-top'
+          } ${menuClassName ? menuClassName : 'w-full min-w-[140px]'} bg-white border border-slate-200/90 rounded-xl shadow-xl py-1.5 max-h-60 overflow-y-auto focus:outline-none animate-dropdown`}
           role="listbox"
         >
           {normalizedOptions.length === 0 ? (
@@ -168,7 +168,7 @@ export const Select: React.FC<SelectProps> = ({
                   role="option"
                   aria-selected={isSelected}
                   onClick={() => handleSelect(opt.value, opt.disabled)}
-                  className={`px-3.5 py-2 text-xs font-semibold flex items-center justify-between cursor-pointer transition ${
+                  className={`px-3.5 py-2 text-xs font-semibold flex items-center justify-between cursor-pointer transition-colors duration-150 ${
                     opt.disabled
                       ? 'opacity-40 cursor-not-allowed'
                       : isSelected

@@ -94,13 +94,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 key={item.id}
                 onClick={() => handleSelectTab(item.id)}
                 title={item.label}
-                className={`w-full flex items-center ${collapsed ? 'justify-center px-2 py-3' : 'gap-3 px-3.5 py-3'} rounded-2xl font-extrabold text-sm tracking-tight transition-all cursor-pointer ${
+                className={`w-full flex items-center ${collapsed ? 'justify-center px-2 py-3' : 'gap-3 px-3.5 py-3'} rounded-2xl font-extrabold text-sm tracking-tight cursor-pointer active:scale-[0.97] transition-all duration-200 ease-out ${
                   active
                     ? 'bg-[#0052FF] text-white shadow-lg shadow-blue-600/30'
                     : 'text-slate-200 hover:text-white hover:bg-[#0F1A2D]'
                 }`}
               >
-                <Icon className="w-4 h-4 shrink-0" />
+                <Icon className="w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-110" />
                 {!collapsed && <span className="font-heading font-extrabold truncate">{item.label}</span>}
               </button>
             );
@@ -115,7 +115,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <img
               src="/avatar.jpg"
               alt={currentUser?.name || 'Admin'}
-              className="w-9 h-9 rounded-full object-cover border border-slate-700 shrink-0"
+              className="w-9 h-9 rounded-full object-cover border border-slate-700 shrink-0 transition-transform duration-200 hover:scale-105"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser?.name || 'Admin')}&background=E31B23&color=fff`;
               }}
@@ -135,7 +135,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {!collapsed && (
             <button
               onClick={logout}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-800/80 transition cursor-pointer shrink-0"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-800/80 transition-all duration-200 active:scale-95 cursor-pointer shrink-0"
               title="Logout"
             >
               <LogOut className="w-4 h-4" />
@@ -149,7 +149,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className={`hidden md:flex ${isCollapsed ? 'w-20' : 'w-64'} bg-[#0A121F] text-slate-100 flex-col shrink-0 min-h-screen border-r border-slate-800/60 no-print transition-all duration-300`}>
+      <aside className={`hidden md:flex ${isCollapsed ? 'w-20' : 'w-64'} bg-[#0A121F] text-slate-100 flex-col shrink-0 min-h-screen border-r border-slate-800/60 no-print transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]`}>
         {renderNavContent(isCollapsed)}
       </aside>
 
@@ -157,10 +157,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {isMobileOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex no-print">
           <div
-            className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs animate-backdrop"
             onClick={onCloseMobile}
           />
-          <aside className="relative w-64 max-w-[80vw] bg-[#0A121F] text-slate-100 flex flex-col h-full border-r border-slate-800 shadow-2xl z-50">
+          <aside className="relative w-64 max-w-[80vw] bg-[#0A121F] text-slate-100 flex flex-col h-full border-r border-slate-800 shadow-2xl z-50 animate-drawer">
             {renderNavContent(false)}
           </aside>
         </div>

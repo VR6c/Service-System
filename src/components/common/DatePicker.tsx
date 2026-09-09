@@ -186,13 +186,13 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             <X className="w-3.5 h-3.5" />
           </button>
         ) : (
-          <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
+          <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform duration-200 ease-out ${isOpen ? 'rotate-90' : ''}`} />
         )}
       </div>
 
       {/* White Light Calendar Popover */}
       {isOpen && (
-        <div className="absolute left-0 mt-1.5 z-50 bg-white text-slate-900 rounded-2xl border border-slate-200 shadow-2xl p-4 w-76 sm:w-80 animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute left-0 mt-1.5 z-50 bg-white text-slate-900 rounded-2xl border border-slate-200 shadow-2xl p-4 w-76 sm:w-80 animate-dropdown origin-top-left">
           {/* Calendar Header with Navigation */}
           <div className="flex items-center justify-between mb-3 px-1">
             <button

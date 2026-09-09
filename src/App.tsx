@@ -21,7 +21,6 @@ import { LanguageProvider } from './context/LanguageContext';
 import { DialogProvider } from './context/DialogContext';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 
-import { StorageService } from './services/storageService';
 
 const MainApp: React.FC = () => {
   const { currentUser } = useAuth();
@@ -33,9 +32,6 @@ const MainApp: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
 
-  useEffect(() => {
-    StorageService.syncFromMongoDB();
-  }, []);
 
   useEffect(() => {
     if (activeTab !== 'quotation-create') setEditingQuotation(null);

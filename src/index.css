@@ -92,7 +92,7 @@
   }
 
   .pro-input {
-    @apply w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-[#E31B23] focus:ring-3 focus:ring-red-500/10 transition-all duration-150;
+    @apply w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-[#E31B23] focus:ring-3 focus:ring-red-500/10 transition-all duration-200 shadow-2xs;
   }
 
   .pro-select {
@@ -147,49 +147,62 @@ select option, .pro-select option {
   font-size: 0.8125rem !important;
 }
 
-.btn-crimson {
-  @apply bg-[#E31B23] hover:bg-[#C7151C] text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all duration-150 shadow-sm hover:shadow-red-600/20 active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2;
+/* Fluid, Tactile Button Interactions */
+.btn-crimson, .byd-gradient-btn, .pro-btn-primary {
+  @apply bg-[#E31B23] hover:bg-[#C7151C] text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow-sm hover:shadow-red-600/25 active:scale-[0.97] cursor-pointer flex items-center justify-center gap-2;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+}
+.btn-crimson:hover, .byd-gradient-btn:hover, .pro-btn-primary:hover {
+  transform: translateY(-1px);
 }
 
-.byd-gradient-btn {
-  @apply bg-[#E31B23] hover:bg-[#C7151C] text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all duration-150 shadow-sm hover:shadow-red-600/20 active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2;
+.btn-navy, .byd-dark-btn {
+  @apply bg-[#081525] hover:bg-[#0E1E34] text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow-sm active:scale-[0.97] cursor-pointer flex items-center justify-center gap-2;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
 }
-
-.btn-navy {
-  @apply bg-[#081525] hover:bg-[#0E1E34] text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all duration-150 shadow-sm active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2;
-}
-
-.byd-dark-btn {
-  @apply bg-[#081525] hover:bg-[#142742] text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all duration-150 shadow-sm active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2;
+.btn-navy:hover, .byd-dark-btn:hover {
+  transform: translateY(-1px);
 }
 
 .btn-gold {
-  @apply bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs transition-all duration-150 shadow-xs hover:shadow-amber-500/20 active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2;
+  @apply bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs shadow-xs hover:shadow-amber-500/25 active:scale-[0.97] cursor-pointer flex items-center justify-center gap-2;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
 }
-
-.pro-btn-primary {
-  @apply bg-[#E31B23] hover:bg-[#C7151C] text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all duration-150 shadow-sm hover:shadow-red-600/20 active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2;
+.btn-gold:hover {
+  transform: translateY(-1px);
 }
 
 .pro-btn-secondary {
-  @apply bg-white hover:bg-slate-50 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs border border-slate-200 transition-all duration-150 shadow-2xs hover:border-slate-300 active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2;
+  @apply bg-white hover:bg-slate-50 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs border border-slate-200 shadow-2xs hover:border-slate-300 active:scale-[0.97] cursor-pointer flex items-center justify-center gap-2;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+}
+.pro-btn-secondary:hover {
+  transform: translateY(-1px);
 }
 
-/* Status Badges */
+/* Status Badges with Subtle Glow */
 .badge-completed {
   @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/80 shadow-2xs;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .badge-pending {
   @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200/80 shadow-2xs;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .badge-converted {
   @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200/80 shadow-2xs;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .badge-draft {
   @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Custom Scrollbars */
@@ -203,83 +216,240 @@ select option, .pro-select option {
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 4px;
+  transition: background-color 0.2s ease;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
-/* Animations & Transitions */
+/* ==========================================================================
+   Smooth Animations & Transitions Engine (Hardware-Accelerated 60/120fps)
+   ========================================================================== */
+
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: none; }
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 4px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 @keyframes pageEnter {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: none; }
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0) scale(0.996);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: none; }
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 @keyframes slideInRight {
-  from { opacity: 0; transform: translateX(12px); }
-  to { opacity: 1; transform: none; }
+  0% {
+    opacity: 0;
+    transform: translate3d(16px, 0, 0) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: none; }
+  0% {
+    opacity: 0;
+    transform: scale(0.97) translate3d(0, 2px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translate3d(0, 0, 0);
+  }
 }
 
 @keyframes popScale {
-  0% { opacity: 0; transform: scale(0.94); }
-  100% { opacity: 1; transform: none; }
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translate3d(0, 6px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translate3d(0, 0, 0);
+  }
 }
 
-@keyframes statusPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.04); }
+@keyframes dropdownEnter {
+  0% {
+    opacity: 0;
+    transform: scale(0.97) translate3d(0, -6px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translate3d(0, 0, 0);
+  }
 }
 
+@keyframes drawerSlideIn {
+  0% {
+    transform: translate3d(-100%, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes backdropFadeIn {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    backdrop-filter: blur(4px);
+  }
+}
+
+@keyframes smoothPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+/* Animation Utility Classes */
 .animate-fade-in {
-  animation: fadeIn 0.2s ease-out forwards;
+  animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 .animate-page-enter {
-  animation: pageEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: pageEnter 0.26s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 .animate-slide-up {
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 .animate-slide-in-right {
-  animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideInRight 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 .animate-scale-in {
-  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 .animate-pop-scale {
-  animation: popScale 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: popScale 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
-.animate-status-pulse {
-  animation: statusPulse 2s ease-in-out infinite;
+.animate-dropdown {
+  animation: dropdownEnter 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: top;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
-/* Staggered Entrance Animation Delays */
-.stagger-1 { animation-delay: 40ms; }
-.stagger-2 { animation-delay: 80ms; }
-.stagger-3 { animation-delay: 120ms; }
-.stagger-4 { animation-delay: 160ms; }
-.stagger-5 { animation-delay: 200ms; }
+.animate-drawer {
+  animation: drawerSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform;
+  backface-visibility: hidden;
+}
 
-/* Interactive Transaction Row Elevation */
+.animate-backdrop {
+  animation: backdropFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: opacity, backdrop-filter;
+}
+
+.animate-smooth-pulse {
+  animation: smoothPulse 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform, opacity;
+}
+
+.animate-shake {
+  animation: shake 0.35s ease-in-out;
+}
+
+/* Staggered Entrance Animation Delays (with both fill-mode to prevent flashes) */
+.stagger-1 { animation-delay: 30ms; }
+.stagger-2 { animation-delay: 60ms; }
+.stagger-3 { animation-delay: 90ms; }
+.stagger-4 { animation-delay: 120ms; }
+.stagger-5 { animation-delay: 150ms; }
+
+/* Interactive Transaction Table Row & Card Utilities */
+.transaction-row {
+  transition: background-color 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.18s ease;
+  will-change: background-color;
+}
+.transaction-row:hover {
+  background-color: rgba(248, 250, 252, 0.95);
+}
+
+.transaction-card {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease,
+              background-color 0.18s ease;
+  will-change: transform, box-shadow;
+}
+.transaction-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px -3px rgba(15, 23, 42, 0.08);
+  border-color: rgba(203, 213, 225, 0.9);
+}
+
+/* Action button micro-interactions */
+.action-btn-hover {
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.15s ease,
+              color 0.15s ease,
+              box-shadow 0.15s ease;
+  will-change: transform;
+}
+.action-btn-hover:hover {
+  transform: translateY(-1px) scale(1.06);
+}
+.action-btn-hover:active {
+  transform: translateY(0) scale(0.95);
+}
+
 .transaction-row-hover {
   transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s ease, box-shadow 0.18s ease;
 }

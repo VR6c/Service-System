@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import type { Quotation, Receipt, User } from '../types';
 import { ReceiptPreviewModal } from '../components/pdf/ReceiptPreviewModal';
 import { Select } from '../components/common/Select';
+import { AnimatedCounter } from '../components/common/AnimatedCounter';
 import {
   FileText,
   DollarSign,
@@ -45,9 +46,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
 }) => {
   const { currentUser, brands, branches } = useAuth();
   const [previewReceipt, setPreviewReceipt] = useState<Receipt | null>(null);
-  const [receipts, setReceipts] = useState<Receipt[]>([]);
-  const [quotations, setQuotations] = useState<Quotation[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+  const [receipts, setReceipts] = useState<Receipt[]>(() => StorageService.getReceipts());
+  const [quotations, setQuotations] = useState<Quotation[]>(() => StorageService.getQuotations());
+  const [users, setUsers] = useState<User[]>(() => StorageService.getUsers());
   const [trendRange, setTrendRange] = useState<'this_year' | 'this_month' | 'last_6_months' | 'all'>('this_year');
   const [workshopRange, setWorkshopRange] = useState<'overall' | 'this_year' | 'this_month'>('overall');
 
@@ -269,33 +270,41 @@ export const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className="space-y-6 pb-12 animate-fade-in font-sans">
       {/* Top Welcome Banner & Date Range Selector */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-heading flex items-center gap-2">
-            Welcome back, {currentUser?.name?.split(' ')[0] || 'Admin'} 👋
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight font-heading flex items-center gap-2 flex-wrap">
+            <span>Welcome back, {currentUser?.name?.split(' ')[0] || 'Admin'}</span>
+            <span>👋</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-semibold mt-1">
-            Service Advisor • {currentUser?.branch || 'BYD Siem Reap Branch'}
+          <p className="text-xs sm:text-sm text-slate-500 font-semibold mt-1 flex items-center gap-1.5 flex-wrap">
+            <span>Service Advisor</span>
+            <span className="text-slate-300">•</span>
+            <span className="text-slate-700 font-bold">{currentUser?.branch || 'BYD Siem Reap Branch'}</span>
           </p>
         </div>
 
         {/* Date Selector Pill */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-2.5 px-4 shadow-2xs flex items-center gap-3 shrink-0 self-start md:self-auto">
-          <div className="p-2 rounded-xl bg-slate-100 text-slate-600">
-            <Calendar className="w-4 h-4" />
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-2.5 px-3.5 sm:px-4 shadow-2xs flex items-center justify-between sm:justify-start gap-3 shrink-0 self-stretch sm:self-auto hover:border-slate-300 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+              <Calendar className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-xs font-extrabold text-slate-900 leading-tight">{currentDateStr}</p>
+              <p className="text-[10px] text-slate-400 font-semibold leading-none mt-0.5 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Live Sync • MongoDB Active</span>
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-xs font-extrabold text-slate-900 leading-tight">{currentDateStr}</p>
-            <p className="text-[10px] text-slate-400 font-semibold leading-none mt-0.5">Live Sync • MongoDB Active</p>
-          </div>
-          <ChevronDown className="w-4 h-4 text-slate-400 ml-1" />
+          <ChevronDown className="w-4 h-4 text-slate-400 ml-1 shrink-0" />
         </div>
       </div>
 
       {/* Dynamic 5 KPI Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Stat 1: Total Users */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 animate-slide-up stagger-1">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-1 animate-slide-up stagger-1">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
               <Users className="w-5 h-5" />
@@ -303,7 +312,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div>
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Users</p>
               <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="text-2xl font-extrabold text-slate-900 font-heading">{users.length}</span>
+                <span className="text-2xl font-extrabold text-slate-900 font-heading">
+                  <AnimatedCounter value={users.length} duration={750} />
+                </span>
               </div>
               <p className="text-[10px] text-slate-400 font-semibold leading-none">Active staff users</p>
             </div>
@@ -315,7 +326,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Stat 2: Total Customers */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 animate-slide-up stagger-2">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-1 animate-slide-up stagger-2">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
               <UserCheck className="w-5 h-5" />
@@ -323,7 +334,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div>
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Receipts</p>
               <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="text-2xl font-extrabold text-slate-900 font-heading">{receipts.length}</span>
+                <span className="text-2xl font-extrabold text-slate-900 font-heading">
+                  <AnimatedCounter value={receipts.length} duration={800} />
+                </span>
               </div>
               <p className="text-[10px] text-slate-400 font-semibold leading-none">Completed service receipts</p>
             </div>
@@ -335,7 +348,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Stat 3: Total Quotations */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 animate-slide-up stagger-3">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-1 animate-slide-up stagger-3">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
               <FileText className="w-5 h-5" />
@@ -343,19 +356,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div>
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Quotations</p>
               <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="text-2xl font-extrabold text-slate-900 font-heading">{quotations.length}</span>
+                <span className="text-2xl font-extrabold text-slate-900 font-heading">
+                  <AnimatedCounter value={quotations.length} duration={850} />
+                </span>
               </div>
               <p className="text-[10px] text-slate-400 font-semibold leading-none">Issued quotes</p>
             </div>
           </div>
           <div className="mt-3 pt-2 border-t border-slate-100 flex items-center gap-1 text-[11px] font-bold text-emerald-600">
-            <span>${Number(totalQuotationAmount || 0).toLocaleString()}</span>
+            <AnimatedCounter value={Number(totalQuotationAmount || 0)} prefix="$" duration={900} />
             <span className="text-slate-400 font-normal">estimated</span>
           </div>
         </div>
 
         {/* Stat 4: Service Branches */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 animate-slide-up stagger-4">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-1 animate-slide-up stagger-4">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
               <Building2 className="w-5 h-5" />
@@ -363,7 +378,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div>
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Branches</p>
               <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="text-2xl font-extrabold text-slate-900 font-heading">{branches.length}</span>
+                <span className="text-2xl font-extrabold text-slate-900 font-heading">
+                  <AnimatedCounter value={branches.length} duration={700} />
+                </span>
               </div>
               <p className="text-[10px] text-slate-400 font-semibold leading-none">Service centers</p>
             </div>
@@ -375,7 +392,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Stat 5: Total Revenue */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 animate-slide-up stagger-5">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-1 animate-slide-up stagger-5">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
               <DollarSign className="w-5 h-5" />
@@ -384,7 +401,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Revenue</p>
               <div className="flex items-baseline gap-1 mt-0.5">
                 <span className="text-2xl font-extrabold text-slate-900 font-heading">
-                  ${Number(totalRevenue || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                  <AnimatedCounter value={Number(totalRevenue || 0)} prefix="$" decimals={2} duration={950} />
                 </span>
               </div>
               <p className="text-[10px] text-slate-400 font-semibold leading-none">Total service revenue</p>
@@ -570,14 +587,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
                 {workshopPerformanceList.map((w, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50/80 transition">
+                  <tr key={idx} className="transaction-row">
                     <td className="py-3.5 px-3 font-bold text-slate-900">{w.name}</td>
                     <td className="py-3.5 px-3 text-center font-bold text-slate-700">{w.receipts}</td>
                     <td className="py-3.5 px-3 text-right font-extrabold text-slate-900">${Number(w.amount || 0).toLocaleString()}</td>
                     <td className="py-3.5 px-3 w-36">
                       <div className="flex items-center gap-2">
                         <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                          <div className="h-full rounded-full bg-blue-600" style={{ width: `${w.performance}%` }}></div>
+                          <div className="h-full rounded-full bg-blue-600 transition-all duration-500 ease-out" style={{ width: `${w.performance}%` }}></div>
                         </div>
                         <span className="text-[10px] font-bold text-slate-500">{w.performance}%</span>
                       </div>
@@ -595,7 +612,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <h3 className="text-base font-extrabold text-slate-900 font-heading">Recent Service Receipts</h3>
             <button
               onClick={() => onViewReceipt && onViewReceipt()}
-              className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition cursor-pointer shadow-2xs"
+              className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs"
             >
               View All
             </button>
@@ -617,7 +634,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   <tr
                     key={r.id}
                     onClick={() => setPreviewReceipt(r)}
-                    className="hover:bg-slate-50/80 cursor-pointer transition"
+                    className="transaction-row cursor-pointer group"
                   >
                     <td className="py-3 px-3 font-bold text-slate-900 font-mono text-[11px]">{r.receipt_no}</td>
                     <td className="py-3 px-3 font-bold text-slate-800">{r.customer_name}</td>

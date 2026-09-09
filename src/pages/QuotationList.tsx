@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useConfirm, useAlert, useToast } from '../context/DialogContext';
 import { Modal } from '../components/common/Modal';
@@ -11,6 +11,7 @@ import { Select } from '../components/common/Select';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/common/Pagination';
+import { AnimatedCounter } from '../components/common/AnimatedCounter';
 import {
   FileText,
   Search,
@@ -89,6 +90,10 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
     return matchesSearch && matchesStatus && matchesBrand && matchesBranch;
   });
 
+  const totalAmountSum = useMemo(() => {
+    return filteredQuotations.reduce((sum, q) => sum + (Number(q.total_amount) || 0), 0);
+  }, [filteredQuotations]);
+
   const {
     currentPage,
     setCurrentPage,
@@ -129,19 +134,18 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
   };
 
   const handleDelete = async (quotation: Quotation) => {
-    if (currentUser?.role !== 'Admin') return;
     const isConfirmed = await confirm({
-      title: 'Delete Service Quotation',
-      message: `Delete quotation ${quotation.quotation_no}? Existing receipts will be kept. This action cannot be undone.`,
-      details: `${quotation.customer_name} • ${quotation.vehicle_model} • Plate: ${quotation.plate_no}`,
-      confirmText: 'Delete Quotation',
+      title: 'Delete Quotation',
+      message: `Are you sure you want to delete quotation ${quotation.quotation_no}? This action cannot be undone.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
       type: 'danger'
     });
+
     if (!isConfirmed) return;
 
-    await StorageService.deleteQuotation(quotation.id);
-
-    setQuotations(current => current.filter(item => item.id !== quotation.id));
+    StorageService.deleteQuotation(quotation.id);
+    setQuotations(prev => prev.filter(q => q.id !== quotation.id));
     if (selectedQuotation?.id === quotation.id) setSelectedQuotation(null);
     showToast({
       type: 'success',
@@ -151,29 +155,31 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans animate-fade-in">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
       {/* Top Scoped Branch & Brand Filter Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 px-4 rounded-2xl border border-slate-200/90 shadow-2xs">
-        <div className="flex items-center gap-2 text-xs">
-          <Building className="w-4 h-4 text-slate-500 shrink-0" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 sm:p-3.5 px-4 rounded-2xl border border-slate-200/90 shadow-2xs">
+        <div className="flex items-center gap-2 text-xs flex-wrap min-w-0">
+          <div className="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+            <Building className="w-3.5 h-3.5 text-slate-500" />
+          </div>
           <span className="font-bold text-slate-700">Workshop Scope:</span>
           {isSA ? (
-            <span className="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 font-extrabold text-[11px]">
+            <span className="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200/80 font-extrabold text-[11px] truncate max-w-[260px]">
               {currentUser.branch || 'Assigned Branch'} (Scoped)
             </span>
           ) : (
-            <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 font-bold text-[11px]">
+            <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 font-bold text-[11px] truncate max-w-[260px]">
               {selectedBranchFilter === 'ALL' ? 'All Workshop Branches' : (branches.find(b => b.id === selectedBranchFilter)?.branch_name || 'Selected Branch')}
             </span>
           )}
         </div>
 
         {/* Top Brand Filter Tabs: [ All Brands ] | [ BYD ] | [ DENZA ] */}
-        <div className="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200/80 self-start sm:self-auto">
+        <div className="flex items-center gap-1 p-1 bg-slate-100/90 rounded-xl border border-slate-200/80 overflow-x-auto no-scrollbar self-stretch sm:self-auto shrink-0">
           <button
             type="button"
             onClick={() => setSelectedBrandFilter('ALL')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+            className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs font-black transition-all duration-200 active:scale-95 cursor-pointer whitespace-nowrap text-center ${
               selectedBrandFilter === 'ALL'
                 ? 'bg-white text-slate-900 shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
@@ -191,7 +197,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
                   key={b.id}
                   type="button"
                   onClick={() => setSelectedBrandFilter(b.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                  className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs font-black transition-all duration-200 active:scale-95 cursor-pointer whitespace-nowrap text-center ${
                     isSelected
                       ? isByd
                         ? 'bg-red-600 text-white shadow-xs'
@@ -220,10 +226,14 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
                   {filterType === 'my' ? 'My Created Quotations' : 'All Service Quotations'}
                 </h2>
                 <span className="bg-amber-50 text-amber-700 font-extrabold text-[11px] px-2.5 py-0.5 rounded-full border border-amber-200 shrink-0">
-                  {filteredQuotations.length} Documents
+                  <AnimatedCounter value={filteredQuotations.length} suffix=" Documents" duration={650} />
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-medium mt-0.5">Manage & convert customer estimates into official receipts</p>
+              <p className="text-xs text-slate-500 font-semibold mt-0.5">
+                Total Estimated Value: <span className="font-mono font-bold text-amber-600">
+                  <AnimatedCounter value={totalAmountSum} prefix="$" decimals={2} duration={750} />
+                </span>
+              </p>
             </div>
           </div>
 
@@ -338,7 +348,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
             paginatedQuotations.map((q, idx) => (
               <div
                 key={q.id}
-                className={`p-4 sm:p-5 hover:bg-slate-50/70 transition-colors space-y-3.5 animate-slide-up stagger-${Math.min(idx + 1, 5)}`}
+                className={`transaction-card p-4 sm:p-5 space-y-3.5 animate-slide-up stagger-${Math.min(idx + 1, 5)}`}
               >
                 {/* Top: Doc No, Date, Status & Amount */}
                 <div className="flex items-start justify-between gap-3">
@@ -403,7 +413,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <button
                       onClick={() => setSelectedQuotation(q)}
-                      className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl transition-all shadow-2xs font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                      className="action-btn-hover px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl shadow-2xs font-bold text-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
                       title="View Document"
                     >
                       <Eye className="w-3.5 h-3.5" />
@@ -412,7 +422,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
 
                     <button
                       onClick={() => handleSendTelegramReminder(q)}
-                      className="p-1.5 bg-sky-50 hover:bg-sky-600 text-sky-600 hover:text-white rounded-xl transition-all shadow-2xs cursor-pointer"
+                      className="action-btn-hover p-1.5 bg-sky-50 hover:bg-sky-600 text-sky-600 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
                       title="Send Telegram Reminder to Group"
                     >
                       <Send className="w-3.5 h-3.5" />
@@ -425,7 +435,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
                           printDocument();
                         }, 150);
                       }}
-                      className="p-1.5 bg-slate-100 hover:bg-slate-800 text-slate-700 hover:text-white rounded-xl transition-all shadow-2xs cursor-pointer"
+                      className="action-btn-hover p-1.5 bg-slate-100 hover:bg-slate-800 text-slate-700 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
                       title="Print Document"
                     >
                       <Printer className="w-3.5 h-3.5" />
@@ -438,7 +448,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
                           exportToPDF('quotation-pdf-document', q.quotation_no);
                         }, 150);
                       }}
-                      className="p-1.5 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white rounded-xl transition-all shadow-2xs cursor-pointer"
+                      className="action-btn-hover p-1.5 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
                       title="Download PDF"
                     >
                       <Download className="w-3.5 h-3.5" />
@@ -446,16 +456,15 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
 
                     <button
                       onClick={() => onConvertToReceipt(q)}
-                      className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white rounded-xl transition-all shadow-2xs font-bold text-xs flex items-center gap-1 cursor-pointer"
+                      className="action-btn-hover p-1.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
                       title="Convert to Official Receipt"
                     >
                       <ArrowRight className="w-3.5 h-3.5" />
-                      <span>Convert</span>
                     </button>
 
                     <button
                       onClick={() => onEdit(q)}
-                      className="p-1.5 bg-amber-50 hover:bg-amber-500 text-amber-700 hover:text-white rounded-xl transition-all shadow-2xs cursor-pointer"
+                      className="action-btn-hover p-1.5 bg-amber-50 hover:bg-amber-500 text-amber-700 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
                       title="Edit Quotation"
                       aria-label={`Edit quotation ${q.quotation_no}`}
                     >
@@ -466,7 +475,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
                   {currentUser?.role === 'Admin' && (
                     <button
                       onClick={() => handleDelete(q)}
-                      className="p-1.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl transition-all shadow-2xs cursor-pointer ml-auto"
+                      className="action-btn-hover p-1.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl shadow-2xs cursor-pointer ml-auto active:scale-95"
                       title="Delete Quotation"
                       aria-label={`Delete quotation ${q.quotation_no}`}
                     >
@@ -511,7 +520,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
                 </tr>
               ) : (
                 paginatedQuotations.map((q, idx) => (
-                  <tr key={q.id} className={`hover:bg-slate-50/80 transition-colors animate-slide-up stagger-${Math.min(idx + 1, 5)} group`}>
+                  <tr key={q.id} className={`transaction-row animate-slide-up stagger-${Math.min(idx + 1, 5)} group`}>
                     <td className="py-3.5 px-5">
                       <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100/90 border border-slate-200/90 text-slate-800 font-mono font-bold text-xs shadow-2xs">
                         <FileText className="w-3.5 h-3.5 text-amber-500 shrink-0" />
@@ -553,7 +562,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
                       <div className="flex items-center justify-center gap-1.5">
                         <button
                           onClick={() => setSelectedQuotation(q)}
-                          className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+                          className="action-btn-hover p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl shadow-2xs cursor-pointer active:scale-95"
                           title="View Document"
                         >
                           <Eye className="w-3.5 h-3.5" />
@@ -561,7 +570,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
 
                         <button
                           onClick={() => handleSendTelegramReminder(q)}
-                          className="p-2 bg-sky-50 hover:bg-sky-600 text-sky-600 hover:text-white rounded-xl transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+                          className="action-btn-hover p-2 bg-sky-50 hover:bg-sky-600 text-sky-600 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
                           title="Send Telegram Reminder to Group"
                         >
                           <Send className="w-3.5 h-3.5" />
@@ -574,7 +583,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
                               printDocument();
                             }, 150);
                           }}
-                          className="p-2 bg-slate-100 hover:bg-slate-800 text-slate-700 hover:text-white rounded-xl transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+                          className="action-btn-hover p-2 bg-slate-100 hover:bg-slate-800 text-slate-700 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
                           title="Print Document"
                         >
                           <Printer className="w-3.5 h-3.5" />
@@ -587,7 +596,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
                               exportToPDF('quotation-pdf-document', q.quotation_no);
                             }, 150);
                           }}
-                          className="p-2 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white rounded-xl transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+                          className="action-btn-hover p-2 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
                           title="Download PDF"
                         >
                           <Download className="w-3.5 h-3.5" />
@@ -595,7 +604,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
 
                         <button
                           onClick={() => onConvertToReceipt(q)}
-                          className="p-2 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white rounded-xl transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+                          className="action-btn-hover p-2 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
                           title="Convert to Official Receipt"
                         >
                           <ArrowRight className="w-3.5 h-3.5" />
@@ -603,7 +612,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
 
                         <button
                           onClick={() => onEdit(q)}
-                          className="p-2 bg-amber-50 hover:bg-amber-500 text-amber-700 hover:text-white rounded-xl transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+                          className="action-btn-hover p-2 bg-amber-50 hover:bg-amber-500 text-amber-700 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
                           title="Edit Quotation"
                           aria-label={`Edit quotation ${q.quotation_no}`}
                         >
@@ -613,7 +622,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
                         {currentUser?.role === 'Admin' && (
                           <button
                             onClick={() => handleDelete(q)}
-                            className="p-2 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+                            className="action-btn-hover p-2 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
                             title="Delete Quotation"
                             aria-label={`Delete quotation ${q.quotation_no}`}
                           >

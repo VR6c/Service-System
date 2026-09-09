@@ -67,7 +67,7 @@ export const PopupConfirmModal: React.FC<PopupConfirmModalProps> = ({
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs animate-backdrop"
         onClick={onCancel}
         aria-hidden="true"
       />

@@ -65,7 +65,7 @@ export const PopupAlertModal: React.FC<PopupAlertModalProps> = ({
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs animate-backdrop"
         onClick={onClose}
         aria-hidden="true"
       />

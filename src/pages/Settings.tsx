@@ -260,53 +260,57 @@ export const Settings: React.FC = () => {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header Banner */}
-      <div className="bg-white rounded-2xl p-5 shadow-xs border border-slate-200/80 flex items-center justify-between no-print">
-        <div className="flex items-center gap-3.5">
-          <div className="p-3 bg-red-50 text-red-600 rounded-xl shadow-2xs border border-red-200">
-            <SettingsIcon className="w-6 h-6" />
+      <div className="bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-2xs border border-slate-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 no-print">
+        <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-red-50 text-red-600 rounded-2xl border border-red-100 flex items-center justify-center shadow-xs shrink-0">
+            <SettingsIcon className="w-6 h-6 stroke-[2.2]" />
           </div>
-          <div>
-            <h2 className="text-lg font-black text-slate-900 font-heading">System Settings & Configuration</h2>
-            <p className="text-xs text-slate-500 font-medium">Customize receipt & quotation headers, logos, text formats, tax rates, and document prefixes.</p>
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-extrabold text-slate-900 font-heading tracking-tight">
+              System Settings &amp; Configuration
+            </h1>
+            <p className="text-xs text-slate-500 font-medium mt-0.5 sm:mt-1 leading-relaxed">
+              Customize receipt &amp; quotation headers, logos, text formats, tax rates, and document prefixes.
+            </p>
           </div>
         </div>
 
         {savedSuccess && (
-          <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-extrabold border border-emerald-200">
-            <CheckCircle className="w-4 h-4 text-emerald-600" />
+          <div className="flex items-center gap-2 px-3.5 py-2 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-bold border border-emerald-200 shadow-2xs shrink-0 self-start sm:self-auto animate-slide-up">
+            <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>Settings saved successfully!</span>
           </div>
         )}
       </div>
 
-      <form onSubmit={handleSave} className="pro-card p-6 space-y-6">
+      <form onSubmit={handleSave} className="pro-card p-4 sm:p-6 lg:p-7 space-y-6 sm:space-y-7">
         {/* Receipt & Quotation Header Settings */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div className="flex items-center gap-2">
-              <Layout className="w-4 h-4 text-red-600" />
-              <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider font-heading">
-                Document Header & Branding Settings (Receipt & Quotation)
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <Layout className="w-4 h-4 text-red-600 shrink-0" />
+              <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider font-heading truncate">
+                Document Header &amp; Branding Settings (Receipt &amp; Quotation)
               </h3>
             </div>
-            <span className="text-[11px] font-bold text-red-700 bg-red-50 px-2.5 py-1 rounded-full border border-red-200">
+            <span className="self-start sm:self-auto text-[11px] font-bold text-red-700 bg-red-50 px-2.5 py-1 rounded-full border border-red-200 shrink-0">
               Live Header Customization
             </span>
           </div>
 
           {/* Clean 2-Column Brand Logo Cards for BYD and DENZA */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 pt-1">
             {/* 1. BYD Logo Upload */}
-            <div className="bg-slate-50/90 p-4.5 rounded-2xl border border-slate-200/90 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-lg bg-red-600 text-white font-black text-[10px] flex items-center justify-center font-heading">BYD</span>
-                  <span className="font-extrabold text-xs text-slate-900 font-heading">BYD Vehicle Brand Logo</span>
+            <div className="bg-slate-50/90 p-4 sm:p-5 rounded-2xl border border-slate-200/90 space-y-3.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="w-6 h-6 rounded-lg bg-red-600 text-white font-black text-[10px] flex items-center justify-center font-heading shrink-0">BYD</span>
+                  <span className="font-extrabold text-xs text-slate-900 font-heading truncate">BYD Vehicle Brand Logo</span>
                 </div>
-                <span className="text-[10px] font-bold text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">Official BYD Logo</span>
+                <span className="text-[10px] font-bold text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200 shrink-0">Official BYD Logo</span>
               </div>
 
-              <div className="flex items-center justify-center p-3 bg-white border border-slate-200 rounded-xl min-h-[70px] shadow-2xs">
+              <div className="flex items-center justify-center p-3 bg-white border border-slate-200 rounded-xl min-h-[75px] shadow-2xs">
                 {settings.byd_logo_url ? (
                   <img src={settings.byd_logo_url} alt="BYD Custom Logo" className="h-10 object-contain" />
                 ) : (
@@ -314,15 +318,15 @@ export const Settings: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
                 <input
                   type="text"
                   value={settings.byd_logo_url || ''}
                   onChange={e => handleChange('byd_logo_url', e.target.value)}
                   placeholder="Paste BYD logo URL or attach PC picture file..."
-                  className="pro-input flex-1 font-mono text-xs"
+                  className="pro-input flex-1 min-w-[180px] font-mono text-xs"
                 />
-                <label className="px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0 shadow-2xs">
+                <label className="px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0 shadow-2xs active:scale-[0.98]">
                   <Upload className="w-4 h-4" />
                   <span>Upload</span>
                   <input
@@ -336,7 +340,7 @@ export const Settings: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleChange('byd_logo_url', '')}
-                    className="p-2 text-slate-400 hover:text-red-600 rounded-xl hover:bg-red-50 transition cursor-pointer"
+                    className="p-2 text-slate-400 hover:text-red-600 rounded-xl hover:bg-red-50 transition cursor-pointer shrink-0"
                     title="Reset to BYD Default Logo"
                   >
                     <X className="w-4 h-4" />
@@ -346,16 +350,16 @@ export const Settings: React.FC = () => {
             </div>
 
             {/* 2. DENZA Logo Upload */}
-            <div className="bg-slate-50/90 p-4.5 rounded-2xl border border-slate-200/90 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-lg bg-blue-900 text-white font-black text-[9px] flex items-center justify-center font-heading">DENZA</span>
-                  <span className="font-extrabold text-xs text-slate-900 font-heading">DENZA Luxury Brand Logo</span>
+            <div className="bg-slate-50/90 p-4 sm:p-5 rounded-2xl border border-slate-200/90 space-y-3.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="w-6 h-6 rounded-lg bg-blue-900 text-white font-black text-[9px] flex items-center justify-center font-heading shrink-0">DENZA</span>
+                  <span className="font-extrabold text-xs text-slate-900 font-heading truncate">DENZA Luxury Brand Logo</span>
                 </div>
-                <span className="text-[10px] font-bold text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">Official DENZA Logo</span>
+                <span className="text-[10px] font-bold text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200 shrink-0">Official DENZA Logo</span>
               </div>
 
-              <div className="flex items-center justify-center p-3 bg-white border border-slate-200 rounded-xl min-h-[70px] shadow-2xs">
+              <div className="flex items-center justify-center p-3 bg-white border border-slate-200 rounded-xl min-h-[75px] shadow-2xs">
                 {settings.denza_logo_url ? (
                   <img src={settings.denza_logo_url} alt="DENZA Custom Logo" className="h-10 object-contain" />
                 ) : (
@@ -363,15 +367,15 @@ export const Settings: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
                 <input
                   type="text"
                   value={settings.denza_logo_url || ''}
                   onChange={e => handleChange('denza_logo_url', e.target.value)}
                   placeholder="Paste DENZA logo URL or attach PC picture file..."
-                  className="pro-input flex-1 font-mono text-xs"
+                  className="pro-input flex-1 min-w-[180px] font-mono text-xs"
                 />
-                <label className="px-3.5 py-2 bg-blue-900 hover:bg-blue-950 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0 shadow-2xs">
+                <label className="px-3.5 py-2 bg-blue-900 hover:bg-blue-950 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0 shadow-2xs active:scale-[0.98]">
                   <Upload className="w-4 h-4" />
                   <span>Upload</span>
                   <input
@@ -385,7 +389,7 @@ export const Settings: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleChange('denza_logo_url', '')}
-                    className="p-2 text-slate-400 hover:text-red-600 rounded-xl hover:bg-red-50 transition cursor-pointer"
+                    className="p-2 text-slate-400 hover:text-red-600 rounded-xl hover:bg-red-50 transition cursor-pointer shrink-0"
                     title="Reset to DENZA Default Logo"
                   >
                     <X className="w-4 h-4" />
@@ -396,9 +400,9 @@ export const Settings: React.FC = () => {
           </div>
 
           {/* Receipt Header Titles */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1 sm:pt-2">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Receipt Header Title (English)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Receipt Header Title (English)</label>
               <input
                 type="text"
                 value={settings.receipt_header_english_title ?? 'BYD SALES & SERVICE CENTER'}
@@ -409,7 +413,7 @@ export const Settings: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Receipt Header Title (Khmer)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Receipt Header Title (Khmer)</label>
               <input
                 type="text"
                 value={settings.receipt_header_khmer_title ?? 'មិនអាចយកទៅប្រកាសពន្ធឬប្រកាសជាប់ពន្ធ'}
@@ -421,9 +425,9 @@ export const Settings: React.FC = () => {
           </div>
 
           {/* Quotation Header Titles */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1 sm:pt-2">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Quotation Header Title (English)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Quotation Header Title (English)</label>
               <input
                 type="text"
                 value={settings.quotation_header_english_title ?? 'Huan Ya He Zhong (Cambodia) Trading Co., Ltd'}
@@ -434,7 +438,7 @@ export const Settings: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Quotation Header Title (Khmer)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Quotation Header Title (Khmer)</label>
               <input
                 type="text"
                 value={settings.quotation_header_khmer_title ?? 'ហ័ន យ៉ា ហ៊ឺ ​ ចុង (ខេមបូឌា) ត្រេឌីង ឯ.ក'}
@@ -446,9 +450,9 @@ export const Settings: React.FC = () => {
           </div>
 
           {/* Address & Phone */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1 sm:pt-2">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Header Contact Telephone (Tel:)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Header Contact Telephone (Tel:)</label>
               <input
                 type="text"
                 value={settings.phone}
@@ -459,7 +463,7 @@ export const Settings: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Header Location Address (Add:)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Header Location Address (Add:)</label>
               <input
                 type="text"
                 value={settings.address}
@@ -474,15 +478,15 @@ export const Settings: React.FC = () => {
         {/* Dealership Info */}
         <div className="space-y-4 pt-4 border-t border-slate-100">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-            <Building2 className="w-4 h-4 text-red-600" />
+            <Building2 className="w-4 h-4 text-red-600 shrink-0" />
             <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider font-heading">
               Service Center Headquarters Details
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Service Center Name</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Service Center Name</label>
               <input
                 type="text"
                 value={settings.center_name}
@@ -492,7 +496,7 @@ export const Settings: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Headquarters Branch Name</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Headquarters Branch Name</label>
               <input
                 type="text"
                 value={settings.branch_name}
@@ -501,8 +505,8 @@ export const Settings: React.FC = () => {
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Contact Email</label>
+            <div className="sm:col-span-2 lg:col-span-1">
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Contact Email</label>
               <input
                 type="email"
                 value={settings.email}
@@ -515,21 +519,21 @@ export const Settings: React.FC = () => {
 
         {/* Tax & Financial Calculation */}
         <div className="space-y-4 pt-4 border-t border-slate-100">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div className="flex items-center gap-2">
-              <Percent className="w-4 h-4 text-emerald-600" />
-              <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider font-heading">
-                Tax & Document Number Format Defaults
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <Percent className="w-4 h-4 text-emerald-600 shrink-0" />
+              <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider font-heading truncate">
+                Tax &amp; Document Number Format Defaults
               </h3>
             </div>
-            <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+            <span className="self-start sm:self-auto text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 shrink-0">
               Live Rate: 1 USD = 4,100 KHR
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">VAT Rate (0.10 = 10%)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">VAT Rate (0.10 = 10%)</label>
               <input
                 type="number"
                 step="0.01"
@@ -540,7 +544,7 @@ export const Settings: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Currency Symbol</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Currency Symbol</label>
               <input
                 type="text"
                 value={settings.currency_symbol}
@@ -550,7 +554,7 @@ export const Settings: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Quotation Number Prefix</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Quotation Number Prefix</label>
               <input
                 type="text"
                 value={settings.quotation_prefix || 'BYD'}
@@ -560,7 +564,7 @@ export const Settings: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Receipt Number Prefix</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Receipt Number Prefix</label>
               <input
                 type="text"
                 value={settings.receipt_prefix || 'BYD60M'}
@@ -573,25 +577,25 @@ export const Settings: React.FC = () => {
 
         {/* Telegram Bot Group Notification Settings */}
         <div className="space-y-4 pt-4 border-t border-slate-100">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div className="flex items-center gap-2">
-              <Send className="w-4 h-4 text-blue-600" />
-              <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider font-heading">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <Send className="w-4 h-4 text-blue-600 shrink-0" />
+              <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider font-heading truncate">
                 Telegram Bot Group Notification Settings
               </h3>
             </div>
-            <span className="text-[11px] font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
+            <span className="self-start sm:self-auto text-[11px] font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200 shrink-0">
               Customer Repair Reminders
             </span>
           </div>
 
-          <p className="text-xs text-slate-600">
+          <p className="text-xs text-slate-600 leading-relaxed">
             Configure your Telegram Bot to send automated customer service repair reminder notifications to your Telegram team group chat.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Telegram Bot Token</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Telegram Bot Token</label>
               <input
                 type="text"
                 value={settings.telegram_bot_token || ''}
@@ -603,7 +607,7 @@ export const Settings: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Telegram Group / Chat ID</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Telegram Group / Chat ID</label>
               <input
                 type="text"
                 value={settings.telegram_chat_id || ''}
@@ -615,19 +619,19 @@ export const Settings: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
             <button
               type="button"
               onClick={handleTestTelegram}
               disabled={testingTelegram || !settings.telegram_bot_token || !settings.telegram_chat_id}
-              className="px-4 py-2 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white rounded-xl text-xs font-bold transition flex items-center gap-2 border border-blue-200 cursor-pointer disabled:opacity-50"
+              className="w-full sm:w-auto px-4 py-2 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 border border-blue-200 cursor-pointer disabled:opacity-50 active:scale-[0.98]"
             >
               <Bot className="w-4 h-4" />
               <span>{testingTelegram ? 'Testing Connection...' : 'Test Telegram Group Connection'}</span>
             </button>
 
             {telegramStatusMsg && (
-              <span className={`text-xs font-bold px-3 py-1.5 rounded-lg border ${telegramStatusMsg.success ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'
+              <span className={`text-xs font-bold px-3 py-1.5 rounded-lg border self-start sm:self-auto ${telegramStatusMsg.success ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'
                 }`}>
                 {telegramStatusMsg.text}
               </span>
@@ -637,49 +641,49 @@ export const Settings: React.FC = () => {
 
         {/* Multi-Brand System Setup (Add, Edit, & Delete Brands) */}
         <div className="space-y-4 pt-4 border-t border-slate-100">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div className="flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-red-600" />
-              <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider font-heading">
-                Multi-Brand System Setup (Add, Edit, & Delete Brands)
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <Building2 className="w-4 h-4 text-red-600 shrink-0" />
+              <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider font-heading truncate">
+                Multi-Brand System Setup (Add, Edit, &amp; Delete Brands)
               </h3>
             </div>
             <button
               type="button"
               onClick={openCreateBrandModal}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition shadow-2xs cursor-pointer"
+              className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition shadow-2xs cursor-pointer shrink-0 active:scale-[0.98]"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add New Brand</span>
             </button>
           </div>
 
-          <p className="text-xs text-slate-500 font-medium">
+          <p className="text-xs text-slate-500 font-medium leading-relaxed">
             Manage your vehicle brand list. Add new car brands, customize document prefixes, update logo images, or delete existing brands.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-1">
             {brands.map(b => {
               const isDenza = b.brand_code.toUpperCase().includes('DENZA');
               const affiliatedBranchCount = branches.filter(br => br.brand_id === b.id).length;
               return (
-                <div key={b.id} className="bg-slate-50/90 p-4 rounded-2xl border border-slate-200/90 space-y-3 flex flex-col justify-between">
+                <div key={b.id} className="bg-slate-50/90 p-4 rounded-2xl border border-slate-200/90 space-y-3 flex flex-col justify-between hover:border-slate-300 transition-all shadow-2xs">
                   <div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
                         {b.logo_url ? (
-                          <img src={b.logo_url} alt={b.brand_name} className="h-7 object-contain max-w-[100px]" />
+                          <img src={b.logo_url} alt={b.brand_name} className="h-7 object-contain max-w-[90px] shrink-0" />
                         ) : b.logo_type === 'denza' || isDenza ? (
-                          <DENZALogo variant="blue" className="h-7" />
+                          <DENZALogo variant="blue" className="h-7 shrink-0" />
                         ) : (
-                          <BYDLogo variant="red" className="h-6" />
+                          <BYDLogo variant="red" className="h-6 shrink-0" />
                         )}
-                        <div>
-                          <h4 className="text-xs font-black text-slate-900 font-heading">{b.brand_name}</h4>
+                        <div className="min-w-0">
+                          <h4 className="text-xs font-black text-slate-900 font-heading truncate">{b.brand_name}</h4>
                           <span className="text-[10px] font-mono font-bold text-slate-500">Code: {b.brand_code}</span>
                         </div>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${b.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-200 text-slate-600'
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase shrink-0 ${b.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-200 text-slate-600'
                         }`}>
                         {b.status}
                       </span>
@@ -698,11 +702,11 @@ export const Settings: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-200/80 flex items-center justify-end gap-1.5">
+                  <div className="pt-2.5 border-t border-slate-200/80 flex items-center justify-end gap-1.5">
                     <button
                       type="button"
                       onClick={() => openEditBrandModal(b)}
-                      className="flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-800 rounded-lg text-xs font-bold transition border border-slate-200 shadow-2xs cursor-pointer"
+                      className="flex items-center gap-1 px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-800 rounded-lg text-xs font-bold transition border border-slate-200 shadow-2xs cursor-pointer active:scale-[0.98]"
                     >
                       <Edit2 className="w-3 h-3 text-slate-600" />
                       <span>Edit</span>
@@ -710,7 +714,7 @@ export const Settings: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleDeleteBrand(b)}
-                      className="flex items-center gap-1 px-2.5 py-1 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-lg text-xs font-bold transition border border-red-200 shadow-2xs cursor-pointer"
+                      className="flex items-center gap-1 px-2.5 py-1.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-lg text-xs font-bold transition border border-red-200 shadow-2xs cursor-pointer active:scale-[0.98]"
                     >
                       <Trash2 className="w-3 h-3" />
                       <span>Delete</span>
@@ -724,25 +728,25 @@ export const Settings: React.FC = () => {
 
         {/* Quotation Terms & Conditions / Bank Details Settings */}
         <div className="space-y-4 pt-4 border-t border-slate-100">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div className="flex items-center gap-2">
-              <FileText className="w-4 h-4 text-amber-500" />
-              <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider font-heading">
-                Quotation Terms & Conditions / Bank Details (报价单条款与付款信息)
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <FileText className="w-4 h-4 text-amber-500 shrink-0" />
+              <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider font-heading truncate">
+                Quotation Terms &amp; Conditions / Bank Details (报价单条款与付款信息)
               </h3>
             </div>
-            <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+            <span className="self-start sm:self-auto text-[11px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200 shrink-0">
               Printed on Quotation PDF Footer
             </span>
           </div>
 
-          <p className="text-xs text-slate-500 font-medium">
+          <p className="text-xs text-slate-500 font-medium leading-relaxed">
             Customize the 4 official terms, bank payment details, and expiration notice printed on every service quotation PDF document.
           </p>
 
-          <div className="space-y-3 bg-slate-50/90 p-4 rounded-2xl border border-slate-200/90">
+          <div className="space-y-3.5 bg-slate-50/90 p-4 sm:p-5 rounded-2xl border border-slate-200/90">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Point 1: Deposit Condition (ប្រាក់កក់)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Point 1: Deposit Condition (ប្រាក់កក់)</label>
               <input
                 type="text"
                 value={settings.quotation_deposit_term ?? '1. Will deposit 30% of full amount.'}
@@ -753,7 +757,7 @@ export const Settings: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Point 2: Remaining Payment Condition (ការទូទាត់ប្រាក់នៅសល់)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Point 2: Remaining Payment Condition (ការទូទាត់ប្រាក់នៅសល់)</label>
               <input
                 type="text"
                 value={settings.quotation_payment_term ?? '2. The remaining needs to be paid after the maintenance is completed.'}
@@ -764,7 +768,7 @@ export const Settings: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Point 3: Bank Account / ABA Transfer Details (គណនីធនាគារ ABA)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Point 3: Bank Account / ABA Transfer Details (គណនីធនាគារ ABA)</label>
               <input
                 type="text"
                 value={settings.quotation_bank_details ?? '3. ABA: HUAN YA HE ZHONG (CAMBODIA) TRADING CO LTD (002 886 771)'}
@@ -775,7 +779,7 @@ export const Settings: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Point 4: Quotation Expiry Notice (សុពលភាពការសម្រង់តម្លៃ)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Point 4: Quotation Expiry Notice (សុពលភាពការសម្រង់តម្លៃ)</label>
               <input
                 type="text"
                 value={settings.quotation_expiration_term ?? '4. This Quotation will Expire in 30 days and will renew this quote again.'}
@@ -786,7 +790,7 @@ export const Settings: React.FC = () => {
             </div>
 
             <div className="pt-2 border-t border-slate-200">
-              <label className="block text-xs font-bold text-slate-700 mb-1">Full Combined Quotation Terms (Multi-Line Preview / Advanced Edit)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Full Combined Quotation Terms (Multi-Line Preview / Advanced Edit)</label>
               <textarea
                 rows={4}
                 value={settings.quotation_terms ?? `${settings.quotation_deposit_term || '1. Will deposit 30% of full amount.'}\n${settings.quotation_payment_term || '2. The remaining needs to be paid after the maintenance is completed.'}\n${settings.quotation_bank_details || '3. ABA: HUAN YA HE ZHONG (CAMBODIA) TRADING CO LTD (002 886 771)'}\n${settings.quotation_expiration_term || '4. This Quotation will Expire in 30 days and will renew this quote again.'}`}
@@ -798,11 +802,11 @@ export const Settings: React.FC = () => {
         </div>
 
         {/* Receipt General Terms & Conditions */}
-        <div className="space-y-2 pt-4 border-t border-slate-100">
+        <div className="space-y-2.5 pt-4 border-t border-slate-100">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-            <FileText className="w-4 h-4 text-slate-600" />
+            <FileText className="w-4 h-4 text-slate-600 shrink-0" />
             <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider font-heading">
-              General Receipt Terms & Conditions Footer
+              General Receipt Terms &amp; Conditions Footer
             </h3>
           </div>
 
@@ -814,10 +818,10 @@ export const Settings: React.FC = () => {
           />
         </div>
 
-        <div className="flex justify-end pt-4 border-t border-slate-100">
+        <div className="flex flex-col sm:flex-row justify-end pt-4 border-t border-slate-100">
           <button
             type="submit"
-            className="pro-btn-primary"
+            className="pro-btn-primary w-full sm:w-auto justify-center shadow-sm active:scale-[0.98]"
           >
             <Save className="w-4 h-4" />
             <span>Save System Configuration</span>

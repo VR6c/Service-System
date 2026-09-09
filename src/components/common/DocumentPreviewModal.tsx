@@ -66,7 +66,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
     >
       {/* Full-screen Backdrop overlay */}
       <div
-        className="fixed inset-0 bg-slate-950/75 backdrop-blur-md transition-all cursor-pointer print:hidden"
+        className="fixed inset-0 bg-slate-950/75 backdrop-blur-md animate-backdrop cursor-pointer print:hidden"
         onClick={onClose}
         aria-hidden="true"
       />

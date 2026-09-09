@@ -12,6 +12,7 @@ import { Select } from '../components/common/Select';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/common/Pagination';
+import { AnimatedCounter } from '../components/common/AnimatedCounter';
 import {
   FileCheck,
   Search,
@@ -166,29 +167,31 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans animate-fade-in">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
       {/* Top Scoped Branch & Brand Filter Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 px-4 rounded-2xl border border-slate-200/90 shadow-2xs">
-        <div className="flex items-center gap-2 text-xs">
-          <Building className="w-4 h-4 text-slate-500 shrink-0" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 sm:p-3.5 px-4 rounded-2xl border border-slate-200/90 shadow-2xs">
+        <div className="flex items-center gap-2 text-xs flex-wrap min-w-0">
+          <div className="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+            <Building className="w-3.5 h-3.5 text-slate-500" />
+          </div>
           <span className="font-bold text-slate-700">Workshop Scope:</span>
           {isSA ? (
-            <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-extrabold text-[11px]">
+            <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200/80 font-extrabold text-[11px] truncate max-w-[260px]">
               {currentUser.branch || 'Assigned Branch'} (Scoped)
             </span>
           ) : (
-            <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 font-bold text-[11px]">
+            <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 font-bold text-[11px] truncate max-w-[260px]">
               {selectedBranchFilter === 'ALL' ? 'All Workshop Branches' : (branches.find(b => b.id === selectedBranchFilter)?.branch_name || 'Selected Branch')}
             </span>
           )}
         </div>
 
         {/* Top Brand Filter Tabs: [ All Brands ] | [ BYD ] | [ DENZA ] */}
-        <div className="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200/80 self-start sm:self-auto">
+        <div className="flex items-center gap-1 p-1 bg-slate-100/90 rounded-xl border border-slate-200/80 overflow-x-auto no-scrollbar self-stretch sm:self-auto shrink-0">
           <button
             type="button"
             onClick={() => setSelectedBrandFilter('ALL')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+            className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs font-black transition-all duration-200 active:scale-95 cursor-pointer whitespace-nowrap text-center ${
               selectedBrandFilter === 'ALL'
                 ? 'bg-white text-slate-900 shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
@@ -206,7 +209,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                   key={b.id}
                   type="button"
                   onClick={() => setSelectedBrandFilter(b.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                  className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs font-black transition-all duration-200 active:scale-95 cursor-pointer whitespace-nowrap text-center ${
                     isSelected
                       ? isByd
                         ? 'bg-red-600 text-white shadow-xs'
@@ -235,11 +238,13 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                   {filterType === 'my' ? 'My Service Receipts' : 'All Official Service Receipts'}
                 </h2>
                 <span className="bg-red-50 text-red-600 font-extrabold text-[11px] px-2.5 py-0.5 rounded-full border border-red-200 shrink-0">
-                  {filteredReceipts.length} Documents
+                  <AnimatedCounter value={filteredReceipts.length} suffix=" Documents" duration={650} />
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-semibold mt-0.5">
-                Total Filtered Revenue: <span className="font-mono font-bold text-emerald-600">${Number(totalAmountSum || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                Total Filtered Revenue: <span className="font-mono font-bold text-emerald-600">
+                  <AnimatedCounter value={Number(totalAmountSum || 0)} prefix="$" decimals={2} duration={750} />
+                </span>
               </p>
             </div>
           </div>
@@ -357,7 +362,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
               return (
                 <div
                   key={r.id}
-                  className={`p-4 sm:p-5 hover:bg-slate-50/70 transition-colors space-y-3.5 animate-slide-up stagger-${Math.min(idx + 1, 5)}`}
+                  className={`transaction-card p-4 sm:p-5 space-y-3.5 animate-slide-up stagger-${Math.min(idx + 1, 5)}`}
                 >
                   {/* Top: Doc No, Date, Status & Amount */}
                   <div className="flex items-start justify-between gap-3">
@@ -383,7 +388,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                           : 'bg-amber-50 text-amber-700 border border-amber-200'
                       }`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${
-                          r.status === 'Completed' ? 'bg-emerald-500 animate-pulse' : r.status === 'Delivered' ? 'bg-blue-500' : 'bg-amber-500'
+                          r.status === 'Completed' ? 'bg-emerald-500 animate-smooth-pulse' : r.status === 'Delivered' ? 'bg-blue-500' : 'bg-amber-500'
                         }`}></span>
                         {r.status}
                       </span>
@@ -422,7 +427,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <button
                         onClick={() => setSelectedReceipt(r)}
-                        className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl transition-all shadow-2xs font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                        className="action-btn-hover px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl shadow-2xs font-bold text-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
                         title="View Document"
                       >
                         <Eye className="w-3.5 h-3.5" />
@@ -431,7 +436,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
 
                       <button
                         onClick={() => handleSendTelegramReminder(r)}
-                        className="p-1.5 bg-sky-50 hover:bg-sky-600 text-sky-600 hover:text-white rounded-xl transition-all shadow-2xs cursor-pointer"
+                        className="action-btn-hover p-1.5 bg-sky-50 hover:bg-sky-600 text-sky-600 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
                         title="Send Telegram Reminder to Group"
                       >
                         <Send className="w-3.5 h-3.5" />
@@ -444,7 +449,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                             printDocument();
                           }, 150);
                         }}
-                        className="p-1.5 bg-slate-100 hover:bg-slate-800 text-slate-700 hover:text-white rounded-xl transition-all shadow-2xs cursor-pointer"
+                        className="action-btn-hover p-1.5 bg-slate-100 hover:bg-slate-800 text-slate-700 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
                         title="Print Document"
                       >
                         <Printer className="w-3.5 h-3.5" />
@@ -453,16 +458,16 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                       <button
                         onClick={() => handleDirectDownload(r)}
                         disabled={downloadReceipt !== null}
-                        className="p-1.5 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white rounded-xl transition-all shadow-2xs cursor-pointer"
+                        className="action-btn-hover p-1.5 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
                         title={`Download ${r.receipt_no}.pdf`}
                         aria-label={`Download ${r.receipt_no} as PDF`}
                       >
-                        <Download className={`w-3.5 h-3.5 ${downloadReceipt?.id === r.id ? 'animate-pulse' : ''}`} />
+                        <Download className={`w-3.5 h-3.5 ${downloadReceipt?.id === r.id ? 'animate-smooth-pulse' : ''}`} />
                       </button>
 
                       <button
                         onClick={() => onEdit(r)}
-                        className="p-1.5 bg-amber-50 hover:bg-amber-500 text-amber-700 hover:text-white rounded-xl transition-all shadow-2xs cursor-pointer"
+                        className="action-btn-hover p-1.5 bg-amber-50 hover:bg-amber-500 text-amber-700 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
                         title="Edit Receipt"
                         aria-label={`Edit receipt ${r.receipt_no}`}
                       >
@@ -473,7 +478,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                     {currentUser?.role === 'Admin' && (
                       <button
                         onClick={() => handleDelete(r)}
-                        className="p-1.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl transition-all shadow-2xs cursor-pointer ml-auto"
+                        className="action-btn-hover p-1.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl shadow-2xs cursor-pointer ml-auto active:scale-95"
                         title="Delete Receipt"
                         aria-label={`Delete receipt ${r.receipt_no}`}
                       >
@@ -522,7 +527,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                   const bObj = brands.find(b => b.id === r.brand_id);
                   const brObj = branches.find(br => br.id === r.branch_id);
                   return (
-                    <tr key={r.id} className={`hover:bg-slate-50/80 transition-colors animate-slide-up stagger-${Math.min(idx + 1, 5)} group`}>
+                    <tr key={r.id} className={`transaction-row animate-slide-up stagger-${Math.min(idx + 1, 5)} group`}>
                       <td className="py-3.5 px-5">
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100/90 border border-slate-200/90 text-slate-800 font-mono font-bold text-xs shadow-2xs">
                           <FileCheck className="w-3.5 h-3.5 text-red-600 shrink-0" />
@@ -557,7 +562,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                             : 'bg-amber-50 text-amber-700 border border-amber-200'
                         }`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${
-                            r.status === 'Completed' ? 'bg-emerald-500 animate-pulse' : r.status === 'Delivered' ? 'bg-blue-500' : 'bg-amber-500'
+                            r.status === 'Completed' ? 'bg-emerald-500 animate-smooth-pulse' : r.status === 'Delivered' ? 'bg-blue-500' : 'bg-amber-500'
                           }`}></span>
                           {r.status}
                         </span>
@@ -567,14 +572,14 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                         <div className="flex items-center justify-center gap-1.5">
                           <button
                             onClick={() => setSelectedReceipt(r)}
-                            className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+                            className="action-btn-hover p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl shadow-2xs cursor-pointer active:scale-95"
                             title="View Document"
                           >
                             <Eye className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleSendTelegramReminder(r)}
-                            className="p-2 bg-sky-50 hover:bg-sky-600 text-sky-600 hover:text-white rounded-xl transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+                            className="action-btn-hover p-2 bg-sky-50 hover:bg-sky-600 text-sky-600 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
                             title="Send Telegram Reminder to Group"
                           >
                             <Send className="w-3.5 h-3.5" />
@@ -586,7 +591,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                                 printDocument();
                               }, 150);
                             }}
-                            className="p-2 bg-slate-100 hover:bg-slate-800 text-slate-700 hover:text-white rounded-xl transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+                            className="action-btn-hover p-2 bg-slate-100 hover:bg-slate-800 text-slate-700 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
                             title="Print Document"
                           >
                             <Printer className="w-3.5 h-3.5" />
@@ -594,15 +599,15 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                           <button
                             onClick={() => handleDirectDownload(r)}
                             disabled={downloadReceipt !== null}
-                            className="p-2 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white rounded-xl transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+                            className="action-btn-hover p-2 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
                             title={`Download ${r.receipt_no}.pdf`}
                             aria-label={`Download ${r.receipt_no} as PDF`}
                           >
-                            <Download className={`w-3.5 h-3.5 ${downloadReceipt?.id === r.id ? 'animate-pulse' : ''}`} />
+                            <Download className={`w-3.5 h-3.5 ${downloadReceipt?.id === r.id ? 'animate-smooth-pulse' : ''}`} />
                           </button>
                           <button
                             onClick={() => onEdit(r)}
-                            className="p-2 bg-amber-50 hover:bg-amber-500 text-amber-700 hover:text-white rounded-xl transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+                            className="action-btn-hover p-2 bg-amber-50 hover:bg-amber-500 text-amber-700 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
                             title="Edit Receipt"
                             aria-label={`Edit receipt ${r.receipt_no}`}
                           >
@@ -612,7 +617,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                           {currentUser?.role === 'Admin' && (
                             <button
                               onClick={() => handleDelete(r)}
-                              className="p-2 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+                              className="action-btn-hover p-2 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
                               title="Delete Receipt"
                               aria-label={`Delete receipt ${r.receipt_no}`}
                             >

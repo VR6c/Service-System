@@ -24,6 +24,7 @@ import {
   Gauge,
   ExternalLink
 } from 'lucide-react';
+import { AnimatedCounter } from '../components/common/AnimatedCounter';
 
 export interface HistoryItem {
   type: 'Quotation' | 'Receipt';
@@ -270,47 +271,53 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
   const countInactive = records.filter((r) => r.status === 'Inactive').length;
 
   return (
-    <div className="space-y-6 pb-12 animate-fade-in font-sans">
+    <div className="space-y-6 pb-12 font-sans">
       {/* Top Banner & Quick Metrics */}
-      <div className="bg-white rounded-2xl p-6 shadow-2xs border border-slate-200/90 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <div className="w-13 h-13 bg-red-50 text-[#E31B23] rounded-2xl border border-red-100 flex items-center justify-center shadow-xs shrink-0">
-            <Users className="w-7 h-7 stroke-[2.2]" />
+      <div className="bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-2xs border border-slate-200/90 flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6">
+        <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-red-50 text-[#E31B23] rounded-2xl border border-red-100 flex items-center justify-center shadow-xs shrink-0">
+            <Users className="w-6 h-6 stroke-[2.2]" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-extrabold text-slate-900 font-heading tracking-tight">
-                Customer & Fleet Registry
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-lg sm:text-xl font-extrabold text-slate-900 font-heading tracking-tight">
+                Customer &amp; Fleet Registry
               </h1>
-              <span className="px-2 py-0.5 bg-red-50 text-[#E31B23] text-[10px] font-black uppercase rounded-full border border-red-100">
+              <span className="px-2 py-0.5 bg-red-50 text-[#E31B23] text-[10px] font-black uppercase rounded-full border border-red-100 shrink-0">
                 Live Data
               </span>
             </div>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Automotive customer profiles, vehicle telemetry, and linked quotation & receipt history
+            <p className="text-xs text-slate-500 font-medium mt-0.5 sm:mt-1 leading-relaxed">
+              Automotive customer profiles, vehicle telemetry, and linked quotation &amp; receipt history
             </p>
           </div>
         </div>
 
         {/* Telemetry Metric Badges */}
-        <div className="flex items-center gap-3 overflow-x-auto pb-1 lg:pb-0">
-          <div className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-center min-w-[100px] shrink-0">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full lg:w-auto shrink-0">
+          <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 sm:px-4 py-2 text-center min-w-[85px] sm:min-w-[100px] flex-1 sm:flex-initial">
             <span className="text-[10px] font-bold uppercase text-slate-400 block tracking-wider">Total Fleet</span>
-            <span className="text-base font-black text-slate-900 font-mono">{countAll}</span>
+            <span className="text-base font-black text-slate-900 font-mono">
+              <AnimatedCounter value={countAll} />
+            </span>
           </div>
-          <div className="bg-amber-50/80 border border-amber-200 rounded-xl px-4 py-2 text-center min-w-[110px] shrink-0">
+          <div className="bg-amber-50/80 border border-amber-200 rounded-xl px-3 sm:px-4 py-2 text-center min-w-[85px] sm:min-w-[110px] flex-1 sm:flex-initial">
             <div className="flex items-center justify-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-smooth-pulse"></span>
               <span className="text-[10px] font-bold uppercase text-amber-700 tracking-wider">In Service</span>
             </div>
-            <span className="text-base font-black text-amber-900 font-mono">{countInService}</span>
+            <span className="text-base font-black text-amber-900 font-mono">
+              <AnimatedCounter value={countInService} />
+            </span>
           </div>
-          <div className="bg-emerald-50/80 border border-emerald-200 rounded-xl px-4 py-2 text-center min-w-[100px] shrink-0">
+          <div className="bg-emerald-50/80 border border-emerald-200 rounded-xl px-3 sm:px-4 py-2 text-center min-w-[85px] sm:min-w-[100px] flex-1 sm:flex-initial">
             <div className="flex items-center justify-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
               <span className="text-[10px] font-bold uppercase text-emerald-700 tracking-wider">Active</span>
             </div>
-            <span className="text-base font-black text-emerald-900 font-mono">{countActive}</span>
+            <span className="text-base font-black text-emerald-900 font-mono">
+              <AnimatedCounter value={countActive} />
+            </span>
           </div>
         </div>
       </div>
@@ -389,7 +396,7 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
                 <div
                   key={r.id}
                   onClick={() => setSelectedCustomer(r)}
-                  className={`p-4 sm:p-5 hover:bg-slate-50/70 transition-colors space-y-3.5 cursor-pointer animate-slide-up stagger-${Math.min(idx + 1, 5)}`}
+                  className={`p-4 sm:p-5 transaction-card space-y-3.5 cursor-pointer animate-slide-up stagger-${Math.min(idx + 1, 5)}`}
                 >
                   {/* Customer Header */}
                   <div className="flex items-start justify-between gap-3">
@@ -417,7 +424,7 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
                       }`}
                     >
                       <span className={`w-1.5 h-1.5 rounded-full ${
-                        r.status === 'In Service' ? 'bg-amber-500 animate-pulse' : r.status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400'
+                        r.status === 'In Service' ? 'bg-amber-500 animate-smooth-pulse' : r.status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400'
                       }`}></span>
                       {r.status}
                     </span>
@@ -526,13 +533,13 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
                   </td>
                 </tr>
               ) : (
-                paginatedRecords.map((r) => {
+                paginatedRecords.map((r, idx) => {
                   const brandInfo = getBrandBadge(r.vehicleModel, r.branch);
                   return (
                     <tr
                       key={r.id}
                       onClick={() => setSelectedCustomer(r)}
-                      className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
+                      className={`transaction-row cursor-pointer group animate-slide-up stagger-${Math.min(idx + 1, 5)}`}
                     >
                       {/* Customer ID & Name */}
                       <td className="py-3.5 px-5 font-bold text-slate-900">
@@ -629,7 +636,7 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
                           }`}
                         >
                           <span className={`w-1.5 h-1.5 rounded-full ${
-                            r.status === 'In Service' ? 'bg-amber-500 animate-pulse' : r.status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400'
+                            r.status === 'In Service' ? 'bg-amber-500 animate-smooth-pulse' : r.status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400'
                           }`}></span>
                           <span>{r.status}</span>
                         </span>
@@ -641,7 +648,7 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
                           {onCreateQuotation && (
                             <button
                               onClick={() => onCreateQuotation(r)}
-                              className="px-2.5 py-1.5 rounded-xl text-slate-700 hover:text-red-700 bg-slate-100 hover:bg-red-50 border border-slate-200/80 hover:border-red-200 transition-all shadow-2xs font-bold text-xs flex items-center gap-1 hover:scale-105 active:scale-95 cursor-pointer"
+                              className="px-2.5 py-1.5 rounded-xl text-slate-700 hover:text-red-700 bg-slate-100 hover:bg-red-50 border border-slate-200/80 hover:border-red-200 transition-all shadow-2xs font-bold text-xs flex items-center gap-1 action-btn-hover cursor-pointer"
                               title="Create Quotation for Customer"
                             >
                               <Plus className="w-3.5 h-3.5" />
@@ -650,7 +657,7 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
                           )}
                           <button
                             onClick={() => setSelectedCustomer(r)}
-                            className="px-2.5 py-1.5 rounded-xl text-slate-700 hover:text-white bg-slate-100 hover:bg-slate-900 border border-slate-200/80 transition-all shadow-2xs font-bold text-xs flex items-center gap-1 hover:scale-105 active:scale-95 cursor-pointer"
+                            className="px-2.5 py-1.5 rounded-xl text-slate-700 hover:text-white bg-slate-100 hover:bg-slate-900 border border-slate-200/80 transition-all shadow-2xs font-bold text-xs flex items-center gap-1 action-btn-hover cursor-pointer"
                             title="View Full Profile"
                           >
                             <Eye className="w-3.5 h-3.5" />
@@ -685,11 +692,11 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto no-print animate-fade-in"
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto no-print"
         >
           {/* Full-screen Backdrop Blur Overlay (covers sidebar, header & entire window) */}
           <div
-            className="fixed inset-0 bg-slate-950/75 backdrop-blur-md transition-all cursor-pointer"
+            className="fixed inset-0 bg-slate-950/75 backdrop-blur-md transition-all cursor-pointer animate-backdrop"
             onClick={() => setSelectedCustomer(null)}
             aria-hidden="true"
           />

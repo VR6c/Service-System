@@ -260,24 +260,24 @@ export const Users: React.FC = () => {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
       {/* Header Banner */}
-      <div className="bg-white rounded-2xl p-5 shadow-xs border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4 no-print">
-        <div className="flex items-center gap-3.5">
-          <div className="p-3 bg-red-600 text-white rounded-xl shadow-xs">
-            <UsersIcon className="w-6 h-6" />
+      <div className="bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-2xs border border-slate-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 no-print">
+        <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-red-50 text-[#E31B23] rounded-2xl border border-red-100 flex items-center justify-center shadow-xs shrink-0">
+            <UsersIcon className="w-6 h-6 stroke-[2.2]" />
           </div>
-          <div>
-            <h2 className="text-lg font-black text-slate-900 font-heading tracking-tight">
-              User & Access Control Management
-            </h2>
-            <p className="text-xs text-slate-500 font-medium">
-              Configure User Credentials & Default Receipt Profiles for seamless receipt auto-fill.
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-extrabold text-slate-900 font-heading tracking-tight">
+              User &amp; Access Control Management
+            </h1>
+            <p className="text-xs text-slate-500 font-medium mt-0.5 sm:mt-1 leading-relaxed">
+              Configure User Credentials &amp; Default Receipt Profiles for seamless receipt auto-fill.
             </p>
           </div>
         </div>
 
         <button
           onClick={openAddModal}
-          className="flex items-center justify-center gap-2 px-4.5 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold rounded-xl text-xs transition-all shadow-xs cursor-pointer"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4.5 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold rounded-xl text-xs transition-all shadow-xs cursor-pointer shrink-0 active:scale-[0.98]"
         >
           <UserPlus className="w-4 h-4" />
           <span>Add New Staff User</span>
