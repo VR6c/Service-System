@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import { StorageService } from '../services/storageService';
 import type { Quotation, Receipt, Brand, Branch } from '../types';
 import { DocumentPreviewModal } from '../components/common/DocumentPreviewModal';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 import {
   Users,
   Search,
@@ -247,6 +249,21 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
     return matchesSearch && matchesStatus;
   });
 
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    startIndex,
+    endIndex,
+    paginatedData: paginatedRecords
+  } = usePagination({
+    data: filteredRecords,
+    initialPageSize: 15,
+    resetDeps: [searchTerm, statusFilter]
+  });
+
   const countAll = records.length;
   const countInService = records.filter((r) => r.status === 'In Service').length;
   const countActive = records.filter((r) => r.status === 'Active').length;
@@ -366,7 +383,7 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
               <p className="text-xs text-slate-400 font-medium mt-0.5">Try adjusting your search query or filter options.</p>
             </div>
           ) : (
-            filteredRecords.map((r, idx) => {
+            paginatedRecords.map((r, idx) => {
               const brandInfo = getBrandBadge(r.vehicleModel, r.branch);
               return (
                 <div
@@ -509,7 +526,7 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
                   </td>
                 </tr>
               ) : (
-                filteredRecords.map((r) => {
+                paginatedRecords.map((r) => {
                   const brandInfo = getBrandBadge(r.vehicleModel, r.branch);
                   return (
                     <tr
@@ -648,6 +665,19 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Footer */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          startIndex={startIndex}
+          endIndex={endIndex}
+          totalItems={filteredRecords.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          itemLabel="customers"
+        />
       </div>
 
       {/* Flagship Customer & Vehicle Profile Modal */}

@@ -17,6 +17,8 @@ export interface SelectProps {
   disabled?: boolean;
   className?: string;
   buttonClassName?: string;
+  menuClassName?: string;
+  direction?: 'down' | 'up';
   icon?: React.ReactNode;
   label?: string;
   size?: 'sm' | 'md' | 'lg';
@@ -33,6 +35,8 @@ export const Select: React.FC<SelectProps> = ({
   disabled = false,
   className = '',
   buttonClassName = '',
+  menuClassName = '',
+  direction = 'down',
   icon,
   label,
   size = 'md',
@@ -148,7 +152,9 @@ export const Select: React.FC<SelectProps> = ({
 
       {isOpen && (
         <div
-          className="absolute z-50 mt-1 w-full min-w-[140px] bg-white border border-slate-200/90 rounded-xl shadow-xl py-1.5 max-h-60 overflow-y-auto focus:outline-none animate-pop-scale"
+          className={`absolute z-50 ${
+            direction === 'up' ? 'bottom-full mb-1.5' : 'mt-1'
+          } ${menuClassName ? menuClassName : 'w-full min-w-[140px]'} bg-white border border-slate-200/90 rounded-xl shadow-xl py-1.5 max-h-60 overflow-y-auto focus:outline-none animate-pop-scale`}
           role="listbox"
         >
           {normalizedOptions.length === 0 ? (

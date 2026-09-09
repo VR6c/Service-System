@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { History, Search, Filter, RefreshCw, X } from 'lucide-react';
 import { Select } from '../components/common/Select';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 
 interface AuditLogItem {
   id: string;
@@ -80,6 +82,21 @@ export const ActivityLog: React.FC = () => {
 
     const matchesModule = moduleFilter === 'All' || l.module === moduleFilter;
     return matchesSearch && matchesModule;
+  });
+
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    startIndex,
+    endIndex,
+    paginatedData: paginatedLogs
+  } = usePagination({
+    data: filteredLogs,
+    initialPageSize: 10,
+    resetDeps: [searchTerm, moduleFilter]
   });
 
   return (
@@ -167,7 +184,7 @@ export const ActivityLog: React.FC = () => {
               <p className="text-xs text-slate-400 font-medium mt-0.5">Try changing your search keywords or module filter.</p>
             </div>
           ) : (
-            filteredLogs.map((log, idx) => (
+            paginatedLogs.map((log, idx) => (
               <div
                 key={log.id}
                 className={`p-4 sm:p-5 hover:bg-slate-50/70 transition-colors space-y-2.5 animate-slide-up stagger-${Math.min(idx + 1, 5)}`}
@@ -244,7 +261,7 @@ export const ActivityLog: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                filteredLogs.map((log, idx) => (
+                paginatedLogs.map((log, idx) => (
                   <tr key={log.id} className={`hover:bg-slate-50/80 transition-colors animate-slide-up stagger-${Math.min(idx + 1, 5)}`}>
                     <td className="py-3.5 px-5 font-mono font-semibold text-slate-500 text-[11px]">
                       {log.timestamp}
@@ -284,6 +301,19 @@ export const ActivityLog: React.FC = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Footer */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          startIndex={startIndex}
+          endIndex={endIndex}
+          totalItems={filteredLogs.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          itemLabel="logs"
+        />
       </div>
     </div>
   );

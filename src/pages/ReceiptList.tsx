@@ -10,6 +10,8 @@ import { ReceiptPDF } from '../components/pdf/ReceiptPDF';
 import { exportToPDF, printDocument } from '../utils/pdfExport';
 import { Select } from '../components/common/Select';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 import {
   FileCheck,
   Search,
@@ -88,6 +90,21 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
   });
 
   const totalAmountSum = filteredReceipts.reduce((acc, r) => acc + r.total_amount, 0);
+
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    startIndex,
+    endIndex,
+    paginatedData: paginatedReceipts
+  } = usePagination({
+    data: filteredReceipts,
+    initialPageSize: 15,
+    resetDeps: [searchQuery, statusFilter, selectedBrandFilter, selectedBranchFilter, filterType]
+  });
 
   const handleSendTelegramReminder = async (r: Receipt) => {
     const res = await sendTelegramReminder({
@@ -334,7 +351,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
               <p className="text-xs text-slate-400 font-medium mt-0.5">Try adjusting your search query or filter options.</p>
             </div>
           ) : (
-            filteredReceipts.map((r, idx) => {
+            paginatedReceipts.map((r, idx) => {
               const bObj = brands.find(b => b.id === r.brand_id);
               const brObj = branches.find(br => br.id === r.branch_id);
               return (
@@ -490,18 +507,18 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
             <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
               {filteredReceipts.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="py-12 text-center text-slate-400 font-semibold">
+                  <td colSpan={10} className="py-12 text-center text-slate-400 font-medium">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mb-1">
                         <FileCheck className="w-6 h-6 stroke-[1.5]" />
                       </div>
-                      <p className="text-sm font-bold text-slate-800 font-heading">No service receipt records found</p>
+                      <p className="text-sm font-bold text-slate-800 font-heading">No service receipts found</p>
                       <p className="text-xs text-slate-400 font-medium">Try adjusting your search query or filter options.</p>
                     </div>
                   </td>
                 </tr>
               ) : (
-                filteredReceipts.map((r, idx) => {
+                paginatedReceipts.map((r, idx) => {
                   const bObj = brands.find(b => b.id === r.brand_id);
                   const brObj = branches.find(br => br.id === r.branch_id);
                   return (
@@ -611,6 +628,19 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Footer */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          startIndex={startIndex}
+          endIndex={endIndex}
+          totalItems={filteredReceipts.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          itemLabel="receipts"
+        />
       </div>
 
       {/* Modal */}

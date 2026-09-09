@@ -9,6 +9,8 @@ import { QuotationPDF } from '../components/pdf/QuotationPDF';
 import { exportToPDF, printDocument } from '../utils/pdfExport';
 import { Select } from '../components/common/Select';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 import {
   FileText,
   Search,
@@ -85,6 +87,21 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
     const matchesBrand = selectedBrandFilter === 'ALL' || q.brand_id === selectedBrandFilter;
     const matchesBranch = selectedBranchFilter === 'ALL' || q.branch_id === selectedBranchFilter;
     return matchesSearch && matchesStatus && matchesBrand && matchesBranch;
+  });
+
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    startIndex,
+    endIndex,
+    paginatedData: paginatedQuotations
+  } = usePagination({
+    data: filteredQuotations,
+    initialPageSize: 15,
+    resetDeps: [searchQuery, statusFilter, selectedBrandFilter, selectedBranchFilter, filterType]
   });
 
   const handleSendTelegramReminder = async (q: Quotation) => {
@@ -318,7 +335,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
               <p className="text-xs text-slate-400 font-medium mt-0.5">Try adjusting your search query or filter options.</p>
             </div>
           ) : (
-            filteredQuotations.map((q, idx) => (
+            paginatedQuotations.map((q, idx) => (
               <div
                 key={q.id}
                 className={`p-4 sm:p-5 hover:bg-slate-50/70 transition-colors space-y-3.5 animate-slide-up stagger-${Math.min(idx + 1, 5)}`}
@@ -493,7 +510,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
                   </td>
                 </tr>
               ) : (
-                filteredQuotations.map((q, idx) => (
+                paginatedQuotations.map((q, idx) => (
                   <tr key={q.id} className={`hover:bg-slate-50/80 transition-colors animate-slide-up stagger-${Math.min(idx + 1, 5)} group`}>
                     <td className="py-3.5 px-5">
                       <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100/90 border border-slate-200/90 text-slate-800 font-mono font-bold text-xs shadow-2xs">
@@ -611,6 +628,19 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Footer */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          startIndex={startIndex}
+          endIndex={endIndex}
+          totalItems={filteredQuotations.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          itemLabel="quotations"
+        />
       </div>
 
       {/* Modal */}
