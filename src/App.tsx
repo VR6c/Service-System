@@ -1,26 +1,36 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { CommandPalette } from './components/common/CommandPalette';
-import { Login } from './pages/Login';
-import { Dashboard } from './pages/Dashboard';
-import { CreateQuotation } from './pages/CreateQuotation';
-import { QuotationList } from './pages/QuotationList';
-import { CreateReceipt } from './pages/CreateReceipt';
-import { ReceiptList } from './pages/ReceiptList';
-import { CustomerVehicle } from './pages/CustomerVehicle';
-import { ActivityLog } from './pages/ActivityLog';
-import { Reports } from './pages/Reports';
-import { Users } from './pages/Users';
-import { Brands } from './pages/Brands';
-import { Branches } from './pages/Branches';
-import { Settings } from './pages/Settings';
 import type { Quotation, Receipt } from './types';
 import { LanguageProvider } from './context/LanguageContext';
 import { DialogProvider } from './context/DialogContext';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 
+// Route-level code-splitting with React.lazy to eliminate monolithic initial bundle
+const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })));
+const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
+const CreateQuotation = lazy(() => import('./pages/CreateQuotation').then(m => ({ default: m.CreateQuotation })));
+const QuotationList = lazy(() => import('./pages/QuotationList').then(m => ({ default: m.QuotationList })));
+const CreateReceipt = lazy(() => import('./pages/CreateReceipt').then(m => ({ default: m.CreateReceipt })));
+const ReceiptList = lazy(() => import('./pages/ReceiptList').then(m => ({ default: m.ReceiptList })));
+const CustomerVehicle = lazy(() => import('./pages/CustomerVehicle').then(m => ({ default: m.CustomerVehicle })));
+const ActivityLog = lazy(() => import('./pages/ActivityLog').then(m => ({ default: m.ActivityLog })));
+const Reports = lazy(() => import('./pages/Reports').then(m => ({ default: m.Reports })));
+const Users = lazy(() => import('./pages/Users').then(m => ({ default: m.Users })));
+const Brands = lazy(() => import('./pages/Brands').then(m => ({ default: m.Brands })));
+const Branches = lazy(() => import('./pages/Branches').then(m => ({ default: m.Branches })));
+const Settings = lazy(() => import('./pages/Settings').then(m => ({ default: m.Settings })));
+
+const PageLoadingFallback: React.FC = () => (
+  <div className="flex items-center justify-center min-h-[380px] w-full p-8" role="status" aria-label="Loading page">
+    <div className="flex flex-col items-center gap-3">
+      <div className="w-9 h-9 border-3 border-red-500/20 border-t-red-600 rounded-full animate-spin" />
+      <span className="text-xs font-semibold text-slate-400 tracking-wider uppercase font-mono">Loading...</span>
+    </div>
+  </div>
+);
 
 const MainApp: React.FC = () => {
   const { currentUser } = useAuth();
@@ -32,14 +42,17 @@ const MainApp: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
 
-
   useEffect(() => {
     if (activeTab !== 'quotation-create') setEditingQuotation(null);
     if (activeTab !== 'receipt-create') setEditingReceipt(null);
   }, [activeTab]);
 
   if (!currentUser) {
-    return <Login />;
+    return (
+      <Suspense fallback={<PageLoadingFallback />}>
+        <Login />
+      </Suspense>
+    );
   }
 
   const handleToggleMenu = () => {
@@ -261,9 +274,11 @@ const MainApp: React.FC = () => {
           onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-7">
-          <div key={activeTab} className="animate-page-enter">
-            {renderContent()}
-          </div>
+          <Suspense fallback={<PageLoadingFallback />}>
+            <div key={activeTab} className="animate-page-enter">
+              {renderContent()}
+            </div>
+          </Suspense>
         </main>
       </div>
 

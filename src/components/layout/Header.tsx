@@ -94,14 +94,21 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* User Profile Card */}
         <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200">
-          <img
-            src="/avatar.jpg"
-            alt={userName}
-            className="w-9 h-9 rounded-full object-cover border border-slate-200 shadow-2xs"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=E31B23&color=fff`;
-            }}
-          />
+          <picture>
+            <source srcSet="/avatar.webp" type="image/webp" />
+            <img
+              src="/avatar.jpg"
+              alt={userName}
+              width={36}
+              height={36}
+              loading="lazy"
+              decoding="async"
+              className="w-9 h-9 rounded-full object-cover border border-slate-200 shadow-2xs"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=E31B23&color=fff`;
+              }}
+            />
+          </picture>
           <div className="hidden sm:flex flex-col text-left min-w-[140px]">
             <Select
               value={currentUser?.id || ''}

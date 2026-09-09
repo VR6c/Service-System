@@ -96,6 +96,12 @@ const QuotationSchema = new mongoose.Schema(
   { timestamps: true, strict: false }
 );
 
+// Performance indexes for faster query filtering and sorting
+QuotationSchema.index({ createdAt: -1 });
+QuotationSchema.index({ quotation_no: 1 });
+QuotationSchema.index({ plate_no: 1 });
+QuotationSchema.index({ brand_id: 1, status: 1 });
+
 const ReceiptSchema = new mongoose.Schema(
   {
     id: { type: String, required: true, unique: true },
@@ -139,6 +145,11 @@ const ReceiptSchema = new mongoose.Schema(
   },
   { timestamps: true, strict: false }
 );
+
+ReceiptSchema.index({ createdAt: -1 });
+ReceiptSchema.index({ receipt_no: 1 });
+ReceiptSchema.index({ plate_no: 1 });
+ReceiptSchema.index({ brand_id: 1, status: 1 });
 
 const SettingsSchema = new mongoose.Schema(
   {

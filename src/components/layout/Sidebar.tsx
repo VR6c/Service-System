@@ -112,14 +112,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="pt-3 border-t border-slate-800/80 space-y-2 mt-auto">
         <div className={`flex items-center ${collapsed ? 'justify-center p-1.5' : 'justify-between p-2.5'} rounded-xl bg-[#0F1A2B] border border-slate-800`}>
           <div className="flex items-center gap-3 overflow-hidden">
-            <img
-              src="/avatar.jpg"
-              alt={currentUser?.name || 'Admin'}
-              className="w-9 h-9 rounded-full object-cover border border-slate-700 shrink-0 transition-transform duration-200 hover:scale-105"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser?.name || 'Admin')}&background=E31B23&color=fff`;
-              }}
-            />
+            <picture>
+              <source srcSet="/avatar.webp" type="image/webp" />
+              <img
+                src="/avatar.jpg"
+                alt={currentUser?.name || 'Admin'}
+                width={36}
+                height={36}
+                loading="lazy"
+                decoding="async"
+                className="w-9 h-9 rounded-full object-cover border border-slate-700 shrink-0 transition-transform duration-200 hover:scale-105"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser?.name || 'Admin')}&background=E31B23&color=fff`;
+                }}
+              />
+            </picture>
             {!collapsed && (
               <div className="flex flex-col min-w-0 text-left">
                 <span className="text-sm font-black text-white truncate leading-tight font-heading">

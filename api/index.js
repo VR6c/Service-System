@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import compression from 'compression';
 import { connectDB } from '../server/db.js';
 import {
   BrandModel,
@@ -15,6 +16,8 @@ dotenv.config();
 
 const app = express();
 
+// High-performance gzip/deflate compression for API responses > 1KB
+app.use(compression({ threshold: 1024 }));
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
@@ -38,13 +41,16 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Seed Initial Data Helper
+// Seed Initial Data Helper with single-flight concurrency lock
 let isSeeded = false;
+let seedPromise = null;
 async function seedInitialDataIfNeeded() {
   if (isSeeded) return;
-  try {
-    const brandCount = await BrandModel.countDocuments();
-    if (brandCount === 0) {
+  if (!seedPromise) {
+    seedPromise = (async () => {
+      try {
+        const brandCount = await BrandModel.estimatedDocumentCount();
+        if (brandCount === 0) {
       console.log('Seeding initial MongoDB data...');
       await BrandModel.insertMany([
         {
@@ -241,11 +247,16 @@ async function seedInitialDataIfNeeded() {
         telegram_reminder_enabled: false
       });
       console.log('Seeding completed.');
+      }
+      isSeeded = true;
+    } catch (err) {
+      console.error('Error seeding initial data:', err);
+    } finally {
+      seedPromise = null;
     }
-    isSeeded = true;
-  } catch (err) {
-    console.error('Error seeding initial data:', err);
+  })();
   }
+  return seedPromise;
 }
 
 // Routes
