@@ -127,13 +127,13 @@ export const Reports: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
       {/* Header & Filter Card */}
-      <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-xs border border-slate-200/80 space-y-4 no-print">
+      <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-2xs border border-slate-200/90 space-y-4 no-print">
         {/* Top Header & Actions */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5 min-w-0">
-            <div className="p-3 bg-red-50 text-red-600 rounded-xl shadow-2xs shrink-0 border border-red-200">
+            <div className="w-11 h-11 sm:w-12 sm:h-12 bg-red-50 text-red-600 rounded-2xl border border-red-100 flex items-center justify-center shadow-xs shrink-0">
               <BarChart3 className="w-6 h-6 text-red-600" />
             </div>
             <div className="min-w-0">
@@ -258,7 +258,7 @@ export const Reports: React.FC = () => {
 
       {/* Report Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 no-print">
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs flex items-center justify-between">
           <div>
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Documents</span>
             <div className="text-3xl font-black text-slate-900 font-heading mt-1">
@@ -270,7 +270,7 @@ export const Reports: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs flex items-center justify-between">
           <div>
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Report Total Amount</span>
             <div className="text-3xl font-black text-emerald-700 font-heading mt-1">
@@ -366,7 +366,7 @@ export const Reports: React.FC = () => {
 
         {/* Desktop Table View (>= lg, and always for print) */}
         <div className="hidden lg:block print:block overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full text-left text-xs border-collapse min-w-[900px]">
             <thead className="bg-slate-50/90 text-slate-600 font-heading font-extrabold uppercase text-[11px] tracking-wider border-b border-slate-200/80 sticky top-0 z-10 backdrop-blur-xs">
               <tr>
                 <th className="py-3.5 px-4">#</th>

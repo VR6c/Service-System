@@ -217,7 +217,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
         {/* Top Section: Title, Stats & Primary Action */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
           <div className="flex items-center gap-3.5 min-w-0">
-            <div className="p-3 bg-amber-50 text-amber-600 rounded-xl shadow-2xs shrink-0 font-bold border border-amber-200">
+            <div className="w-11 h-11 sm:w-12 sm:h-12 bg-amber-50 text-amber-600 rounded-2xl border border-amber-200/90 flex items-center justify-center shadow-xs shrink-0 font-bold">
               <FileText className="w-6 h-6 stroke-[2.5]" />
             </div>
             <div className="min-w-0">
@@ -409,11 +409,11 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
                 </div>
 
                 {/* Actions Toolbar */}
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5 flex-wrap">
+                <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <button
                       onClick={() => setSelectedQuotation(q)}
-                      className="action-btn-hover px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl shadow-2xs font-bold text-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
+                      className="action-btn-hover px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl shadow-2xs font-bold text-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
                       title="View Document"
                     >
                       <Eye className="w-3.5 h-3.5" />
@@ -422,7 +422,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
 
                     <button
                       onClick={() => handleSendTelegramReminder(q)}
-                      className="action-btn-hover p-1.5 bg-sky-50 hover:bg-sky-600 text-sky-600 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
+                      className="action-btn-hover p-2 bg-sky-50 hover:bg-sky-600 text-sky-600 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95 flex items-center justify-center"
                       title="Send Telegram Reminder to Group"
                     >
                       <Send className="w-3.5 h-3.5" />
@@ -435,7 +435,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
                           printDocument();
                         }, 150);
                       }}
-                      className="action-btn-hover p-1.5 bg-slate-100 hover:bg-slate-800 text-slate-700 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
+                      className="action-btn-hover p-2 bg-slate-100 hover:bg-slate-800 text-slate-700 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95 flex items-center justify-center"
                       title="Print Document"
                     >
                       <Printer className="w-3.5 h-3.5" />
@@ -448,7 +448,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
                           exportToPDF('quotation-pdf-document', q.quotation_no);
                         }, 150);
                       }}
-                      className="action-btn-hover p-1.5 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
+                      className="action-btn-hover p-2 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95 flex items-center justify-center"
                       title="Download PDF"
                     >
                       <Download className="w-3.5 h-3.5" />
@@ -456,7 +456,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
 
                     <button
                       onClick={() => onConvertToReceipt(q)}
-                      className="action-btn-hover p-1.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
+                      className="action-btn-hover p-2 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95 flex items-center justify-center"
                       title="Convert to Official Receipt"
                     >
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -464,7 +464,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
 
                     <button
                       onClick={() => onEdit(q)}
-                      className="action-btn-hover p-1.5 bg-amber-50 hover:bg-amber-500 text-amber-700 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
+                      className="action-btn-hover p-2 bg-amber-50 hover:bg-amber-500 text-amber-700 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95 flex items-center justify-center"
                       title="Edit Quotation"
                       aria-label={`Edit quotation ${q.quotation_no}`}
                     >
@@ -475,7 +475,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
                   {currentUser?.role === 'Admin' && (
                     <button
                       onClick={() => handleDelete(q)}
-                      className="action-btn-hover p-1.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl shadow-2xs cursor-pointer ml-auto active:scale-95"
+                      className="action-btn-hover p-2 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl shadow-2xs cursor-pointer ml-auto active:scale-95 flex items-center justify-center"
                       title="Delete Quotation"
                       aria-label={`Delete quotation ${q.quotation_no}`}
                     >
@@ -490,7 +490,7 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
 
         {/* Desktop Table View (>= lg) */}
         <div className="hidden lg:block overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full text-left border-collapse text-xs min-w-[950px]">
             <thead className="bg-slate-50/90 text-slate-600 font-heading font-extrabold uppercase text-[11px] tracking-wider border-b border-slate-200/80 sticky top-0 z-10 backdrop-blur-xs">
               <tr>
                 <th className="py-3.5 px-5">Quotation No</th>

@@ -271,7 +271,7 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
   const countInactive = records.filter((r) => r.status === 'Inactive').length;
 
   return (
-    <div className="space-y-6 pb-12 font-sans">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
       {/* Top Banner & Quick Metrics */}
       <div className="bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-2xs border border-slate-200/90 flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6">
         <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
@@ -323,10 +323,10 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
       </div>
 
       {/* Search & Filter Controls */}
-      <div className="bg-white rounded-2xl p-4 shadow-2xs border border-slate-200/90 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl p-4 shadow-2xs border border-slate-200/90 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
         {/* Search Input */}
-        <div className="relative w-full sm:w-96">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+        <div className="relative flex-1 min-w-0 w-full sm:max-w-md">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             placeholder="Search customer, phone, plate number, VIN, or ID..."
@@ -337,7 +337,7 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
-              className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -379,8 +379,8 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
 
       {/* Customer Registry Table */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden no-print">
-        {/* Mobile Card View (< md) */}
-        <div className="md:hidden divide-y divide-slate-100">
+        {/* Mobile Card View (< lg) */}
+        <div className="lg:hidden divide-y divide-slate-100">
           {filteredRecords.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
               <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mb-2">
@@ -505,9 +505,9 @@ export const CustomerVehicle: React.FC<CustomerVehicleProps> = ({
           )}
         </div>
 
-        {/* Desktop Table View (>= md) */}
-        <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+        {/* Desktop Table View (>= lg) */}
+        <div className="hidden lg:block overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs min-w-[850px]">
             <thead className="bg-slate-50/90 text-slate-600 font-heading font-extrabold uppercase text-[11px] tracking-wider border-b border-slate-200/80 sticky top-0 z-10 backdrop-blur-xs">
               <tr>
                 <th className="py-3.5 px-5">Customer</th>

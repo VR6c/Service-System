@@ -268,7 +268,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   });
 
   return (
-    <div className="space-y-6 pb-12 animate-fade-in font-sans">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-fade-in font-sans">
       {/* Top Welcome Banner & Date Range Selector */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="min-w-0">
@@ -293,7 +293,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <p className="text-xs font-extrabold text-slate-900 leading-tight">{currentDateStr}</p>
               <p className="text-[10px] text-slate-400 font-semibold leading-none mt-0.5 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>Live Sync • MongoDB Active</span>
+                <span>Live Sync • Active</span>
               </p>
             </div>
           </div>
@@ -576,7 +576,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs min-w-[480px]">
               <thead>
                 <tr className="text-slate-400 font-bold uppercase border-b border-slate-100 text-[10px]">
                   <th className="py-2.5 px-3">Workshop Branch</th>
@@ -619,7 +619,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs min-w-[480px]">
               <thead>
                 <tr className="text-slate-400 font-bold uppercase border-b border-slate-100 text-[10px]">
                   <th className="py-2.5 px-3">Receipt No.</th>
@@ -641,11 +641,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     <td className="py-3 px-3 text-slate-600 text-[11px]">{r.vehicle_model} / <span className="font-semibold">{r.plate_no}</span></td>
                     <td className="py-3 px-3 text-right font-extrabold text-slate-900">${Number(r.total_amount || 0).toFixed(2)}</td>
                     <td className="py-3 px-3 text-center">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${
-                        r.status === 'Completed'
-                          ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-                          : 'bg-amber-100 text-amber-700 border border-amber-200'
-                      }`}>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${r.status === 'Completed'
+                        ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                        : 'bg-amber-100 text-amber-700 border border-amber-200'
+                        }`}>
                         {r.status}
                       </span>
                     </td>

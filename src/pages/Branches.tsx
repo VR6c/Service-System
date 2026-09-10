@@ -135,21 +135,25 @@ export const Branches: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
       {/* Header & Filter */}
-      <div className="bg-white rounded-2xl p-5 shadow-xs border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-black text-slate-900 font-heading flex items-center gap-2">
-            <GitBranch className="w-5 h-5 text-red-600" />
-            Branch Center Management
-          </h2>
-          <p className="text-xs text-slate-500 font-medium">
-            Manage service center locations, contact details, and brand affiliations.
-          </p>
+      <div className="bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-2xs border border-slate-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 no-print">
+        <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-red-50 text-red-600 rounded-2xl border border-red-100 flex items-center justify-center shadow-xs shrink-0">
+            <GitBranch className="w-6 h-6 stroke-[2.2]" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-extrabold text-slate-900 font-heading tracking-tight truncate">
+              Branch Center Management
+            </h1>
+            <p className="text-xs text-slate-500 font-medium mt-0.5 sm:mt-1 leading-relaxed">
+              Manage service center locations, contact details, and brand affiliations.
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="w-44">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto shrink-0">
+          <div className="w-full sm:w-44">
             <Select
               value={filterBrandId}
               onChange={setFilterBrandId}
@@ -163,10 +167,10 @@ export const Branches: React.FC = () => {
 
           <button
             onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer active:scale-[0.98]"
           >
             <Plus className="w-4 h-4" />
-            Add Branch
+            <span>Add Branch</span>
           </button>
         </div>
       </div>

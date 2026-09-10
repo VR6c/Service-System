@@ -106,7 +106,7 @@ export const Select: React.FC<SelectProps> = ({
 
   // Size variations
   const sizeStyles = {
-    sm: 'px-2 py-1 text-[11px]',
+    sm: 'px-3 py-2 text-xs',
     md: 'px-3.5 py-2.5 text-xs',
     lg: 'px-4 py-3 text-sm',
   };

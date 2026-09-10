@@ -4,6 +4,8 @@ import type { User, UserRole } from '../types';
 import { Modal } from '../components/common/Modal';
 import { useConfirm, useAlert, useToast } from '../context/DialogContext';
 import { Select } from '../components/common/Select';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/common/Pagination';
 import {
   Users as UsersIcon,
   UserPlus,
@@ -20,7 +22,10 @@ import {
   Sparkles,
   AlertCircle,
   Save,
-  Check
+  Check,
+  Search,
+  Filter,
+  X
 } from 'lucide-react';
 
 export const Users: React.FC = () => {
@@ -31,6 +36,39 @@ export const Users: React.FC = () => {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+
+  // Search & Filter State
+  const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+
+  const filteredUsers = users.filter((u) => {
+    const term = searchTerm.toLowerCase().trim();
+    const matchesSearch =
+      !term ||
+      u.name.toLowerCase().includes(term) ||
+      u.email.toLowerCase().includes(term) ||
+      (u.branch && u.branch.toLowerCase().includes(term));
+
+    const matchesRole = roleFilter === 'ALL' || u.role === roleFilter;
+    const matchesStatus = statusFilter === 'ALL' || u.status === statusFilter;
+    return matchesSearch && matchesRole && matchesStatus;
+  });
+
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    startIndex,
+    endIndex,
+    paginatedData: paginatedUsers
+  } = usePagination({
+    data: filteredUsers,
+    initialPageSize: 10,
+    resetDeps: [searchTerm, roleFilter, statusFilter]
+  });
 
   // Section A: Login & Account Info State
   const [name, setName] = useState('');
@@ -277,30 +315,84 @@ export const Users: React.FC = () => {
 
         <button
           onClick={openAddModal}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4.5 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold rounded-xl text-xs transition-all shadow-xs cursor-pointer shrink-0 active:scale-[0.98]"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold rounded-xl text-xs transition-all shadow-xs cursor-pointer shrink-0 active:scale-[0.98]"
         >
           <UserPlus className="w-4 h-4" />
           <span>Add New Staff User</span>
         </button>
       </div>
 
+      {/* Search & Filter Controls */}
+      <div className="bg-white rounded-2xl p-4 shadow-2xs border border-slate-200/90 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 no-print">
+        {/* Search Input */}
+        <div className="relative flex-1 min-w-0 w-full sm:max-w-md">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search staff by name, email, branch..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-9 text-xs text-slate-900 placeholder-slate-400 font-semibold focus:outline-none focus:border-red-500 focus:bg-white transition-all shadow-2xs"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Filter Dropdowns */}
+        <div className="flex items-center gap-2.5 w-full sm:w-auto shrink-0">
+          <div className="w-full sm:w-44 flex-1 sm:flex-none">
+            <Select
+              icon={<Shield className="w-3.5 h-3.5" />}
+              value={roleFilter}
+              onChange={setRoleFilter}
+              options={[
+                { value: 'ALL', label: 'All Roles' },
+                { value: 'Admin', label: 'Admin' },
+                { value: 'Service Advisor', label: 'Service Advisor' }
+              ]}
+              size="sm"
+            />
+          </div>
+
+          <div className="w-full sm:w-40 flex-1 sm:flex-none">
+            <Select
+              icon={<Filter className="w-3.5 h-3.5" />}
+              value={statusFilter}
+              onChange={setStatusFilter}
+              options={[
+                { value: 'ALL', label: 'All Statuses' },
+                { value: 'Active', label: 'Active' },
+                { value: 'Inactive', label: 'Inactive' }
+              ]}
+              size="sm"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Users Table */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden no-print">
-        {/* Mobile Card View (< md) */}
-        <div className="md:hidden divide-y divide-slate-100">
-          {users.length === 0 ? (
+        {/* Mobile Card View (< lg) */}
+        <div className="lg:hidden divide-y divide-slate-100">
+          {filteredUsers.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
               <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mb-2">
                 <UsersIcon className="w-6 h-6 stroke-[1.5]" />
               </div>
               <p className="text-sm font-bold text-slate-800 font-heading">No staff users found</p>
-              <p className="text-xs text-slate-400 font-medium mt-0.5">Click "Add New Staff User" to create an account.</p>
+              <p className="text-xs text-slate-400 font-medium mt-0.5">Try adjusting your search query or filter options.</p>
             </div>
           ) : (
-            users.map((u, idx) => (
+            paginatedUsers.map((u, idx) => (
               <div
                 key={u.id}
-                className={`p-4 sm:p-5 hover:bg-slate-50/70 transition-colors space-y-3.5 animate-slide-up stagger-${Math.min(idx + 1, 5)}`}
+                className={`transaction-card p-4 sm:p-5 space-y-3.5 animate-slide-up stagger-${Math.min(idx + 1, 5)}`}
               >
                 {/* User Header */}
                 <div className="flex items-start justify-between gap-3">
@@ -415,9 +507,9 @@ export const Users: React.FC = () => {
           )}
         </div>
 
-        {/* Desktop Table View (>= md) */}
-        <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+        {/* Desktop Table View (>= lg) */}
+        <div className="hidden lg:block overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs min-w-[850px]">
             <thead className="bg-slate-50/90 text-slate-600 font-heading font-extrabold uppercase text-[11px] tracking-wider border-b border-slate-200/80 sticky top-0 z-10 backdrop-blur-xs">
               <tr>
                 <th className="py-3.5 px-5">User Name</th>
@@ -430,7 +522,7 @@ export const Users: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
-              {users.length === 0 ? (
+              {filteredUsers.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-slate-400 font-medium">
                     <div className="flex flex-col items-center justify-center gap-2">
@@ -438,13 +530,13 @@ export const Users: React.FC = () => {
                         <UsersIcon className="w-6 h-6 stroke-[1.5]" />
                       </div>
                       <p className="text-sm font-bold text-slate-800 font-heading">No staff users found</p>
-                      <p className="text-xs text-slate-400 font-medium">Click "Add New Staff User" to create an account.</p>
+                      <p className="text-xs text-slate-400 font-medium">Try adjusting your search query or filter options.</p>
                     </div>
                   </td>
                 </tr>
               ) : (
-                users.map(u => (
-                  <tr key={u.id} className="hover:bg-slate-50/80 transition-colors group">
+                paginatedUsers.map(u => (
+                  <tr key={u.id} className="transaction-row animate-slide-up stagger-1 group hover:bg-slate-50/80 transition-colors">
                     <td className="py-3.5 px-5 font-bold text-slate-900 flex items-center gap-3 font-heading text-sm">
                       <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs text-white shadow-xs ${
@@ -543,6 +635,19 @@ export const Users: React.FC = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Footer */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          startIndex={startIndex}
+          endIndex={endIndex}
+          totalItems={filteredUsers.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          itemLabel="staff users"
+        />
       </div>
 
       {/* Redesigned Portal Modal: Add / Edit User */}

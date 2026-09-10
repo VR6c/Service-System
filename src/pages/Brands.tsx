@@ -146,25 +146,29 @@ export const Brands: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
       {/* Header */}
-      <div className="bg-white rounded-2xl p-5 shadow-xs border border-slate-200/80 flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-black text-slate-900 font-heading flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-red-600" />
-            Brand Management
-          </h2>
-          <p className="text-xs text-slate-500 font-medium">
-            Configure multi-brand settings, headers, logos, and document numbering prefixes for BYD & DENZA.
-          </p>
+      <div className="bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-2xs border border-slate-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 no-print">
+        <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-red-50 text-red-600 rounded-2xl border border-red-100 flex items-center justify-center shadow-xs shrink-0">
+            <Building2 className="w-6 h-6 stroke-[2.2]" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-extrabold text-slate-900 font-heading tracking-tight truncate">
+              Brand Management
+            </h1>
+            <p className="text-xs text-slate-500 font-medium mt-0.5 sm:mt-1 leading-relaxed">
+              Configure multi-brand settings, headers, logos, and document numbering prefixes for BYD & DENZA.
+            </p>
+          </div>
         </div>
 
         <button
           onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer active:scale-[0.98] shrink-0"
         >
           <Plus className="w-4 h-4" />
-          Add New Brand
+          <span>Add New Brand</span>
         </button>
       </div>
 
@@ -173,7 +177,7 @@ export const Brands: React.FC = () => {
         {brands.map(b => {
           const isDenza = b.brand_code.toUpperCase().includes('DENZA');
           return (
-            <div key={b.id} className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-4">
+            <div key={b.id} className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/90 shadow-2xs flex flex-col justify-between space-y-4 hover:border-slate-300 transition-colors">
               <div className="flex items-start justify-between border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-3">
                   {b.logo_url ? (

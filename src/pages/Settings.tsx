@@ -258,7 +258,7 @@ export const Settings: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
       {/* Header Banner */}
       <div className="bg-white rounded-2xl p-4 sm:p-5 lg:p-6 shadow-2xs border border-slate-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 no-print">
         <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">

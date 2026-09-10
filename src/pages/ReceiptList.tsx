@@ -229,7 +229,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
         {/* Top Section: Title, Stats & Primary Action */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
           <div className="flex items-center gap-3.5 min-w-0">
-            <div className="p-3 bg-red-50 text-red-600 rounded-xl shadow-2xs shrink-0 border border-red-200">
+            <div className="w-11 h-11 sm:w-12 sm:h-12 bg-red-50 text-red-600 rounded-2xl border border-red-100 flex items-center justify-center shadow-xs shrink-0">
               <FileCheck className="w-6 h-6 text-red-600" />
             </div>
             <div className="min-w-0">
@@ -423,11 +423,11 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                   </div>
 
                   {/* Actions Toolbar */}
-                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5 flex-wrap">
+                  <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <button
                         onClick={() => setSelectedReceipt(r)}
-                        className="action-btn-hover px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl shadow-2xs font-bold text-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
+                        className="action-btn-hover px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl shadow-2xs font-bold text-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
                         title="View Document"
                       >
                         <Eye className="w-3.5 h-3.5" />
@@ -436,7 +436,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
 
                       <button
                         onClick={() => handleSendTelegramReminder(r)}
-                        className="action-btn-hover p-1.5 bg-sky-50 hover:bg-sky-600 text-sky-600 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
+                        className="action-btn-hover p-2 bg-sky-50 hover:bg-sky-600 text-sky-600 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95 flex items-center justify-center"
                         title="Send Telegram Reminder to Group"
                       >
                         <Send className="w-3.5 h-3.5" />
@@ -449,7 +449,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                             printDocument();
                           }, 150);
                         }}
-                        className="action-btn-hover p-1.5 bg-slate-100 hover:bg-slate-800 text-slate-700 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
+                        className="action-btn-hover p-2 bg-slate-100 hover:bg-slate-800 text-slate-700 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95 flex items-center justify-center"
                         title="Print Document"
                       >
                         <Printer className="w-3.5 h-3.5" />
@@ -458,7 +458,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                       <button
                         onClick={() => handleDirectDownload(r)}
                         disabled={downloadReceipt !== null}
-                        className="action-btn-hover p-1.5 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
+                        className="action-btn-hover p-2 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95 flex items-center justify-center"
                         title={`Download ${r.receipt_no}.pdf`}
                         aria-label={`Download ${r.receipt_no} as PDF`}
                       >
@@ -467,7 +467,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
 
                       <button
                         onClick={() => onEdit(r)}
-                        className="action-btn-hover p-1.5 bg-amber-50 hover:bg-amber-500 text-amber-700 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
+                        className="action-btn-hover p-2 bg-amber-50 hover:bg-amber-500 text-amber-700 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95 flex items-center justify-center"
                         title="Edit Receipt"
                         aria-label={`Edit receipt ${r.receipt_no}`}
                       >
@@ -478,7 +478,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                     {currentUser?.role === 'Admin' && (
                       <button
                         onClick={() => handleDelete(r)}
-                        className="action-btn-hover p-1.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl shadow-2xs cursor-pointer ml-auto active:scale-95"
+                        className="action-btn-hover p-2 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl shadow-2xs cursor-pointer ml-auto active:scale-95 flex items-center justify-center"
                         title="Delete Receipt"
                         aria-label={`Delete receipt ${r.receipt_no}`}
                       >
@@ -494,7 +494,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
 
         {/* Desktop Table View (>= lg) */}
         <div className="hidden lg:block overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full text-left border-collapse text-xs min-w-[950px]">
             <thead className="bg-slate-50/90 text-slate-600 font-heading font-extrabold uppercase text-[11px] tracking-wider border-b border-slate-200/80 sticky top-0 z-10 backdrop-blur-xs">
               <tr>
                 <th className="py-3.5 px-5">Receipt No</th>
