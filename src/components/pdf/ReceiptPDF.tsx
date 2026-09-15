@@ -1,8 +1,6 @@
 import React from 'react';
 import type { Receipt, Brand, Branch, SystemSettings } from '../../types';
 import { StorageService } from '../../services/storageService';
-import { BYDLogo } from '../common/BYDLogo';
-import { DENZALogo } from '../common/DENZALogo';
 
 interface ReceiptPDFProps {
   receipt: Receipt;
@@ -30,18 +28,20 @@ export const ReceiptPDF: React.FC<ReceiptPDFProps> = ({
   documentId = 'receipt-pdf-document',
   className = ''
 }) => {
-  const brands = StorageService.getBrands();
-  const matchedBrand = brand || brands.find(b => 
-    b.id === receipt.brand_id ||
-    (receipt.brand_name && (b.brand_name.toLowerCase() === receipt.brand_name.toLowerCase() || b.brand_code.toLowerCase() === receipt.brand_name.toLowerCase())) ||
-    receipt.receipt_no.toUpperCase().startsWith(b.receipt_prefix.toUpperCase())
-  );
-
-  const isDenza = (matchedBrand?.brand_code || receipt.brand_name || '').toUpperCase().includes('DENZA') ||
-    receipt.receipt_no.toUpperCase().startsWith('DENZA');
-
   // Guard against null/undefined receipt
   if (!receipt) return null;
+
+  // Resolve static two brand logic: 1. BYD, 2. DENZA
+  const { brand: resolvedBrand, isDenza } = StorageService.resolveBrand(
+    brand
+      ? { brand_id: brand.id, brand_code: brand.brand_code, brand_name: brand.brand_name }
+      : {
+          brand_id: receipt.brand_id,
+          brand_name: receipt.brand_name,
+          receipt_no: receipt.receipt_no
+        }
+  );
+  const matchedBrand = brand || resolvedBrand;
 
   // Fill up to 5 rows for authentic document height matching File 1
   const rawItems = Array.isArray(receipt.fee_items) ? receipt.fee_items : [];
@@ -71,13 +71,12 @@ export const ReceiptPDF: React.FC<ReceiptPDFProps> = ({
   }
 
   // Header Info - customizable via Settings & Brand/Branch
-  const logoType = matchedBrand?.logo_type || settings?.header_logo_type || (isDenza ? 'denza' : 'byd');
-  const customLogoUrl = matchedBrand?.logo_url || (isDenza ? settings?.denza_logo_url : settings?.byd_logo_url) || settings?.header_logo_url || '';
+  const customLogoUrl = matchedBrand.logo_url || (isDenza ? settings?.denza_logo_url : settings?.byd_logo_url) || settings?.header_logo_url || '';
 
-  const centerTitle = matchedBrand?.service_center_name || settings?.receipt_header_english_title || 'BYD SALES & SERVICE CENTER';
-  const localTitle = matchedBrand?.local_company_name || settings?.receipt_header_khmer_title || 'មិនអាចយកទៅប្រកាសពន្ធឬប្រកាសជាប់ពន្ធ';
-  const phoneText = branch?.telephone || matchedBrand?.telephone || settings?.phone || '+855 63 965 432';
-  const addressText = branch?.address || matchedBrand?.address || settings?.address || 'National Road 6, Svay Dangkum, Siem Reap';
+  const centerTitle = matchedBrand.service_center_name || (isDenza ? 'DENZA EXECUTIVE SERVICE CENTER' : (settings?.receipt_header_english_title || 'BYD SALES & SERVICE CENTER'));
+  const localTitle = matchedBrand.local_company_name || (isDenza ? 'មជ្ឈមណ្ឌលសេវាកម្មរថយន្តអគ្គិសនីដេនហ្សា' : (settings?.receipt_header_khmer_title || 'មិនអាចយកទៅប្រកាសពន្ធឬប្រកាសជាប់ពន្ធ'));
+  const phoneText = branch?.telephone || matchedBrand.telephone || settings?.phone || (isDenza ? '+855 23 999 777' : '+855 23 888 999');
+  const addressText = branch?.address || matchedBrand.address || settings?.address || (isDenza ? 'No. 100 Hun Sen Blvd, Chak Angre Krom, Phnom Penh, Cambodia' : 'No. 888 Monivong Blvd, Tonle Bassac, Chamkarmon, Phnom Penh, Cambodia');
 
   return (
     <div
@@ -93,12 +92,8 @@ export const ReceiptPDF: React.FC<ReceiptPDFProps> = ({
             {/* Top Row: Logo Left + Centered Header Titles */}
             <div className="flex items-start justify-between">
               <div className="shrink-0 pt-0.5 max-w-[130px] overflow-hidden">
-                {customLogoUrl && customLogoUrl.trim() !== '' ? (
+                {customLogoUrl && customLogoUrl.trim() !== '' && (
                   <img src={customLogoUrl} alt="Logo" className="h-10 object-contain" />
-                ) : logoType === 'denza' || isDenza ? (
-                  <DENZALogo variant="blue" className="h-10" />
-                ) : (
-                  <BYDLogo variant="red" className="h-10" />
                 )}
               </div>
 

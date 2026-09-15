@@ -1,8 +1,6 @@
 import React from 'react';
 import type { Quotation, Brand, SystemSettings, Branch } from '../../types';
 import { StorageService } from '../../services/storageService';
-import { BYDLogo } from '../common/BYDLogo';
-import { DENZALogo } from '../common/DENZALogo';
 
 interface QuotationPDFProps {
   quotation: Quotation;
@@ -13,22 +11,24 @@ interface QuotationPDFProps {
 
 export const QuotationPDF: React.FC<QuotationPDFProps> = ({ quotation, brand, settings, branch: _branch }) => {
   const currentSettings = settings || StorageService.getSettings();
-  const brands = StorageService.getBrands();
-  const matchedBrand = brand || brands.find(b => 
-    (quotation.brand_name && (b.brand_name.toLowerCase() === quotation.brand_name.toLowerCase() || b.brand_code.toLowerCase() === quotation.brand_name.toLowerCase())) ||
-    quotation.quotation_no.toUpperCase().startsWith(b.document_prefix.toUpperCase())
+  // Resolve static two brand logic: 1. BYD, 2. DENZA
+  const { brand: resolvedBrand, isDenza } = StorageService.resolveBrand(
+    brand
+      ? { brand_id: brand.id, brand_code: brand.brand_code, brand_name: brand.brand_name }
+      : {
+          brand_id: quotation.brand_id,
+          brand_name: quotation.brand_name,
+          quotation_no: quotation.quotation_no
+        }
   );
+  const matchedBrand = brand || resolvedBrand;
 
-  const isDenza = (matchedBrand?.brand_code || quotation.brand_name || '').toUpperCase().includes('DENZA') ||
-    quotation.quotation_no.toUpperCase().startsWith('DENZA');
+  const customLogoUrl = matchedBrand.logo_url || (isDenza ? currentSettings?.denza_logo_url : currentSettings?.byd_logo_url) || currentSettings?.header_logo_url || '';
 
-  const logoType = matchedBrand?.logo_type || currentSettings?.header_logo_type || (isDenza ? 'denza' : 'byd');
-  const customLogoUrl = matchedBrand?.logo_url || (isDenza ? currentSettings?.denza_logo_url : currentSettings?.byd_logo_url) || currentSettings?.header_logo_url || '';
-
-  const englishTitle = matchedBrand?.service_center_name || currentSettings?.quotation_header_english_title || 'Huan Ya He Zhong (Cambodia) Trading Co., Ltd';
-  const khmerTitle = matchedBrand?.local_company_name || currentSettings?.quotation_header_khmer_title || 'ហ័ន យ៉ា ហ៊ឺ ​ ចុង (ខេមបូឌា) ត្រេឌីង ឯ.ក';
-  const phoneText = matchedBrand?.telephone || currentSettings?.phone || '023 886 687';
-  const addressText = matchedBrand?.address || currentSettings?.address || 'Lot No. 52 National Road 6A Phum Dermkor, S. Chroycheongva, K. Chroychongva, Phnom Penh';
+  const englishTitle = matchedBrand.service_center_name || currentSettings?.quotation_header_english_title || (isDenza ? 'DENZA Executive Service Center' : 'Huan Ya He Zhong (Cambodia) Trading Co., Ltd');
+  const khmerTitle = matchedBrand.local_company_name || currentSettings?.quotation_header_khmer_title || (isDenza ? 'មជ្ឈមណ្ឌលសេវាកម្មរថយន្តអគ្គិសនីដេនហ្សា' : 'ហ័ន យ៉ា ហ៊ឺ ​ ចុង (ខេមបូឌា) ត្រេឌីង ឯ.ក');
+  const phoneText = matchedBrand.telephone || currentSettings?.phone || (isDenza ? '+855 23 999 777' : '023 886 687');
+  const addressText = matchedBrand.address || currentSettings?.address || (isDenza ? 'No. 100 Hun Sen Blvd, Chak Angre Krom, Phnom Penh, Cambodia' : 'Lot No. 52 National Road 6A Phum Dermkor, S. Chroycheongva, K. Chroychongva, Phnom Penh');
 
   const rawTerms = currentSettings?.quotation_terms || [
     currentSettings?.quotation_deposit_term || '1. Will deposit 30% of full amount.',
@@ -76,12 +76,8 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({ quotation, brand, se
         <div className="relative border-b border-slate-300 pb-3">
           {/* Logo Top Left */}
           <div className="absolute left-0 top-0 max-w-[130px] overflow-hidden">
-            {customLogoUrl && customLogoUrl.trim() !== '' ? (
+            {customLogoUrl && customLogoUrl.trim() !== '' && (
               <img src={customLogoUrl} alt="Logo" className="h-10 object-contain" />
-            ) : logoType === 'denza' || isDenza ? (
-              <DENZALogo variant="blue" className="h-10" />
-            ) : (
-              <BYDLogo variant="red" className="h-10" />
             )}
           </div>
 

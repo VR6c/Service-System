@@ -6,8 +6,6 @@ import { StorageService } from '../services/storageService';
 import { testTelegramBotConnection } from '../services/telegramService';
 import type { SystemSettings, Brand } from '../types';
 import { Settings as SettingsIcon, Save, CheckCircle, Building2, Percent, FileText, Layout, Upload, X, Send, Bot, Plus, Edit2, Trash2, Image as ImageIcon } from 'lucide-react';
-import { BYDLogo } from '../components/common/BYDLogo';
-import { DENZALogo } from '../components/common/DENZALogo';
 import { Select } from '../components/common/Select';
 
 export const Settings: React.FC = () => {
@@ -34,7 +32,7 @@ export const Settings: React.FC = () => {
 
   const [brandCode, setBrandCode] = useState('');
   const [brandName, setBrandName] = useState('');
-  const [logoType, setLogoType] = useState<'byd' | 'denza' | 'custom'>('byd');
+  const [logoType, setLogoType] = useState<'byd' | 'denza' | 'custom'>('custom');
   const [logoUrl, setLogoUrl] = useState('');
   const [serviceCenterName, setServiceCenterName] = useState('');
   const [localCompanyName, setLocalCompanyName] = useState('');
@@ -49,7 +47,7 @@ export const Settings: React.FC = () => {
     setEditingBrand(null);
     setBrandCode('');
     setBrandName('');
-    setLogoType('byd');
+    setLogoType('custom');
     setLogoUrl('');
     setServiceCenterName('');
     setLocalCompanyName('');
@@ -66,7 +64,7 @@ export const Settings: React.FC = () => {
     setEditingBrand(b);
     setBrandCode(b.brand_code);
     setBrandName(b.brand_name);
-    setLogoType(b.logo_type || (b.brand_code.toLowerCase().includes('denza') ? 'denza' : 'byd'));
+    setLogoType(b.logo_type || 'custom');
     setLogoUrl(b.logo_url || '');
     setServiceCenterName(b.service_center_name);
     setLocalCompanyName(b.local_company_name || '');
@@ -80,6 +78,15 @@ export const Settings: React.FC = () => {
   };
 
   const handleDeleteBrand = async (b: Brand) => {
+    if (b.id === 'brand-byd' || b.id === 'brand-denza' || b.brand_code === 'BYD' || b.brand_code === 'DENZA') {
+      await showAlert({
+        title: 'Core Static Brand',
+        message: 'BYD and DENZA are static system brands and cannot be deleted.',
+        type: 'warning'
+      });
+      return;
+    }
+
     const isConfirmed = await confirm({
       title: 'Delete Automotive Brand',
       message: `Are you sure you want to delete brand "${b.brand_name}"? This will also remove any affiliated branches.`,
@@ -307,14 +314,17 @@ export const Settings: React.FC = () => {
                   <span className="w-6 h-6 rounded-lg bg-red-600 text-white font-black text-[10px] flex items-center justify-center font-heading shrink-0">BYD</span>
                   <span className="font-extrabold text-xs text-slate-900 font-heading truncate">BYD Vehicle Brand Logo</span>
                 </div>
-                <span className="text-[10px] font-bold text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200 shrink-0">Official BYD Logo</span>
+                <span className="text-[10px] font-bold text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200 shrink-0">Brand Logo</span>
               </div>
 
               <div className="flex items-center justify-center p-3 bg-white border border-slate-200 rounded-xl min-h-[75px] shadow-2xs">
                 {settings.byd_logo_url ? (
                   <img src={settings.byd_logo_url} alt="BYD Custom Logo" className="h-10 object-contain" />
                 ) : (
-                  <BYDLogo variant="red" className="h-10" />
+                  <div className="text-xs text-slate-400 font-semibold flex items-center gap-1.5">
+                    <ImageIcon className="w-4 h-4 text-slate-300" />
+                    <span>No BYD logo uploaded</span>
+                  </div>
                 )}
               </div>
 
@@ -341,7 +351,7 @@ export const Settings: React.FC = () => {
                     type="button"
                     onClick={() => handleChange('byd_logo_url', '')}
                     className="p-2 text-slate-400 hover:text-red-600 rounded-xl hover:bg-red-50 transition cursor-pointer shrink-0"
-                    title="Reset to BYD Default Logo"
+                    title="Remove BYD Logo"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -356,14 +366,17 @@ export const Settings: React.FC = () => {
                   <span className="w-6 h-6 rounded-lg bg-blue-900 text-white font-black text-[9px] flex items-center justify-center font-heading shrink-0">DENZA</span>
                   <span className="font-extrabold text-xs text-slate-900 font-heading truncate">DENZA Luxury Brand Logo</span>
                 </div>
-                <span className="text-[10px] font-bold text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200 shrink-0">Official DENZA Logo</span>
+                <span className="text-[10px] font-bold text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200 shrink-0">Brand Logo</span>
               </div>
 
               <div className="flex items-center justify-center p-3 bg-white border border-slate-200 rounded-xl min-h-[75px] shadow-2xs">
                 {settings.denza_logo_url ? (
                   <img src={settings.denza_logo_url} alt="DENZA Custom Logo" className="h-10 object-contain" />
                 ) : (
-                  <DENZALogo variant="blue" className="h-10" />
+                  <div className="text-xs text-slate-400 font-semibold flex items-center gap-1.5">
+                    <ImageIcon className="w-4 h-4 text-slate-300" />
+                    <span>No DENZA logo uploaded</span>
+                  </div>
                 )}
               </div>
 
@@ -390,7 +403,7 @@ export const Settings: React.FC = () => {
                     type="button"
                     onClick={() => handleChange('denza_logo_url', '')}
                     className="p-2 text-slate-400 hover:text-red-600 rounded-xl hover:bg-red-50 transition cursor-pointer shrink-0"
-                    title="Reset to DENZA Default Logo"
+                    title="Remove DENZA Logo"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -664,7 +677,8 @@ export const Settings: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-1">
             {brands.map(b => {
-              const isDenza = b.brand_code.toUpperCase().includes('DENZA');
+              const isStatic = b.id === 'brand-byd' || b.id === 'brand-denza' || b.brand_code === 'BYD' || b.brand_code === 'DENZA';
+              const staticNum = b.brand_code === 'BYD' || b.id === 'brand-byd' ? '1. BYD' : (b.brand_code === 'DENZA' || b.id === 'brand-denza' ? '2. DENZA' : null);
               const affiliatedBranchCount = branches.filter(br => br.brand_id === b.id).length;
               return (
                 <div key={b.id} className="bg-slate-50/90 p-4 rounded-2xl border border-slate-200/90 space-y-3 flex flex-col justify-between hover:border-slate-300 transition-all shadow-2xs">
@@ -673,14 +687,21 @@ export const Settings: React.FC = () => {
                       <div className="flex items-center gap-2.5 min-w-0">
                         {b.logo_url ? (
                           <img src={b.logo_url} alt={b.brand_name} className="h-7 object-contain max-w-[90px] shrink-0" />
-                        ) : b.logo_type === 'denza' || isDenza ? (
-                          <DENZALogo variant="blue" className="h-7 shrink-0" />
                         ) : (
-                          <BYDLogo variant="red" className="h-6 shrink-0" />
+                          <div className="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center font-black text-slate-600 text-[10px] font-heading shrink-0">
+                            {b.brand_code.slice(0, 3)}
+                          </div>
                         )}
                         <div className="min-w-0">
                           <h4 className="text-xs font-black text-slate-900 font-heading truncate">{b.brand_name}</h4>
-                          <span className="text-[10px] font-mono font-bold text-slate-500">Code: {b.brand_code}</span>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-[10px] font-mono font-bold text-slate-500">Code: {b.brand_code}</span>
+                            {staticNum && (
+                              <span className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase bg-blue-50 text-blue-700 border border-blue-200">
+                                Static ({staticNum})
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase shrink-0 ${b.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-200 text-slate-600'
@@ -711,14 +732,16 @@ export const Settings: React.FC = () => {
                       <Edit2 className="w-3 h-3 text-slate-600" />
                       <span>Edit</span>
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteBrand(b)}
-                      className="flex items-center gap-1 px-2.5 py-1.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-lg text-xs font-bold transition border border-red-200 shadow-2xs cursor-pointer active:scale-[0.98]"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                      <span>Delete</span>
-                    </button>
+                    {!isStatic && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteBrand(b)}
+                        className="flex items-center gap-1 px-2.5 py-1.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-lg text-xs font-bold transition border border-red-200 shadow-2xs cursor-pointer active:scale-[0.98]"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>Delete</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -840,14 +863,19 @@ export const Settings: React.FC = () => {
         <form onSubmit={handleBrandSave} className="space-y-4 text-xs">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Brand Code *</label>
+              <label className="block font-bold text-slate-700 mb-1">
+                Brand Code * {editingBrand && (editingBrand.brand_code === 'BYD' || editingBrand.brand_code === 'DENZA') && (
+                  <span className="text-[10px] text-blue-600 font-semibold">(Static)</span>
+                )}
+              </label>
               <input
                 type="text"
                 required
+                disabled={Boolean(editingBrand && (editingBrand.brand_code === 'BYD' || editingBrand.brand_code === 'DENZA'))}
                 value={brandCode}
                 onChange={e => setBrandCode(e.target.value)}
-                placeholder="e.g. BYD, DENZA, TOYOTA"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold"
+                placeholder="e.g. BYD, DENZA"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold disabled:opacity-75 disabled:cursor-not-allowed"
               />
             </div>
             <div>
@@ -868,95 +896,61 @@ export const Settings: React.FC = () => {
             <div className="flex items-center justify-between">
               <label className="font-bold text-slate-800 flex items-center gap-1.5 text-xs">
                 <ImageIcon className="w-4 h-4 text-red-600" />
-                Brand Logo Picture (BYD / DENZA / Custom)
+                Brand Logo Picture
               </label>
               <span className="text-[10px] font-semibold text-slate-500">Saved to local database</span>
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => { setLogoType('byd'); setLogoUrl(''); }}
-                className={`px-3 py-2.5 rounded-xl border text-center font-bold text-[11px] flex flex-col items-center justify-center gap-1.5 transition cursor-pointer ${logoType === 'byd' && !logoUrl ? 'border-red-600 bg-red-50 text-red-700 shadow-2xs' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
-                  }`}
-              >
-                <BYDLogo variant="red" className="h-4" />
-                <span>BYD Standard</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => { setLogoType('denza'); setLogoUrl(''); }}
-                className={`px-3 py-2.5 rounded-xl border text-center font-bold text-[11px] flex flex-col items-center justify-center gap-1.5 transition cursor-pointer ${logoType === 'denza' && !logoUrl ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-2xs' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
-                  }`}
-              >
-                <DENZALogo variant="blue" className="h-4" />
-                <span>DENZA</span>
-              </button>
-
-              <label
-                className={`px-3 py-2.5 rounded-xl border text-center font-bold text-[11px] flex flex-col items-center justify-center gap-1.5 transition cursor-pointer ${logoUrl || logoType === 'custom' ? 'border-purple-600 bg-purple-50 text-purple-700 shadow-2xs' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
-                  }`}
-              >
-                <Upload className="w-4 h-4 text-purple-600" />
-                <span>Upload from PC</span>
+            <div className="space-y-2.5">
+              <div className="flex items-center gap-2">
                 <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleBrandImageUpload}
-                  className="hidden"
+                  type="text"
+                  value={logoUrl}
+                  onChange={e => {
+                    setLogoUrl(e.target.value);
+                    setLogoType('custom');
+                  }}
+                  placeholder="Paste image URL or attach local PC picture file..."
+                  className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono"
                 />
-              </label>
-            </div>
-
-            {(logoType === 'custom' || logoUrl) && (
-              <div className="space-y-2 pt-1 border-t border-slate-200/80">
-                <div className="flex items-center gap-2">
+                <label className="px-3.5 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0 shadow-2xs active:scale-[0.98]">
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Browse PC</span>
                   <input
-                    type="text"
-                    value={logoUrl}
-                    onChange={e => {
-                      setLogoUrl(e.target.value);
-                      setLogoType('custom');
-                    }}
-                    placeholder="Paste image URL or attach local PC picture file..."
-                    className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-mono"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleBrandImageUpload}
+                    className="hidden"
                   />
-                  <label className="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer shrink-0">
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Browse PC</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleBrandImageUpload}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-
-                {logoUrl && (
-                  <div className="flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-slate-100 p-1.5 rounded-lg border border-slate-200">
-                        <img src={logoUrl} alt="Logo Preview" className="h-8 max-w-[120px] object-contain" />
-                      </div>
-                      <div>
-                        <span className="text-xs font-bold text-slate-900 block">Attached Picture Ready</span>
-                        <span className="text-[10px] text-emerald-600 font-semibold">Saved directly to local database</span>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => { setLogoUrl(''); setLogoType('byd'); }}
-                      className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer"
-                      title="Remove attached picture"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
+                </label>
               </div>
-            )}
+
+              {logoUrl ? (
+                <div className="flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-slate-100 p-1.5 rounded-lg border border-slate-200">
+                      <img src={logoUrl} alt="Logo Preview" className="h-8 max-w-[120px] object-contain" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-slate-900 block">Attached Picture Ready</span>
+                      <span className="text-[10px] text-emerald-600 font-semibold">Saved directly to local database</span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setLogoUrl(''); setLogoType('custom'); }}
+                    className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer"
+                    title="Remove attached picture"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <p className="text-[11px] text-slate-400 font-medium">
+                  No logo attached. Upload an image file or paste an image URL.
+                </p>
+              )}
+            </div>
           </div>
 
           <div>

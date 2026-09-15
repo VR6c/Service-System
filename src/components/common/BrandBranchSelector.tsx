@@ -1,7 +1,5 @@
 import React from 'react';
 import type { Brand, Branch } from '../../types';
-import { BYDLogo } from './BYDLogo';
-import { DENZALogo } from './DENZALogo';
 import { Building2, ShieldCheck } from 'lucide-react';
 import { Select } from './Select';
 
@@ -63,7 +61,6 @@ export const BrandBranchSelector: React.FC<BrandBranchSelectorProps> = ({
           <div className="grid grid-cols-2 gap-3">
             {brands.map(brand => {
               const isSelected = brand.id === selectedBrandId;
-              const isByd = brand.logo_type === 'byd' || brand.brand_code === 'BYD';
               const isDisabled = readOnly || (isBrandLocked && !isSelected);
 
               return (
@@ -81,7 +78,11 @@ export const BrandBranchSelector: React.FC<BrandBranchSelectorProps> = ({
                   }`}
                 >
                   <div className="w-9 h-9 rounded-lg bg-white shadow-2xs border border-slate-200/80 flex items-center justify-center p-1 shrink-0">
-                    {isByd ? <BYDLogo className="w-full h-full" /> : <DENZALogo className="w-full h-full text-slate-900" />}
+                    {brand.logo_url ? (
+                      <img src={brand.logo_url} alt={brand.brand_name} className="w-full h-full object-contain" />
+                    ) : (
+                      <span className="font-black text-xs text-slate-700 font-heading">{brand.brand_code.slice(0, 3)}</span>
+                    )}
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-bold truncate">{brand.brand_name}</p>

@@ -4,9 +4,7 @@ import { useConfirm, useAlert, useToast } from '../context/DialogContext';
 import { Modal } from '../components/common/Modal';
 import { StorageService } from '../services/storageService';
 import type { Brand } from '../types';
-import { Building2, Plus, Edit2, Trash2, Upload, Image as ImageIcon } from 'lucide-react';
-import { BYDLogo } from '../components/common/BYDLogo';
-import { DENZALogo } from '../components/common/DENZALogo';
+import { Building2, Plus, Edit2, Trash2, Upload, X, Image as ImageIcon } from 'lucide-react';
 import { Select } from '../components/common/Select';
 
 export const Brands: React.FC = () => {
@@ -21,7 +19,7 @@ export const Brands: React.FC = () => {
   // Form State
   const [brandCode, setBrandCode] = useState('');
   const [brandName, setBrandName] = useState('');
-  const [logoType, setLogoType] = useState<'byd' | 'denza' | 'custom'>('byd');
+  const [logoType, setLogoType] = useState<'byd' | 'denza' | 'custom'>('custom');
   const [logoUrl, setLogoUrl] = useState('');
   const [serviceCenterName, setServiceCenterName] = useState('');
   const [localCompanyName, setLocalCompanyName] = useState('');
@@ -36,7 +34,7 @@ export const Brands: React.FC = () => {
     setEditingBrand(null);
     setBrandCode('');
     setBrandName('');
-    setLogoType('byd');
+    setLogoType('custom');
     setLogoUrl('');
     setServiceCenterName('');
     setLocalCompanyName('');
@@ -53,7 +51,7 @@ export const Brands: React.FC = () => {
     setEditingBrand(b);
     setBrandCode(b.brand_code);
     setBrandName(b.brand_name);
-    setLogoType(b.logo_type || 'byd');
+    setLogoType(b.logo_type || 'custom');
     setLogoUrl(b.logo_url || '');
     setServiceCenterName(b.service_center_name);
     setLocalCompanyName(b.local_company_name || '');
@@ -67,6 +65,15 @@ export const Brands: React.FC = () => {
   };
 
   const handleDeleteBrand = async (b: Brand) => {
+    if (b.id === 'brand-byd' || b.id === 'brand-denza' || b.brand_code === 'BYD' || b.brand_code === 'DENZA') {
+      await showAlert({
+        title: 'Core Static Brand',
+        message: 'BYD and DENZA are static system brands and cannot be deleted.',
+        type: 'warning'
+      });
+      return;
+    }
+
     const isConfirmed = await confirm({
       title: 'Delete Automotive Brand',
       message: `Are you sure you want to delete brand "${b.brand_name}"? This will also remove any affiliated branches.`,
@@ -175,21 +182,30 @@ export const Brands: React.FC = () => {
       {/* Brands Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {brands.map(b => {
-          const isDenza = b.brand_code.toUpperCase().includes('DENZA');
+          const isStatic = b.id === 'brand-byd' || b.id === 'brand-denza' || b.brand_code === 'BYD' || b.brand_code === 'DENZA';
+          const staticNum = b.brand_code === 'BYD' || b.id === 'brand-byd' ? '1. BYD' : (b.brand_code === 'DENZA' || b.id === 'brand-denza' ? '2. DENZA' : null);
+
           return (
             <div key={b.id} className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/90 shadow-2xs flex flex-col justify-between space-y-4 hover:border-slate-300 transition-colors">
               <div className="flex items-start justify-between border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-3">
                   {b.logo_url ? (
                     <img src={b.logo_url} alt={b.brand_name} className="h-9 object-contain max-w-[140px]" />
-                  ) : b.logo_type === 'denza' || isDenza ? (
-                    <DENZALogo variant="blue" className="h-9" />
                   ) : (
-                    <BYDLogo variant="red" className="h-8" />
+                    <div className="w-9 h-9 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-black text-slate-600 text-xs font-heading">
+                      {b.brand_code.slice(0, 3)}
+                    </div>
                   )}
                   <div>
                     <h3 className="text-base font-black text-slate-900 font-heading">{b.brand_name}</h3>
-                    <span className="text-xs font-mono font-bold text-slate-500">Code: {b.brand_code}</span>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs font-mono font-bold text-slate-500">Code: {b.brand_code}</span>
+                      {staticNum && (
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-blue-50 text-blue-700 border border-blue-200">
+                          Static Brand ({staticNum})
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -232,14 +248,16 @@ export const Brands: React.FC = () => {
                   <Edit2 className="w-3.5 h-3.5" />
                   Edit
                 </button>
-                <button
-                  onClick={() => handleDeleteBrand(b)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl text-xs font-bold transition cursor-pointer"
-                  title="Delete Brand"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  Delete
-                </button>
+                {!isStatic && (
+                  <button
+                    onClick={() => handleDeleteBrand(b)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl text-xs font-bold transition cursor-pointer"
+                    title="Delete Brand"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Delete
+                  </button>
+                )}
               </div>
             </div>
           );
@@ -257,13 +275,18 @@ export const Brands: React.FC = () => {
         <form onSubmit={handleSave} className="space-y-4 text-xs">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Brand Code *</label>
+              <label className="block font-bold text-slate-700 mb-1">
+                Brand Code * {editingBrand && (editingBrand.brand_code === 'BYD' || editingBrand.brand_code === 'DENZA') && (
+                  <span className="text-[10px] text-blue-600 font-semibold">(Static)</span>
+                )}
+              </label>
               <input
                 type="text"
+                disabled={Boolean(editingBrand && (editingBrand.brand_code === 'BYD' || editingBrand.brand_code === 'DENZA'))}
                 value={brandCode}
                 onChange={e => setBrandCode(e.target.value)}
                 placeholder="BYD or DENZA"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold text-slate-900"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold text-slate-900 disabled:opacity-75 disabled:cursor-not-allowed"
               />
             </div>
             <div>
@@ -283,56 +306,61 @@ export const Brands: React.FC = () => {
             <div className="flex items-center justify-between">
               <label className="font-bold text-slate-800 flex items-center gap-1.5 text-xs">
                 <ImageIcon className="w-4 h-4 text-red-600" />
-                <span>Brand Logo Style</span>
+                <span>Brand Logo Picture</span>
               </label>
+              <span className="text-[10px] font-semibold text-slate-500">Saved to local database</span>
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => setLogoType('byd')}
-                className={`flex flex-col items-center justify-center p-2.5 rounded-xl border transition cursor-pointer ${logoType === 'byd' ? 'bg-white border-red-600 ring-2 ring-red-600/20 shadow-xs' : 'bg-white border-slate-200 hover:bg-slate-100'
-                  }`}
-              >
-                <BYDLogo className="h-6 w-auto" />
-                <span className="text-[10px] font-bold text-slate-700 mt-1">BYD Standard</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setLogoType('denza')}
-                className={`flex flex-col items-center justify-center p-2.5 rounded-xl border transition cursor-pointer ${logoType === 'denza' ? 'bg-white border-red-600 ring-2 ring-red-600/20 shadow-xs' : 'bg-white border-slate-200 hover:bg-slate-100'
-                  }`}
-              >
-                <DENZALogo className="h-6 w-auto" />
-                <span className="text-[10px] font-bold text-slate-700 mt-1">DENZA Luxury</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setLogoType('custom')}
-                className={`flex flex-col items-center justify-center p-2.5 rounded-xl border transition cursor-pointer ${logoType === 'custom' ? 'bg-white border-red-600 ring-2 ring-red-600/20 shadow-xs' : 'bg-white border-slate-200 hover:bg-slate-100'
-                  }`}
-              >
-                {logoUrl ? (
-                  <img src={logoUrl} alt="Custom" className="h-6 w-auto max-w-full object-contain" />
-                ) : (
-                  <Upload className="w-5 h-5 text-slate-400" />
-                )}
-                <span className="text-[10px] font-bold text-slate-700 mt-1">Custom Logo</span>
-              </button>
-            </div>
-
-            {logoType === 'custom' && (
-              <div className="pt-2 border-t border-slate-200/80">
+            <div className="space-y-2.5">
+              <div className="flex items-center gap-2">
                 <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-red-50 file:text-red-700 hover:file:bg-red-100 cursor-pointer"
+                  type="text"
+                  value={logoUrl}
+                  onChange={e => {
+                    setLogoUrl(e.target.value);
+                    setLogoType('custom');
+                  }}
+                  placeholder="Paste image URL or upload PC picture file..."
+                  className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono"
                 />
+                <label className="px-3.5 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0 shadow-2xs active:scale-[0.98]">
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Browse PC</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </label>
               </div>
-            )}
+
+              {logoUrl ? (
+                <div className="flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-slate-100 p-1.5 rounded-lg border border-slate-200">
+                      <img src={logoUrl} alt="Logo Preview" className="h-8 max-w-[120px] object-contain" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-slate-900 block">Attached Picture Ready</span>
+                      <span className="text-[10px] text-emerald-600 font-semibold">Saved directly to local database</span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setLogoUrl(''); setLogoType('custom'); }}
+                    className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer"
+                    title="Remove attached picture"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <p className="text-[11px] text-slate-400 font-medium">
+                  No logo attached. Upload an image file or paste an image URL.
+                </p>
+              )}
+            </div>
           </div>
 
           <div>

@@ -8,12 +8,12 @@ const RECEIPTS_KEY = 'byd_receipts';
 const SETTINGS_KEY = 'byd_settings';
 const CURRENT_USER_KEY = 'byd_current_user';
 
-export const INITIAL_BRANDS: Brand[] = [
+export const STATIC_BRANDS: Brand[] = [
   {
     id: 'brand-byd',
     brand_code: 'BYD',
     brand_name: 'BYD Cambodia',
-    logo_type: 'byd',
+    logo_type: 'custom',
     logo_url: '',
     service_center_name: 'BYD SALES & SERVICE CENTER',
     local_company_name: 'មិនអាចយកប្រកាសជាចំណាយឬប្រកាសពន្ធ',
@@ -30,7 +30,7 @@ export const INITIAL_BRANDS: Brand[] = [
     id: 'brand-denza',
     brand_code: 'DENZA',
     brand_name: 'DENZA',
-    logo_type: 'denza',
+    logo_type: 'custom',
     logo_url: '',
     service_center_name: 'DENZA EXECUTIVE SERVICE CENTER',
     local_company_name: 'មជ្ឈមណ្ឌលសេវាកម្មរថយន្តអគ្គិសនីដេនហ្សា',
@@ -44,6 +44,8 @@ export const INITIAL_BRANDS: Brand[] = [
     updated_at: '2026-01-01'
   }
 ];
+
+export const INITIAL_BRANDS: Brand[] = STATIC_BRANDS;
 
 export const INITIAL_BRANCHES: Branch[] = [
   {
@@ -495,7 +497,7 @@ export const INITIAL_SETTINGS: SystemSettings = {
   quotation_prefix: 'BYD',
   receipt_prefix: 'BYD60M',
   terms_conditions: '1. All parts replaced carry BYD / DENZA official manufacturer warranty.\n2. Service quotations are valid for 14 calendar days from date of issue.\n3. Customer authorization is required prior to initiating any non-quoted repair work.',
-  header_logo_type: 'byd',
+  header_logo_type: 'custom',
   header_logo_url: '',
   receipt_header_english_title: 'BYD SALES & SERVICE CENTER',
   receipt_header_khmer_title: 'មិនអាចយកទៅប្រកាសពន្ធឬប្រកាសជាប់ពន្ធ',
@@ -531,32 +533,122 @@ export class StorageService {
 
   static getBrands(): Brand[] {
     const data = localStorage.getItem(BRANDS_KEY);
-    if (!data) {
-      localStorage.setItem(BRANDS_KEY, JSON.stringify(INITIAL_BRANDS));
-      return INITIAL_BRANDS;
+    let brands: Brand[] = [];
+    if (data) {
+      try {
+        brands = JSON.parse(data);
+      } catch {
+        brands = [];
+      }
     }
-    const brands: Brand[] = JSON.parse(data);
+
+    // Always enforce the two static brands: 1. BYD, 2. DENZA
+    let byd = brands.find(b => b.id === 'brand-byd' || b.brand_code === 'BYD');
+    let denza = brands.find(b => b.id === 'brand-denza' || b.brand_code === 'DENZA');
+
     let updated = false;
-    brands.forEach(b => {
+
+    if (!byd) {
+      byd = { ...STATIC_BRANDS[0] };
+      updated = true;
+    } else {
+      if (byd.id !== 'brand-byd' || byd.brand_code !== 'BYD') {
+        byd.id = 'brand-byd';
+        byd.brand_code = 'BYD';
+        updated = true;
+      }
+    }
+
+    if (!denza) {
+      denza = { ...STATIC_BRANDS[1] };
+      updated = true;
+    } else {
+      if (denza.id !== 'brand-denza' || denza.brand_code !== 'DENZA') {
+        denza.id = 'brand-denza';
+        denza.brand_code = 'DENZA';
+        updated = true;
+      }
+    }
+
+    [byd, denza].forEach(b => {
+      if (b.logo_type === 'byd' || b.logo_type === 'denza') {
+        b.logo_type = 'custom';
+        updated = true;
+      }
       if (b.brand_code === 'BYD') {
         if (!b.local_company_name || b.local_company_name.includes('ចំនាយ')) {
-          b.local_company_name = 'មិនមែនជាប្រកាសជាប់ពន្ធ/ប្រកាសពន្ធ';
+          b.local_company_name = 'មិនអាចយកប្រកាសជាចំណាយឬប្រកាសពន្ធ';
           updated = true;
         }
-        if (b.address.includes('Lot No. 52')) {
+        if (b.address && b.address.includes('Lot No. 52')) {
           b.address = 'No. 888 Monivong Blvd, Tonle Bassac, Chamkarmon, Phnom Penh, Cambodia';
           updated = true;
         }
-        if (b.telephone.includes('017 555 811')) {
+        if (b.telephone && b.telephone.includes('017 555 811')) {
           b.telephone = '+855 23 888 999 / +855 12 999 888';
           updated = true;
         }
       }
     });
-    if (updated) {
-      localStorage.setItem(BRANDS_KEY, JSON.stringify(brands));
+
+    const otherBrands = brands.filter(
+      b => b.id !== 'brand-byd' && b.id !== 'brand-denza' && b.brand_code !== 'BYD' && b.brand_code !== 'DENZA'
+    );
+
+    const result = [byd, denza, ...otherBrands];
+
+    if (updated || !data) {
+      localStorage.setItem(BRANDS_KEY, JSON.stringify(result));
     }
-    return brands;
+    return result;
+  }
+
+  static getBYDBrand(): Brand {
+    const brands = this.getBrands();
+    return brands[0] || STATIC_BRANDS[0];
+  }
+
+  static getDenzaBrand(): Brand {
+    const brands = this.getBrands();
+    return brands.find(b => b.brand_code === 'DENZA') || STATIC_BRANDS[1];
+  }
+
+  static resolveBrand(target?: {
+    brand_id?: string;
+    brand_name?: string;
+    brand_code?: string;
+    receipt_no?: string;
+    quotation_no?: string;
+  }): { brand: Brand; isDenza: boolean } {
+    const brands = this.getBrands();
+    const byd = brands[0] || STATIC_BRANDS[0];
+    const denza = brands.find(b => b.brand_code === 'DENZA') || STATIC_BRANDS[1];
+
+    if (!target) {
+      return { brand: byd, isDenza: false };
+    }
+
+    const docNo = target.receipt_no || target.quotation_no || '';
+    const name = target.brand_name || '';
+    const code = target.brand_code || '';
+    const id = target.brand_id || '';
+
+    const isDenza = Boolean(
+      id === 'brand-denza' ||
+      id === denza.id ||
+      code.toUpperCase() === 'DENZA' ||
+      name.toUpperCase().includes('DENZA') ||
+      (docNo && (
+        docNo.toUpperCase().startsWith('DENZA') ||
+        (denza.document_prefix && docNo.toUpperCase().startsWith(denza.document_prefix.toUpperCase())) ||
+        (denza.receipt_prefix && docNo.toUpperCase().startsWith(denza.receipt_prefix.toUpperCase()))
+      ))
+    );
+
+    return {
+      brand: isDenza ? denza : byd,
+      isDenza
+    };
   }
 
   static async saveBrands(brands: Brand[]): Promise<void> {
@@ -593,6 +685,10 @@ export class StorageService {
   }
 
   static async deleteBrand(id: string): Promise<void> {
+    if (id === 'brand-byd' || id === 'brand-denza') {
+      console.warn('Cannot delete static system brand:', id);
+      return;
+    }
     const brands = this.getBrands().filter(b => b.id !== id);
     localStorage.setItem(BRANDS_KEY, JSON.stringify(brands));
     try {
