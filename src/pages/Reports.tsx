@@ -1,13 +1,30 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { StorageService } from '../services/storageService';
 import { useAuth } from '../context/AuthContext';
-import { Download, Printer, BarChart3, Building, GitBranch, Calendar, FileText, FileCheck, Phone, Car } from 'lucide-react';
+import {
+  Printer,
+  BarChart3,
+  Building,
+  GitBranch,
+  Calendar,
+  FileText,
+  FileCheck,
+  Phone,
+  Car,
+  FileSpreadsheet,
+  FileDown,
+  Loader2
+} from 'lucide-react';
 import { DatePicker } from '../components/common/DatePicker';
 import { Select } from '../components/common/Select';
 import { AnimatedCounter } from '../components/common/AnimatedCounter';
+import { exportReportToExcel, type ReportRowData } from '../utils/excelExport';
+import { exportToPDF, printDocumentElement } from '../utils/pdfExport';
+import { ReportPDF } from '../components/pdf/ReportPDF';
+import type { SystemSettings } from '../types';
 
 export const Reports: React.FC = () => {
-  const { brands, branches } = useAuth();
+  const { brands, branches, currentUser } = useAuth();
 
   const [reportType, setReportType] = useState<'quotation' | 'receipt'>('receipt');
   const [selectedBrandId, setSelectedBrandId] = useState<string>('all');
@@ -15,6 +32,14 @@ export const Reports: React.FC = () => {
   const [dateFilter, setDateFilter] = useState<string>('this_month');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
+  const [settings, setSettings] = useState<SystemSettings>(() => StorageService.getSettings());
+
+  const [isExportingExcel, setIsExportingExcel] = useState(false);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
+
+  useEffect(() => {
+    StorageService.fetchSettings().then(s => setSettings(s)).catch(() => {});
+  }, []);
 
   const allQuotations = useMemo(() => StorageService.getQuotations(), []);
   const allReceipts = useMemo(() => StorageService.getReceipts(), []);
@@ -25,6 +50,52 @@ export const Reports: React.FC = () => {
       b => (b.supported_brand_ids && b.supported_brand_ids.includes(selectedBrandId)) || b.brand_id === selectedBrandId
     );
   }, [branches, selectedBrandId]);
+
+  const selectedBrand = useMemo(() => {
+    if (selectedBrandId === 'all') return undefined;
+    return brands.find(b => b.id === selectedBrandId);
+  }, [brands, selectedBrandId]);
+
+  const selectedBranch = useMemo(() => {
+    if (selectedBranchId === 'all') return undefined;
+    return branches.find(b => b.id === selectedBranchId);
+  }, [branches, selectedBranchId]);
+
+  const dateFilterLabel = useMemo(() => {
+    switch (dateFilter) {
+      case 'today':
+        return 'Today';
+      case 'this_month':
+        return 'This Month';
+      case 'last_month':
+        return 'Last Month';
+      case 'custom':
+        return 'Custom Date Range';
+      default:
+        return 'All Time';
+    }
+  }, [dateFilter]);
+
+  const getDateRangeText = (): string => {
+    const today = new Date();
+    if (dateFilter === 'today') {
+      return today.toISOString().slice(0, 10);
+    }
+    if (dateFilter === 'this_month') {
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10);
+      const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().slice(0, 10);
+      return `${firstDay} to ${lastDay}`;
+    }
+    if (dateFilter === 'last_month') {
+      const firstDay = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().slice(0, 10);
+      const lastDay = new Date(today.getFullYear(), today.getMonth(), 0).toISOString().slice(0, 10);
+      return `${firstDay} to ${lastDay}`;
+    }
+    if (dateFilter === 'custom') {
+      return `${startDate || 'Start Date'} to ${endDate || 'End Date'}`;
+    }
+    return 'All Records';
+  };
 
   const isDateInFilter = (dateStr: string): boolean => {
     if (!dateStr) return false;
@@ -58,7 +129,7 @@ export const Reports: React.FC = () => {
     }
   };
 
-  const reportData = useMemo(() => {
+  const reportData: ReportRowData[] = useMemo(() => {
     if (reportType === 'quotation') {
       return allQuotations.filter(q => {
         if (selectedBrandId !== 'all' && q.brand_id !== selectedBrandId) return false;
@@ -96,34 +167,48 @@ export const Reports: React.FC = () => {
     }
   }, [reportType, allQuotations, allReceipts, selectedBrandId, selectedBranchId, dateFilter, startDate, endDate, brands, branches]);
 
-  const totalSum = reportData.reduce((acc, row) => acc + row.amount, 0);
+  const totalSum = reportData.reduce((acc, row) => acc + (Number(row.amount) || 0), 0);
 
-  const exportToCSV = () => {
-    const headers = ['Document No', 'Brand', 'Branch', 'Customer Name', 'Phone', 'Vehicle', 'Amount ($)', 'Created By', 'Date'];
-    const rows = reportData.map(r => [
-      `"${r.doc_no}"`,
-      `"${r.brand}"`,
-      `"${r.branch}"`,
-      `"${r.customer}"`,
-      `"${r.phone}"`,
-      `"${r.vehicle}"`,
-      Number(r.amount || 0).toFixed(2),
-      `"${r.created_by}"`,
-      `"${r.date}"`
-    ]);
-
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `${reportType}_report_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  // 1. Export Excel (.xlsx) with Logo Header, styled headers, and text-formatted phone numbers
+  const handleExportExcel = async () => {
+    setIsExportingExcel(true);
+    try {
+      await exportReportToExcel({
+        reportType,
+        brandFilterName: selectedBrand ? selectedBrand.brand_name : 'All Brands',
+        branchFilterName: selectedBranch ? selectedBranch.branch_name : 'All Branches',
+        dateFilterName: dateFilterLabel,
+        dateRangeText: getDateRangeText(),
+        totalSum,
+        reportData,
+        brand: selectedBrand,
+        branch: selectedBranch,
+        settings,
+        generatedBy: currentUser?.name || 'Administrator'
+      });
+    } catch (error) {
+      console.error('Failed to export Excel report:', error);
+    } finally {
+      setIsExportingExcel(false);
+    }
   };
 
+  // 2. Export High-Resolution PDF with official logo header format
+  const handleExportPDF = async () => {
+    setIsExportingPDF(true);
+    try {
+      const filename = `${reportType}_report_${new Date().toISOString().slice(0, 10)}`;
+      await exportToPDF('report-pdf-document', filename, 'landscape');
+    } catch (error) {
+      console.error('Failed to export PDF report:', error);
+    } finally {
+      setIsExportingPDF(false);
+    }
+  };
+
+  // 3. Print Report with official logo header format
   const handlePrintReport = () => {
-    window.print();
+    printDocumentElement('report-pdf-document', 'landscape');
   };
 
   return (
@@ -141,22 +226,48 @@ export const Reports: React.FC = () => {
                 Service Reports & Analytics
               </h2>
               <p className="text-xs text-slate-500 font-medium mt-0.5">
-                Export comprehensive financial and operational reports across BYD & DENZA branches.
+                Export comprehensive financial and operational reports across BYD & DENZA branches with official logo header.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 w-full sm:w-auto shrink-0">
+          <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto shrink-0">
+            {/* Export Excel (.xlsx) */}
             <button
-              onClick={exportToCSV}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2.5 bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-800 border border-slate-200 rounded-xl text-xs font-bold transition shadow-2xs hover:shadow-xs active:scale-[0.98] cursor-pointer"
+              onClick={handleExportExcel}
+              disabled={isExportingExcel || reportData.length === 0}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition shadow-xs hover:shadow-sm active:scale-[0.98] cursor-pointer"
+              title="Download formatted Excel spreadsheet (.xlsx) with official logo header and number formatting"
             >
-              <Download className="w-4 h-4 text-slate-600" />
-              <span>Export CSV / Excel</span>
+              {isExportingExcel ? (
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
+              ) : (
+                <FileSpreadsheet className="w-4 h-4 text-emerald-100" />
+              )}
+              <span>{isExportingExcel ? 'Exporting...' : 'Export Excel'}</span>
             </button>
+
+            {/* Export PDF */}
+            <button
+              onClick={handleExportPDF}
+              disabled={isExportingPDF || reportData.length === 0}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2.5 bg-white hover:bg-slate-50 active:bg-slate-100 disabled:opacity-50 text-slate-800 border border-slate-200 rounded-xl text-xs font-bold transition shadow-2xs hover:shadow-xs active:scale-[0.98] cursor-pointer"
+              title="Download official PDF report with logo header, summary KPI, and authorization blocks"
+            >
+              {isExportingPDF ? (
+                <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+              ) : (
+                <FileDown className="w-4 h-4 text-blue-600" />
+              )}
+              <span>{isExportingPDF ? 'Generating...' : 'Export PDF'}</span>
+            </button>
+
+            {/* Print Report */}
             <button
               onClick={handlePrintReport}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-xl text-xs font-bold transition shadow-xs hover:shadow-sm active:scale-[0.98] cursor-pointer"
+              disabled={reportData.length === 0}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition shadow-xs hover:shadow-sm active:scale-[0.98] cursor-pointer"
+              title="Print official report layout with logo and executive signature blocks"
             >
               <Printer className="w-4 h-4" />
               <span>Print Report</span>
@@ -264,6 +375,9 @@ export const Reports: React.FC = () => {
             <div className="text-3xl font-black text-slate-900 font-heading mt-1">
               <AnimatedCounter value={reportData.length} />
             </div>
+            <span className="text-[11px] text-slate-500 font-medium mt-0.5 block">
+              {reportType === 'receipt' ? 'Official Receipts' : 'Customer Quotations'}
+            </span>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
             {reportType === 'receipt' ? <FileCheck className="w-6 h-6" /> : <FileText className="w-6 h-6" />}
@@ -276,6 +390,9 @@ export const Reports: React.FC = () => {
             <div className="text-3xl font-black text-emerald-700 font-heading mt-1">
               <AnimatedCounter value={totalSum} prefix="$" decimals={2} />
             </div>
+            <span className="text-[11px] text-slate-500 font-medium mt-0.5 block">
+              Period: {dateFilterLabel}
+            </span>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
             $
@@ -283,18 +400,10 @@ export const Reports: React.FC = () => {
         </div>
       </div>
 
-      {/* Data Table Printable Area */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-        {/* Printable Title Block */}
-        <div className="p-5 sm:p-6 pb-2 hidden print:block border-b border-slate-200">
-          <h1 className="text-xl font-black text-slate-900">
-            BYD & DENZA {reportType.toUpperCase()} REPORT
-          </h1>
-          <p className="text-xs text-slate-600 mt-1">Generated Date: {new Date().toLocaleDateString()}</p>
-        </div>
-
-        {/* Mobile Card View (< lg, hidden on print) */}
-        <div className="lg:hidden print:hidden divide-y divide-slate-100">
+      {/* Data Table Area */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden no-print">
+        {/* Mobile Card View (< lg) */}
+        <div className="lg:hidden divide-y divide-slate-100">
           {reportData.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
               <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mb-2">
@@ -364,12 +473,12 @@ export const Reports: React.FC = () => {
           )}
         </div>
 
-        {/* Desktop Table View (>= lg, and always for print) */}
-        <div className="hidden lg:block print:block overflow-x-auto">
+        {/* Desktop Table View (>= lg) */}
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse min-w-[900px]">
             <thead className="bg-slate-50/90 text-slate-600 font-heading font-extrabold uppercase text-[11px] tracking-wider border-b border-slate-200/80 sticky top-0 z-10 backdrop-blur-xs">
               <tr>
-                <th className="py-3.5 px-4">#</th>
+                <th className="py-3.5 px-4 text-center">#</th>
                 <th className="py-3.5 px-4">Document No.</th>
                 <th className="py-3.5 px-4">Brand</th>
                 <th className="py-3.5 px-4">Branch</th>
@@ -397,7 +506,7 @@ export const Reports: React.FC = () => {
               ) : (
                 reportData.map((row, idx) => (
                   <tr key={idx} className={`transaction-row animate-slide-up stagger-${Math.min(idx + 1, 5)}`}>
-                    <td className="py-3.5 px-4 text-slate-400 font-medium">{idx + 1}</td>
+                    <td className="py-3.5 px-4 text-center text-slate-400 font-medium">{idx + 1}</td>
                     <td className="py-3.5 px-4">
                       <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-slate-100/90 border border-slate-200/90 text-slate-800 font-mono font-bold text-xs shadow-2xs">
                         {row.doc_no}
@@ -428,6 +537,25 @@ export const Reports: React.FC = () => {
             </tfoot>
           </table>
         </div>
+      </div>
+
+      {/* Off-screen Document for High-Definition PDF Generation & Isolated Clean Printing */}
+      <div className="contents" aria-hidden="true">
+        <ReportPDF
+          documentId="report-pdf-document"
+          className="fixed left-[-10000px] top-0 pointer-events-none"
+          reportType={reportType}
+          brandFilterName={selectedBrand ? selectedBrand.brand_name : 'All Brands'}
+          branchFilterName={selectedBranch ? selectedBranch.branch_name : 'All Branches'}
+          dateFilterName={dateFilterLabel}
+          dateRangeText={getDateRangeText()}
+          totalSum={totalSum}
+          reportData={reportData}
+          brand={selectedBrand}
+          branch={selectedBranch}
+          settings={settings}
+          generatedBy={currentUser?.name || 'Administrator'}
+        />
       </div>
     </div>
   );

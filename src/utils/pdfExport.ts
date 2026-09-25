@@ -1,9 +1,17 @@
-export const exportToPDF = async (elementId: string, filename: string) => {
+export const exportToPDF = async (
+  elementId: string,
+  filename: string,
+  orientation: 'portrait' | 'landscape' = 'portrait'
+) => {
   const element = document.getElementById(elementId);
   if (!element) {
     console.error(`Element with id ${elementId} not found`);
     return;
   }
+
+  const isLandscape = orientation === 'landscape';
+  const targetWidthMm = isLandscape ? 297 : 210;
+  const pageHeightMm = isLandscape ? 210 : 297;
 
   try {
     const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
@@ -30,7 +38,7 @@ export const exportToPDF = async (elementId: string, filename: string) => {
             clonedEl.style.left = '0';
             clonedEl.style.margin = '0 auto';
             clonedEl.style.transform = 'none';
-            clonedEl.style.width = '210mm';
+            clonedEl.style.width = `${targetWidthMm}mm`;
             clonedEl.style.boxShadow = 'none';
             clonedEl.style.border = 'none';
             clonedEl.style.visibility = 'visible';
@@ -59,41 +67,49 @@ export const exportToPDF = async (elementId: string, filename: string) => {
 
     const imgData = canvas.toDataURL('image/jpeg', 0.95);
     const pdf = new jsPDF({
-      orientation: 'portrait',
+      orientation,
       unit: 'mm',
       format: 'a4'
     });
 
-    const pdfWidth = 210; // A4 width in mm
+    const pdfWidth = targetWidthMm;
     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
     let heightLeft = pdfHeight;
     let position = 0;
 
     pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
-    heightLeft -= 297;
+    heightLeft -= pageHeightMm;
 
     while (heightLeft > 0.5) {
-      position = position - 297;
+      position = position - pageHeightMm;
       pdf.addPage();
       pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
-      heightLeft -= 297;
+      heightLeft -= pageHeightMm;
     }
 
     pdf.save(`${filename}.pdf`);
   } catch (error) {
     console.error('PDF export error:', error);
     // Fail-safe print dialog to Save as PDF
-    printDocumentElement(elementId);
+    printDocumentElement(elementId, orientation);
   }
 };
 
-export const printDocumentElement = (elementId: string) => {
+export const printDocumentElement = (
+  elementId: string,
+  orientation: 'portrait' | 'landscape' = 'portrait'
+) => {
   const element = document.getElementById(elementId);
   if (!element) {
     window.print();
     return;
   }
+
+  const isLandscape = orientation === 'landscape';
+  const widthMm = isLandscape ? 297 : 210;
+  const heightMm = isLandscape ? 210 : 297;
+  const contentWidthMm = isLandscape ? 280 : 190;
 
   // Create isolated printing iframe to guarantee 100% un-clipped print preview
   const iframe = document.createElement('iframe');
@@ -126,27 +142,27 @@ export const printDocumentElement = (elementId: string) => {
         ${headStyles}
         <style>
           @page {
-            size: A4 portrait;
+            size: A4 ${orientation};
             margin: 0;
           }
           html, body {
-            width: 210mm !important;
-            min-height: 297mm !important;
+            width: ${widthMm}mm !important;
+            min-height: ${heightMm}mm !important;
             margin: 0 !important;
             padding: 0 !important;
             background: #ffffff !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          .receipt-print-page {
-            width: 210mm !important;
-            min-height: 297mm !important;
-            padding: 10mm 0 !important;
+          .receipt-print-page, .report-print-page {
+            width: ${widthMm}mm !important;
+            min-height: ${heightMm}mm !important;
+            padding: 8mm 0 !important;
             margin: 0 auto !important;
             box-sizing: border-box !important;
           }
-          .receipt-content {
-            width: 190mm !important;
+          .receipt-content, .report-content {
+            width: ${contentWidthMm}mm !important;
             margin: 0 auto !important;
           }
           #${elementId} {
@@ -177,9 +193,12 @@ export const printDocumentElement = (elementId: string) => {
 };
 
 export const printDocument = () => {
+  const reportEl = document.getElementById('report-pdf-document');
   const receiptEl = document.getElementById('receipt-pdf-document');
   const quotationEl = document.getElementById('quotation-pdf-document');
-  if (receiptEl) {
+  if (reportEl) {
+    printDocumentElement('report-pdf-document', 'landscape');
+  } else if (receiptEl) {
     printDocumentElement('receipt-pdf-document');
   } else if (quotationEl) {
     printDocumentElement('quotation-pdf-document');

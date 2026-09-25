@@ -936,16 +936,16 @@ export class StorageService {
       mileage: Number(quotation.mileage) || 0,
       fee_items: Array.isArray(quotation.fee_items)
         ? quotation.fee_items.map((item, idx) => ({
-            ...item,
-            id: item?.id || `item-${idx}`,
-            description: item?.description || '',
-            quantity: Number(item?.quantity) || 0,
-            unit_price: Number(item?.unit_price) || 0,
-            amount: Number(item?.amount) || 0,
-            sap_no: item?.sap_no || '',
-            paint_check: item?.paint_check || '',
-            image_url: item?.image_url || ''
-          }))
+          ...item,
+          id: item?.id || `item-${idx}`,
+          description: item?.description || '',
+          quantity: Number(item?.quantity) || 0,
+          unit_price: Number(item?.unit_price) || 0,
+          amount: Number(item?.amount) || 0,
+          sap_no: item?.sap_no || '',
+          paint_check: item?.paint_check || '',
+          image_url: item?.image_url || ''
+        }))
         : []
     };
   }
@@ -1024,16 +1024,16 @@ export class StorageService {
       mileage: Number(receipt.mileage) || 0,
       fee_items: Array.isArray(receipt.fee_items)
         ? receipt.fee_items.map((item, idx) => ({
-            ...item,
-            id: item?.id || `item-${idx}`,
-            description: item?.description || '',
-            quantity: Number(item?.quantity) || 0,
-            unit_price: Number(item?.unit_price) || 0,
-            amount: Number(item?.amount) || 0,
-            sap_no: item?.sap_no || '',
-            stock_yes_no: item?.stock_yes_no || 'YES',
-            warranty_yes_no: item?.warranty_yes_no || 'YES'
-          }))
+          ...item,
+          id: item?.id || `item-${idx}`,
+          description: item?.description || '',
+          quantity: Number(item?.quantity) || 0,
+          unit_price: Number(item?.unit_price) || 0,
+          amount: Number(item?.amount) || 0,
+          sap_no: item?.sap_no || '',
+          stock_yes_no: item?.stock_yes_no || 'YES',
+          warranty_yes_no: item?.warranty_yes_no || 'YES'
+        }))
         : []
     };
   }
