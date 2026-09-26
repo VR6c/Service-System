@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useAlert, useToast } from '../context/DialogContext';
 import { StorageService } from '../services/storageService';
-import { sendTelegramReminder } from '../services/telegramService';
+import { sendTelegramReminder, sendTelegramComplete } from '../services/telegramService';
 import type { Receipt, ReceiptStatus, Quotation } from '../types';
 import { useFeeItems } from '../hooks/useFeeItems';
 import { useDocumentForm } from '../hooks/useDocumentForm';
@@ -21,7 +21,8 @@ import {
   Clock,
   Wrench,
   Sparkles,
-  Building2
+  Building2,
+  CheckCircle2
 } from 'lucide-react';
 
 interface CreateReceiptProps {
@@ -104,7 +105,7 @@ export const CreateReceipt: React.FC<CreateReceiptProps> = ({
     setReceiptNo(StorageService.generateReceiptNo(docForm.selectedBrandId, docForm.selectedBranchId));
   }, [docForm.selectedBrandId, docForm.selectedBranchId, editingReceipt]);
 
-  const handleSendTelegramNow = async () => {
+  const handleSendTelegramCompleteNow = async () => {
     if (!docForm.customerName.trim() || !docForm.vehicleModel.trim() || !docForm.plateNo.trim()) {
       await showAlert({
         title: 'Customer & Vehicle Details Required',
@@ -114,24 +115,70 @@ export const CreateReceipt: React.FC<CreateReceiptProps> = ({
       });
       return;
     }
-    const res = await sendTelegramReminder({
+    const branchName = docForm.currentBranch?.branch_name 
+      || (currentUser?.role === 'Service Advisor' ? currentUser.branch : '') 
+      || StorageService.getSettings().branch_name;
+
+    const res = await sendTelegramComplete({
       customer_name: docForm.customerName,
+      branch_name: branchName,
       vehicle_model: docForm.vehicleModel,
       plate_no: docForm.plateNo,
-      remind_date: remindDate,
-      phone: docForm.phone
+      remind_date: editingReceipt?.completion?.finished_date || new Date().toISOString().split('T')[0],
+      phone: docForm.phone,
+      receipt_no: receiptNo
     });
 
     if (res.success) {
       showToast({
         type: 'success',
-        title: 'Telegram Reminder Sent',
-        message: `Customer: ${docForm.customerName} • Vehicle: ${docForm.vehicleModel} • Plate: ${docForm.plateNo}`
+        title: 'Services Complete Sent',
+        message: `Dispatched to Services Complete group for ${docForm.customerName} (${docForm.plateNo})`
       });
     } else {
       await showAlert({
-        title: 'Telegram Notification Error',
-        message: res.message || 'Failed to dispatch Telegram reminder.',
+        title: 'Telegram Error',
+        message: res.message || 'Failed to dispatch Services Complete notification.',
+        type: 'error',
+        confirmText: 'OK'
+      });
+    }
+  };
+
+  const handleSendTelegramReminderNow = async () => {
+    if (!docForm.customerName.trim() || !docForm.vehicleModel.trim() || !docForm.plateNo.trim()) {
+      await showAlert({
+        title: 'Customer & Vehicle Details Required',
+        message: 'Please fill in Customer Name, Vehicle Model, and Plate Number first.',
+        type: 'warning',
+        confirmText: 'Understood'
+      });
+      return;
+    }
+    const branchName = docForm.currentBranch?.branch_name 
+      || (currentUser?.role === 'Service Advisor' ? currentUser.branch : '') 
+      || StorageService.getSettings().branch_name;
+
+    const res = await sendTelegramReminder({
+      customer_name: docForm.customerName,
+      branch_name: branchName,
+      vehicle_model: docForm.vehicleModel,
+      plate_no: docForm.plateNo,
+      remind_date: remindDate,
+      phone: docForm.phone,
+      receipt_no: receiptNo
+    });
+
+    if (res.success) {
+      showToast({
+        type: 'success',
+        title: 'Services Reminder Sent',
+        message: `Dispatched to Services Reminder group for ${docForm.customerName} (${docForm.plateNo})`
+      });
+    } else {
+      await showAlert({
+        title: 'Telegram Error',
+        message: res.message || 'Failed to dispatch Services Reminder notification.',
         type: 'error',
         confirmText: 'OK'
       });
@@ -195,6 +242,72 @@ export const CreateReceipt: React.FC<CreateReceiptProps> = ({
       title: 'Receipt Saved Successfully',
       message: `Receipt #${receiptNo} has been saved.`
     });
+
+    // Check if Telegram Auto sent mode is configured per group
+    const sysSettings = StorageService.getSettings();
+    const isBotReady = Boolean(sysSettings.telegram_bot_token?.trim());
+    if (isBotReady) {
+      const branchName = savedRecord.branch_name 
+        || docForm.currentBranch?.branch_name 
+        || (currentUser?.role === 'Service Advisor' ? currentUser.branch : '') 
+        || sysSettings.branch_name;
+
+      const completeMode = sysSettings.telegram_complete_send_mode || sysSettings.telegram_send_mode || 'manual';
+      const reminderMode = sysSettings.telegram_reminder_send_mode || sysSettings.telegram_send_mode || 'manual';
+
+      // 1. If service is Completed or Delivered and Complete group is Auto sent
+      if (completeMode === 'auto' &&
+          (savedRecord.status === 'Completed' || savedRecord.status === 'Delivered') && 
+          (sysSettings.telegram_complete_chat_id || sysSettings.telegram_chat_id)) {
+        try {
+          const compRes = await sendTelegramComplete({
+            customer_name: savedRecord.customer_name,
+            branch_name: branchName,
+            vehicle_model: savedRecord.vehicle_model,
+            plate_no: savedRecord.plate_no,
+            remind_date: savedRecord.completion?.finished_date || new Date().toISOString().split('T')[0],
+            phone: savedRecord.phone,
+            receipt_no: savedRecord.receipt_no
+          });
+          if (compRes.success) {
+            showToast({
+              type: 'success',
+              title: 'Auto Sent: Services Complete',
+              message: `Dispatched to Services Complete group for ${savedRecord.customer_name}.`
+            });
+          }
+        } catch (err) {
+          console.error('Auto-send complete error:', err);
+        }
+      }
+
+      // 2. If scheduled remind_date is present and Reminder group is Auto sent
+      if (reminderMode === 'auto' &&
+          savedRecord.remind_date && 
+          (sysSettings.telegram_reminder_chat_id || sysSettings.telegram_chat_id)) {
+        try {
+          const remRes = await sendTelegramReminder({
+            customer_name: savedRecord.customer_name,
+            branch_name: branchName,
+            vehicle_model: savedRecord.vehicle_model,
+            plate_no: savedRecord.plate_no,
+            remind_date: savedRecord.remind_date,
+            phone: savedRecord.phone,
+            receipt_no: savedRecord.receipt_no
+          });
+          if (remRes.success) {
+            showToast({
+              type: 'success',
+              title: 'Auto Sent: Services Reminder',
+              message: `Dispatched to Services Reminder group for ${savedRecord.customer_name}.`
+            });
+          }
+        } catch (err) {
+          console.error('Auto-send reminder error:', err);
+        }
+      }
+    }
+
     setSavedReceipt(savedRecord);
     setIsPreviewOpen(true);
     if (onSaved) onSaved(savedRecord);
@@ -282,15 +395,41 @@ export const CreateReceipt: React.FC<CreateReceiptProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleSendTelegramNow}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-sky-50 text-sky-700 hover:bg-sky-100 text-xs font-bold transition border border-sky-200"
-          >
-            <Bell className="w-4 h-4 text-sky-600" />
-            Send Telegram
-          </button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Group 1: Services Complete */}
+            <button
+              type="button"
+              onClick={handleSendTelegramCompleteNow}
+              className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white text-xs font-bold transition border border-emerald-200 cursor-pointer active:scale-95 shadow-2xs"
+              title="Send notification to 1. Services Complete Telegram group"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Services Complete</span>
+            </button>
+
+            {/* Group 2: Services Reminder */}
+            <button
+              type="button"
+              onClick={handleSendTelegramReminderNow}
+              className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-sky-50 text-sky-700 hover:bg-sky-600 hover:text-white text-xs font-bold transition border border-sky-200 cursor-pointer active:scale-95 shadow-2xs"
+              title="Send notification to 2. Services Reminder Telegram group"
+            >
+              <Bell className="w-3.5 h-3.5 text-sky-600 group-hover:text-white" />
+              <span>Services Reminder</span>
+            </button>
+
+            {StorageService.getSettings().telegram_complete_send_mode === 'auto' && (
+              <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                ⚡ Complete: Auto
+              </span>
+            )}
+            {StorageService.getSettings().telegram_reminder_send_mode === 'auto' && (
+              <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-sky-50 text-sky-700 border border-sky-200">
+                ⚡ Reminder: Auto
+              </span>
+            )}
+          </div>
 
           {savedReceipt && (
             <button

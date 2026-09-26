@@ -244,7 +244,12 @@ async function seedInitialDataIfNeeded() {
             quotation_terms: 'សូមពិនិត្យព័ត៌មានលម្អិតមុនពេលធ្វើការអនុម័ត',
             telegram_bot_token: '',
             telegram_chat_id: '',
-            telegram_reminder_enabled: false
+            telegram_complete_chat_id: '',
+            telegram_reminder_chat_id: '',
+            telegram_complete_send_mode: 'manual',
+            telegram_reminder_send_mode: 'manual',
+            telegram_reminder_enabled: false,
+            telegram_send_mode: 'manual'
           });
           console.log('Seeding completed.');
         }

@@ -186,10 +186,15 @@ export interface SystemSettings {
   quotation_expiration_term?: string;
   quotation_terms?: string;
 
-  // Telegram Bot Settings
+  // Telegram Bot Settings (Dual-Group Setup)
   telegram_bot_token?: string;
-  telegram_chat_id?: string;
+  telegram_chat_id?: string; // Legacy fallback
+  telegram_complete_chat_id?: string; // 1. Services Complete Group
+  telegram_reminder_chat_id?: string; // 2. Services Reminder Group
+  telegram_complete_send_mode?: 'auto' | 'manual'; // Group 1 (Complete) sending mode
+  telegram_reminder_send_mode?: 'auto' | 'manual'; // Group 2 (Reminder) sending mode
   telegram_reminder_enabled?: boolean;
+  telegram_send_mode?: 'auto' | 'manual'; // Legacy fallback
 }
 
 export interface DashboardMetrics {

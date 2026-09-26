@@ -5,7 +5,7 @@ import { Modal } from '../components/common/Modal';
 import { StorageService } from '../services/storageService';
 import { testTelegramBotConnection } from '../services/telegramService';
 import type { SystemSettings, Brand } from '../types';
-import { Settings as SettingsIcon, Save, CheckCircle, Building2, Percent, FileText, Layout, Upload, X, Send, Bot, Plus, Edit2, Trash2, Image as ImageIcon } from 'lucide-react';
+import { Settings as SettingsIcon, Save, CheckCircle, CheckCircle2, Bell, Building2, Percent, FileText, Layout, Upload, X, Send, Bot, Plus, Edit2, Trash2, Image as ImageIcon, Zap, MousePointer } from 'lucide-react';
 import { Select } from '../components/common/Select';
 
 export const Settings: React.FC = () => {
@@ -15,8 +15,6 @@ export const Settings: React.FC = () => {
   const showToast = useToast();
   const [settings, setSettings] = useState<SystemSettings>(StorageService.getSettings());
   const [savedSuccess, setSavedSuccess] = useState(false);
-  const [testingTelegram, setTestingTelegram] = useState(false);
-  const [telegramStatusMsg, setTelegramStatusMsg] = useState<{ success?: boolean; text?: string } | null>(null);
 
   React.useEffect(() => {
     const loadSettings = async () => {
@@ -195,12 +193,25 @@ export const Settings: React.FC = () => {
     });
   };
 
-  const handleTestTelegram = async () => {
-    setTestingTelegram(true);
+  const [testingGroup, setTestingGroup] = useState<'complete' | 'reminder' | null>(null);
+  const [telegramStatusMsg, setTelegramStatusMsg] = useState<{ group?: string; success?: boolean; text?: string } | null>(null);
+
+  const handleTestTelegram = async (groupType: 'complete' | 'reminder') => {
+    setTestingGroup(groupType);
     setTelegramStatusMsg(null);
-    const res = await testTelegramBotConnection(settings.telegram_bot_token || '', settings.telegram_chat_id || '');
-    setTelegramStatusMsg({ success: res.success, text: res.message });
-    setTestingTelegram(false);
+    const chatId = groupType === 'complete' 
+      ? (settings.telegram_complete_chat_id || settings.telegram_chat_id || '')
+      : (settings.telegram_reminder_chat_id || settings.telegram_chat_id || '');
+    const groupName = groupType === 'complete' ? 'Services Complete' : 'Services Reminder';
+
+    const res = await testTelegramBotConnection(
+      settings.telegram_bot_token || '', 
+      chatId, 
+      groupName, 
+      settings.branch_name || ''
+    );
+    setTelegramStatusMsg({ group: groupName, success: res.success, text: res.message });
+    setTestingGroup(null);
   };
 
   const handleBYDLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -588,68 +599,232 @@ export const Settings: React.FC = () => {
           </div>
         </div>
 
-        {/* Telegram Bot Group Notification Settings */}
+        {/* Telegram Bot Group Notification Settings (Dual Groups: 1. Services Complete & 2. Services Reminder) */}
         <div className="space-y-4 pt-4 border-t border-slate-100">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2 min-w-0">
               <Send className="w-4 h-4 text-blue-600 shrink-0" />
               <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider font-heading truncate">
-                Telegram Bot Group Notification Settings
+                Telegram Bot Notification Settings (2 Dedicated Groups)
               </h3>
             </div>
-            <span className="self-start sm:self-auto text-[11px] font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200 shrink-0">
-              Customer Repair Reminders
-            </span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                1. Services Complete
+              </span>
+              <span className="text-[11px] font-bold text-sky-700 bg-sky-50 px-2.5 py-0.5 rounded-full border border-sky-200">
+                2. Services Reminder
+              </span>
+            </div>
           </div>
 
           <p className="text-xs text-slate-600 leading-relaxed">
-            Configure your Telegram Bot to send automated customer service repair reminder notifications to your Telegram team group chat.
+            Configure your Telegram Bot token and set up 2 separate Telegram group chats: one for <strong>Services Complete</strong> notifications and one for <strong>Services Reminder</strong> alerts.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Telegram Bot Token</label>
-              <input
-                type="text"
-                value={settings.telegram_bot_token || ''}
-                onChange={e => handleChange('telegram_bot_token', e.target.value)}
-                placeholder="e.g. 123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ"
-                className="pro-input font-mono text-xs"
-              />
-              <p className="text-[11px] text-slate-400 mt-1">Get Bot Token from Telegram @BotFather</p>
+          {/* Shared Bot Token */}
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+            <label className="block text-xs font-bold text-slate-800 mb-1.5">Telegram Bot Token (Shared for both groups)</label>
+            <input
+              type="text"
+              value={settings.telegram_bot_token || ''}
+              onChange={e => handleChange('telegram_bot_token', e.target.value)}
+              placeholder="e.g. 123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ"
+              className="pro-input font-mono text-xs bg-white"
+            />
+            <p className="text-[11px] text-slate-400 mt-1.5">
+              Get Bot Token from Telegram <a href="https://t.me/BotFather" target="_blank" rel="noreferrer" className="text-blue-600 underline font-bold">@BotFather</a>. Add this bot as an Administrator into both Telegram groups.
+            </p>
+          </div>
+
+          {/* 2 Groups Setup Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+            {/* Group 1: Services Complete */}
+            <div className="bg-slate-50/90 p-4 sm:p-5 rounded-2xl border border-slate-200/90 space-y-4 hover:border-slate-300 transition-all shadow-2xs flex flex-col justify-between">
+              <div className="space-y-3.5">
+                <div className="flex items-center justify-between gap-2 border-b border-slate-200/80 pb-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200/80 flex items-center justify-center shrink-0">
+                      <CheckCircle2 className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="font-extrabold text-xs text-slate-900 font-heading truncate block">1. Services Complete Group</span>
+                      <span className="text-[10px] text-slate-500 font-medium block">Vehicle repair &amp; service finished alerts</span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-200 shrink-0">
+                    Group 1
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Services Complete Group Chat ID</label>
+                  <input
+                    type="text"
+                    value={settings.telegram_complete_chat_id || ''}
+                    onChange={e => handleChange('telegram_complete_chat_id', e.target.value)}
+                    placeholder="e.g. -100123456789 or @byd_services_complete"
+                    className="pro-input font-mono text-xs bg-white"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">Dispatches notifications when repair &amp; maintenance is completed.</p>
+                </div>
+
+                {/* Group 1 Sending Mode */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-bold text-slate-700">Group 1 Sending Mode</label>
+                    <span className="text-[10px] font-bold text-slate-500">
+                      {settings.telegram_complete_send_mode === 'auto' ? '⚡ Auto Active' : '👆 Manual Only'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200/80">
+                    <button
+                      type="button"
+                      onClick={() => handleChange('telegram_complete_send_mode', 'auto')}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-black transition-all duration-200 active:scale-95 cursor-pointer whitespace-nowrap text-center ${
+                        settings.telegram_complete_send_mode === 'auto'
+                          ? 'bg-white text-emerald-700 shadow-xs border border-slate-200/60'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <Zap className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Auto sent</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleChange('telegram_complete_send_mode', 'manual')}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-black transition-all duration-200 active:scale-95 cursor-pointer whitespace-nowrap text-center ${
+                        (settings.telegram_complete_send_mode || 'manual') === 'manual'
+                          ? 'bg-white text-slate-900 shadow-xs border border-slate-200/60'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <MousePointer className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Manual sent</span>
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    {settings.telegram_complete_send_mode === 'auto'
+                      ? 'Automatically routes completed service receipts to Group 1 upon saving.'
+                      : 'Staff explicitly clicks "Services Complete" button to dispatch notifications.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-200/80">
+                <button
+                  type="button"
+                  onClick={() => handleTestTelegram('complete')}
+                  disabled={testingGroup !== null || !settings.telegram_bot_token || !(settings.telegram_complete_chat_id || settings.telegram_chat_id)}
+                  className="w-full flex items-center justify-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-800 rounded-xl text-xs font-bold transition border border-slate-200 shadow-2xs cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Bot className="w-3.5 h-3.5 text-slate-600" />
+                  <span>{testingGroup === 'complete' ? 'Testing Complete Group...' : 'Test Services Complete Group'}</span>
+                </button>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">Telegram Group / Chat ID</label>
-              <input
-                type="text"
-                value={settings.telegram_chat_id || ''}
-                onChange={e => handleChange('telegram_chat_id', e.target.value)}
-                placeholder="e.g. -100123456789 or @your_group_name"
-                className="pro-input font-mono text-xs"
-              />
-              <p className="text-[11px] text-slate-400 mt-1">Chat ID or Group ID where reminders are sent</p>
+            {/* Group 2: Services Reminder */}
+            <div className="bg-slate-50/90 p-4 sm:p-5 rounded-2xl border border-slate-200/90 space-y-4 hover:border-slate-300 transition-all shadow-2xs flex flex-col justify-between">
+              <div className="space-y-3.5">
+                <div className="flex items-center justify-between gap-2 border-b border-slate-200/80 pb-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-7 h-7 rounded-lg bg-sky-50 text-sky-600 border border-sky-200/80 flex items-center justify-center shrink-0">
+                      <Bell className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="font-extrabold text-xs text-slate-900 font-heading truncate block">2. Services Reminder Group</span>
+                      <span className="text-[10px] text-slate-500 font-medium block">Scheduled maintenance &amp; intake reminders</span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold text-sky-700 bg-white px-2 py-0.5 rounded border border-sky-200 shrink-0">
+                    Group 2
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Services Reminder Group Chat ID</label>
+                  <input
+                    type="text"
+                    value={settings.telegram_reminder_chat_id || ''}
+                    onChange={e => handleChange('telegram_reminder_chat_id', e.target.value)}
+                    placeholder="e.g. -100987654321 or @byd_services_reminder"
+                    className="pro-input font-mono text-xs bg-white"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">Dispatches scheduled customer service repair reminder alerts.</p>
+                </div>
+
+                {/* Group 2 Sending Mode */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-bold text-slate-700">Group 2 Sending Mode</label>
+                    <span className="text-[10px] font-bold text-slate-500">
+                      {settings.telegram_reminder_send_mode === 'auto' ? '⚡ Auto Active' : '👆 Manual Only'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200/80">
+                    <button
+                      type="button"
+                      onClick={() => handleChange('telegram_reminder_send_mode', 'auto')}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-black transition-all duration-200 active:scale-95 cursor-pointer whitespace-nowrap text-center ${
+                        settings.telegram_reminder_send_mode === 'auto'
+                          ? 'bg-white text-sky-700 shadow-xs border border-slate-200/60'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <Zap className="w-3.5 h-3.5 text-sky-600" />
+                      <span>Auto sent</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleChange('telegram_reminder_send_mode', 'manual')}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-black transition-all duration-200 active:scale-95 cursor-pointer whitespace-nowrap text-center ${
+                        (settings.telegram_reminder_send_mode || 'manual') === 'manual'
+                          ? 'bg-white text-slate-900 shadow-xs border border-slate-200/60'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <MousePointer className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Manual sent</span>
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    {settings.telegram_reminder_send_mode === 'auto'
+                      ? 'Automatically routes reminder records to Group 2 when remind date is set.'
+                      : 'Staff explicitly clicks "Services Reminder" button to dispatch alerts.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-200/80">
+                <button
+                  type="button"
+                  onClick={() => handleTestTelegram('reminder')}
+                  disabled={testingGroup !== null || !settings.telegram_bot_token || !(settings.telegram_reminder_chat_id || settings.telegram_chat_id)}
+                  className="w-full flex items-center justify-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-800 rounded-xl text-xs font-bold transition border border-slate-200 shadow-2xs cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Bot className="w-3.5 h-3.5 text-slate-600" />
+                  <span>{testingGroup === 'reminder' ? 'Testing Reminder Group...' : 'Test Services Reminder Group'}</span>
+                </button>
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
-            <button
-              type="button"
-              onClick={handleTestTelegram}
-              disabled={testingTelegram || !settings.telegram_bot_token || !settings.telegram_chat_id}
-              className="w-full sm:w-auto px-4 py-2 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 border border-blue-200 cursor-pointer disabled:opacity-50 active:scale-[0.98]"
-            >
-              <Bot className="w-4 h-4" />
-              <span>{testingTelegram ? 'Testing Connection...' : 'Test Telegram Group Connection'}</span>
-            </button>
-
-            {telegramStatusMsg && (
-              <span className={`text-xs font-bold px-3 py-1.5 rounded-lg border self-start sm:self-auto ${telegramStatusMsg.success ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'
-                }`}>
-                {telegramStatusMsg.text}
-              </span>
-            )}
-          </div>
+          {/* Test Status Banner */}
+          {telegramStatusMsg && (
+            <div className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-between gap-3 ${
+              telegramStatusMsg.success ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-red-50 text-red-800 border-red-200'
+            }`}>
+              <span>{telegramStatusMsg.text}</span>
+              <button 
+                type="button" 
+                onClick={() => setTelegramStatusMsg(null)}
+                className="text-[11px] px-2 py-0.5 rounded-md hover:bg-black/5 cursor-pointer"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Multi-Brand System Setup (Add, Edit, & Delete Brands) */}

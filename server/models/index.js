@@ -178,7 +178,12 @@ const SettingsSchema = new mongoose.Schema(
     quotation_terms: { type: String, default: '' },
     telegram_bot_token: { type: String, default: '' },
     telegram_chat_id: { type: String, default: '' },
-    telegram_reminder_enabled: { type: Boolean, default: false }
+    telegram_complete_chat_id: { type: String, default: '' },
+    telegram_reminder_chat_id: { type: String, default: '' },
+    telegram_complete_send_mode: { type: String, default: 'manual' },
+    telegram_reminder_send_mode: { type: String, default: 'manual' },
+    telegram_reminder_enabled: { type: Boolean, default: false },
+    telegram_send_mode: { type: String, default: 'manual' }
   },
   { timestamps: true, strict: false }
 );

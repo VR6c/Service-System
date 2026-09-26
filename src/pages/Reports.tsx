@@ -476,21 +476,21 @@ export const Reports: React.FC = () => {
         {/* Desktop Table View (>= lg) */}
         <div className="hidden lg:block overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse min-w-[900px]">
-            <thead className="bg-slate-50/90 text-slate-600 font-heading font-extrabold uppercase text-[11px] tracking-wider border-b border-slate-200/80 sticky top-0 z-10 backdrop-blur-xs">
+            <thead className="bg-[#002060] text-white font-heading font-extrabold uppercase text-[11px] tracking-wider border-b border-[#002060] sticky top-0 z-10">
               <tr>
-                <th className="py-3.5 px-4 text-center">#</th>
-                <th className="py-3.5 px-4">Document No.</th>
-                <th className="py-3.5 px-4">Brand</th>
-                <th className="py-3.5 px-4">Branch</th>
-                <th className="py-3.5 px-4">Customer</th>
-                <th className="py-3.5 px-4">Phone</th>
-                <th className="py-3.5 px-4">Vehicle Details</th>
-                <th className="py-3.5 px-4 text-right">Amount ($)</th>
-                <th className="py-3.5 px-4">Created By</th>
-                <th className="py-3.5 px-4">Date</th>
+                <th className="py-3 px-3 text-center w-[4%]">S/n</th>
+                <th className="py-3 px-3 text-center">Document No.</th>
+                <th className="py-3 px-3 text-center">Brand</th>
+                <th className="py-3 px-3">Branch</th>
+                <th className="py-3 px-3">Customer</th>
+                <th className="py-3 px-3 text-center">Phone</th>
+                <th className="py-3 px-3">Vehicle Details</th>
+                <th className="py-3 px-3">Created By</th>
+                <th className="py-3 px-3 text-center">Date</th>
+                <th className="py-3 px-3 text-right">Total Amount ($)</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+            <tbody className="divide-y divide-slate-100 font-medium text-slate-800 bg-white">
               {reportData.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="py-12 text-center text-slate-400 font-medium">
@@ -505,34 +505,35 @@ export const Reports: React.FC = () => {
                 </tr>
               ) : (
                 reportData.map((row, idx) => (
-                  <tr key={idx} className={`transaction-row animate-slide-up stagger-${Math.min(idx + 1, 5)}`}>
-                    <td className="py-3.5 px-4 text-center text-slate-400 font-medium">{idx + 1}</td>
-                    <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-slate-100/90 border border-slate-200/90 text-slate-800 font-mono font-bold text-xs shadow-2xs">
+                  <tr key={idx} className={`transaction-row hover:bg-slate-50/70 transition-colors animate-slide-up stagger-${Math.min(idx + 1, 5)}`}>
+                    <td className="py-3 px-3 text-center font-bold text-slate-900">{idx + 1}</td>
+                    <td className="py-3 px-3 text-center">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-slate-900 font-mono font-bold text-xs">
                         {row.doc_no}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 font-extrabold text-slate-900">{row.brand}</td>
-                    <td className="py-3.5 px-4 font-medium text-slate-700">{row.branch}</td>
-                    <td className="py-3.5 px-4 font-bold text-slate-900 font-heading text-sm">{row.customer}</td>
-                    <td className="py-3.5 px-4 text-slate-600 font-mono">{row.phone}</td>
-                    <td className="py-3.5 px-4 text-slate-700 font-medium">{row.vehicle}</td>
-                    <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900">
+                    <td className="py-3 px-3 text-center font-bold text-slate-900">{row.brand}</td>
+                    <td className="py-3 px-3 font-medium text-slate-700">{row.branch}</td>
+                    <td className="py-3 px-3 font-bold text-slate-900 font-heading text-sm">{row.customer}</td>
+                    <td className="py-3 px-3 text-center text-slate-600 font-mono">{row.phone}</td>
+                    <td className="py-3 px-3 text-slate-700 font-medium">{row.vehicle}</td>
+                    <td className="py-3 px-3 text-slate-600">{row.created_by}</td>
+                    <td className="py-3 px-3 text-center text-slate-500 font-mono">{row.date}</td>
+                    <td className="py-3 px-3 text-right font-mono font-bold text-slate-900">
                       ${Number(row.amount || 0).toFixed(2)}
                     </td>
-                    <td className="py-3.5 px-4 text-slate-600">{row.created_by}</td>
-                    <td className="py-3.5 px-4 text-slate-500">{row.date}</td>
                   </tr>
                 ))
               )}
             </tbody>
             <tfoot>
-              <tr className="bg-slate-50 font-bold border-t-2 border-slate-200 text-xs">
-                <td colSpan={7} className="py-3.5 px-4 text-right text-slate-900 uppercase font-extrabold">Grand Total:</td>
-                <td className="py-3.5 px-4 text-right font-mono text-sm text-emerald-800 font-black">
-                  ${Number(totalSum || 0).toFixed(2)}
+              <tr className="bg-[#002060] text-white font-bold text-xs border-t border-slate-900">
+                <td colSpan={9} className="py-3 px-4 text-center uppercase font-black tracking-wider text-white">
+                  TOTAL ({reportData.length} records):
                 </td>
-                <td colSpan={2}></td>
+                <td className="py-3 px-4 text-right font-mono text-sm text-white font-black">
+                  ${Number(totalSum || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </td>
               </tr>
             </tfoot>
           </table>

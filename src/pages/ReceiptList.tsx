@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useConfirm, useAlert, useToast } from '../context/DialogContext';
 import { Modal } from '../components/common/Modal';
 import { StorageService } from '../services/storageService';
-import { sendTelegramReminder } from '../services/telegramService';
+import { sendTelegramReminder, sendTelegramComplete } from '../services/telegramService';
 import type { Receipt } from '../types';
 import { ReceiptPDF } from '../components/pdf/ReceiptPDF';
 import { exportToPDF, printDocument } from '../utils/pdfExport';
@@ -28,7 +28,9 @@ import {
   Send,
   Building,
   GitBranch,
-  Phone
+  Phone,
+  CheckCircle2,
+  Bell
 } from 'lucide-react';
 
 interface ReceiptListProps {
@@ -53,6 +55,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
   const [selectedBrandFilter, setSelectedBrandFilter] = useState<string>('ALL');
   const [selectedBranchFilter, setSelectedBranchFilter] = useState<string>(defaultBranch);
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
+  const [telegramActionReceipt, setTelegramActionReceipt] = useState<Receipt | null>(null);
   const [downloadReceipt, setDownloadReceipt] = useState<Receipt | null>(null);
 
   useEffect(() => {
@@ -107,25 +110,63 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
     resetDeps: [searchQuery, statusFilter, selectedBrandFilter, selectedBranchFilter, filterType]
   });
 
-  const handleSendTelegramReminder = async (r: Receipt) => {
-    const res = await sendTelegramReminder({
+  const handleSendTelegramComplete = async (r: Receipt) => {
+    const branchName = r.branch_name 
+      || branches.find(b => b.id === r.branch_id)?.branch_name 
+      || (currentUser?.role === 'Service Advisor' ? currentUser.branch : '')
+      || StorageService.getSettings().branch_name;
+
+    const res = await sendTelegramComplete({
       customer_name: r.customer_name,
+      branch_name: branchName,
       vehicle_model: r.vehicle_model,
       plate_no: r.plate_no,
-      remind_date: r.remind_date || r.created_date,
-      phone: r.phone
+      remind_date: r.completion?.finished_date || r.created_date,
+      phone: r.phone,
+      receipt_no: r.receipt_no
     });
 
     if (res.success) {
       showToast({
         type: 'success',
-        title: 'Telegram Reminder Sent',
-        message: `${r.customer_name} • ${r.vehicle_model} • Plate: ${r.plate_no}`
+        title: 'Services Complete Sent',
+        message: `Dispatched to Services Complete group for ${r.customer_name} (${r.plate_no})`
       });
     } else {
       await showAlert({
-        title: 'Telegram Notification Failed',
-        message: res.message || 'Could not send reminder to Telegram group.',
+        title: 'Telegram Error',
+        message: res.message || 'Could not send notification to Services Complete group.',
+        type: 'error'
+      });
+    }
+  };
+
+  const handleSendTelegramReminder = async (r: Receipt) => {
+    const branchName = r.branch_name 
+      || branches.find(b => b.id === r.branch_id)?.branch_name 
+      || (currentUser?.role === 'Service Advisor' ? currentUser.branch : '')
+      || StorageService.getSettings().branch_name;
+
+    const res = await sendTelegramReminder({
+      customer_name: r.customer_name,
+      branch_name: branchName,
+      vehicle_model: r.vehicle_model,
+      plate_no: r.plate_no,
+      remind_date: r.remind_date || r.created_date,
+      phone: r.phone,
+      receipt_no: r.receipt_no
+    });
+
+    if (res.success) {
+      showToast({
+        type: 'success',
+        title: 'Services Reminder Sent',
+        message: `Dispatched to Services Reminder group for ${r.customer_name} (${r.plate_no})`
+      });
+    } else {
+      await showAlert({
+        title: 'Telegram Error',
+        message: res.message || 'Could not send notification to Services Reminder group.',
         type: 'error'
       });
     }
@@ -435,9 +476,9 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                       </button>
 
                       <button
-                        onClick={() => handleSendTelegramReminder(r)}
+                        onClick={() => setTelegramActionReceipt(r)}
                         className="action-btn-hover p-2 bg-sky-50 hover:bg-sky-600 text-sky-600 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95 flex items-center justify-center"
-                        title="Send Telegram Reminder to Group"
+                        title="Send Telegram Notification (Services Complete / Reminder)"
                       >
                         <Send className="w-3.5 h-3.5" />
                       </button>
@@ -578,9 +619,9 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
                             <Eye className="w-3.5 h-3.5" />
                           </button>
                           <button
-                            onClick={() => handleSendTelegramReminder(r)}
+                            onClick={() => setTelegramActionReceipt(r)}
                             className="action-btn-hover p-2 bg-sky-50 hover:bg-sky-600 text-sky-600 hover:text-white rounded-xl shadow-2xs cursor-pointer active:scale-95"
-                            title="Send Telegram Reminder to Group"
+                            title="Send Telegram Notification (Services Complete / Reminder)"
                           >
                             <Send className="w-3.5 h-3.5" />
                           </button>
@@ -666,12 +707,21 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
             <div className="flex items-center gap-2">
               <button
                 type="button"
+                onClick={() => handleSendTelegramComplete(selectedReceipt)}
+                className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-extrabold text-white shadow-xs transition-all hover:bg-emerald-700 active:scale-[0.98] cursor-pointer"
+                title="Send to 1. Services Complete Telegram group"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Services Complete</span>
+              </button>
+              <button
+                type="button"
                 onClick={() => handleSendTelegramReminder(selectedReceipt)}
                 className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl bg-sky-600 px-3 py-1.5 text-xs font-extrabold text-white shadow-xs transition-all hover:bg-sky-700 active:scale-[0.98] cursor-pointer"
-                title="Send Telegram Reminder to Group"
+                title="Send to 2. Services Reminder Telegram group"
               >
-                <Send className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Send Telegram</span>
+                <Bell className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Services Reminder</span>
               </button>
               <button
                 type="button"
@@ -737,6 +787,84 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ filterType, onCreateNe
             />
           </ErrorBoundary>
         </div>
+      )}
+
+      {/* Telegram Group Selection Modal */}
+      {telegramActionReceipt && (
+        <Modal
+          isOpen={Boolean(telegramActionReceipt)}
+          onClose={() => setTelegramActionReceipt(null)}
+          maxWidth="md"
+          title={
+            <div className="flex items-center gap-2">
+              <Send className="w-5 h-5 text-blue-600" />
+              <span className="font-heading font-black text-slate-900 text-base">
+                Send Telegram Notification
+              </span>
+            </div>
+          }
+          subtitle={`Receipt #${telegramActionReceipt.receipt_no} • ${telegramActionReceipt.customer_name} (${telegramActionReceipt.plate_no})`}
+        >
+          <div className="space-y-4 pt-2">
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Select which Telegram group to dispatch this notification to:
+            </p>
+
+            <div className="grid grid-cols-1 gap-3">
+              {/* Option 1: Services Complete */}
+              <button
+                type="button"
+                onClick={() => {
+                  const target = telegramActionReceipt;
+                  setTelegramActionReceipt(null);
+                  handleSendTelegramComplete(target);
+                }}
+                className="w-full text-left p-4 rounded-2xl border-2 border-emerald-200 bg-emerald-50/50 hover:bg-emerald-50 hover:border-emerald-500 transition-all flex items-start gap-3.5 cursor-pointer shadow-2xs group"
+              >
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0 group-hover:scale-105 transition-transform">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-black text-slate-900">1. Services Complete</h4>
+                    <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      Group 1
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1 leading-snug">
+                    Send notification that vehicle repair &amp; maintenance service has been completed.
+                  </p>
+                </div>
+              </button>
+
+              {/* Option 2: Services Reminder */}
+              <button
+                type="button"
+                onClick={() => {
+                  const target = telegramActionReceipt;
+                  setTelegramActionReceipt(null);
+                  handleSendTelegramReminder(target);
+                }}
+                className="w-full text-left p-4 rounded-2xl border-2 border-sky-200 bg-sky-50/50 hover:bg-sky-50 hover:border-sky-500 transition-all flex items-start gap-3.5 cursor-pointer shadow-2xs group"
+              >
+                <div className="w-10 h-10 rounded-xl bg-sky-100 flex items-center justify-center text-sky-600 shrink-0 group-hover:scale-105 transition-transform">
+                  <Bell className="w-5 h-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-black text-slate-900">2. Services Reminder</h4>
+                    <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 border border-sky-300">
+                      Group 2
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1 leading-snug">
+                    Send scheduled service and maintenance reminder alert.
+                  </p>
+                </div>
+              </button>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   );

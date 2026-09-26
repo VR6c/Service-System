@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useAlert, useToast } from '../context/DialogContext';
 import { StorageService } from '../services/storageService';
+import { sendTelegramReminder } from '../services/telegramService';
 import type { Quotation } from '../types';
 import { useFeeItems } from '../hooks/useFeeItems';
 import { useDocumentForm } from '../hooks/useDocumentForm';
@@ -16,7 +17,8 @@ import {
   Eye,
   ArrowRight,
   Sparkles,
-  Building2
+  Building2,
+  Send
 } from 'lucide-react';
 
 interface CreateQuotationProps {
@@ -122,6 +124,45 @@ export const CreateQuotation: React.FC<CreateQuotationProps> = ({
     setIsPreviewOpen(true);
   };
 
+  const handleSendTelegramNow = async () => {
+    if (!docForm.customerName.trim() || !docForm.vehicleModel.trim() || !docForm.plateNo.trim()) {
+      await showAlert({
+        title: 'Customer & Vehicle Details Required',
+        message: 'Please fill in Customer Name, Vehicle Model, and Plate Number first.',
+        type: 'warning',
+        confirmText: 'Understood'
+      });
+      return;
+    }
+    const branchName = docForm.currentBranch?.branch_name 
+      || (currentUser?.role === 'Service Advisor' ? currentUser.branch : '') 
+      || StorageService.getSettings().branch_name;
+
+    const res = await sendTelegramReminder({
+      customer_name: docForm.customerName,
+      branch_name: branchName,
+      vehicle_model: docForm.vehicleModel,
+      plate_no: docForm.plateNo,
+      remind_date: editingQuotation?.remind_date || new Date().toISOString().split('T')[0],
+      phone: docForm.phone
+    });
+
+    if (res.success) {
+      showToast({
+        type: 'success',
+        title: 'Telegram Reminder Sent',
+        message: `Customer: ${docForm.customerName} • Vehicle: ${docForm.vehicleModel} • Plate: ${docForm.plateNo}`
+      });
+    } else {
+      await showAlert({
+        title: 'Telegram Notification Error',
+        message: res.message || 'Failed to dispatch Telegram reminder.',
+        type: 'error',
+        confirmText: 'OK'
+      });
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto font-sans animate-fade-in pb-12">
       {/* Prominent Active Brand Context Toggle at the very top (Dynamic Scope) */}
@@ -205,6 +246,16 @@ export const CreateQuotation: React.FC<CreateQuotationProps> = ({
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleSendTelegramNow}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-sky-50 text-sky-700 hover:bg-sky-100 text-xs font-bold transition border border-sky-200 cursor-pointer"
+            title="Send service reminder notification to Telegram group"
+          >
+            <Send className="w-4 h-4 text-sky-600" />
+            <span>Send Telegram</span>
+          </button>
+
           {savedQuotation && (
             <button
               type="button"

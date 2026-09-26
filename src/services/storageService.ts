@@ -510,7 +510,12 @@ export const INITIAL_SETTINGS: SystemSettings = {
   quotation_terms: '1. Will deposit 30% of full amount.\n2. The remaining needs to be paid after the maintenance is completed.\n3. ABA: HUAN YA HE ZHONG (CAMBODIA) TRADING CO LTD (002 886 771)\n4. This Quotation will Expire in 30 days and will renew this quote again.',
   telegram_bot_token: '',
   telegram_chat_id: '',
-  telegram_reminder_enabled: true
+  telegram_complete_chat_id: '',
+  telegram_reminder_chat_id: '',
+  telegram_reminder_enabled: true,
+  telegram_complete_send_mode: 'manual',
+  telegram_reminder_send_mode: 'manual',
+  telegram_send_mode: 'manual'
 };
 
 export class StorageService {
@@ -1162,6 +1167,29 @@ export class StorageService {
     if (!settings.quotation_terms) {
       settings.quotation_terms = `${settings.quotation_deposit_term}\n${settings.quotation_payment_term}\n${settings.quotation_bank_details}\n${settings.quotation_expiration_term}`;
       updated = true;
+    }
+    if (!settings.telegram_send_mode) {
+      settings.telegram_send_mode = 'manual';
+      updated = true;
+    }
+    if (!settings.telegram_complete_send_mode) {
+      settings.telegram_complete_send_mode = settings.telegram_send_mode || 'manual';
+      updated = true;
+    }
+    if (!settings.telegram_reminder_send_mode) {
+      settings.telegram_reminder_send_mode = settings.telegram_send_mode || 'manual';
+      updated = true;
+    }
+    // Backward compatibility: migrate telegram_chat_id to both groups if not set
+    if (settings.telegram_chat_id) {
+      if (!settings.telegram_complete_chat_id) {
+        settings.telegram_complete_chat_id = settings.telegram_chat_id;
+        updated = true;
+      }
+      if (!settings.telegram_reminder_chat_id) {
+        settings.telegram_reminder_chat_id = settings.telegram_chat_id;
+        updated = true;
+      }
     }
     if (updated) {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));

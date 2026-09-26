@@ -110,8 +110,14 @@ export const QuotationList: React.FC<QuotationListProps> = ({ filterType, onCrea
   });
 
   const handleSendTelegramReminder = async (q: Quotation) => {
+    const branchName = q.branch_name 
+      || branches.find(b => b.id === q.branch_id)?.branch_name 
+      || (currentUser?.role === 'Service Advisor' ? currentUser.branch : '')
+      || StorageService.getSettings().branch_name;
+
     const res = await sendTelegramReminder({
       customer_name: q.customer_name,
+      branch_name: branchName,
       vehicle_model: q.vehicle_model,
       plate_no: q.plate_no,
       remind_date: q.remind_date || q.created_date,
